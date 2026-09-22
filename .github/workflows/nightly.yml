@@ -25,7 +25,9 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: vsix
+          pattern: dist-*
+          merge-multiple: true
+          path: out
 
       - name: Pick tag
         id: tag
@@ -42,8 +44,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          mv *.vsix "md2pdfx-$TAG.vsix"
-          gh release create "$TAG" "md2pdfx-$TAG.vsix" \
+          # md2pdfX-<version>-<platform>-<arch>.<архив>, расширение — md2pdfX-<version>.vsix
+          version=${TAG#v}
+          mv out/*.vsix "out/md2pdfX-$version.vsix"
+          for f in out/md2pdfX-*-*.*; do
+            case $f in *.vsix) continue ;; esac
+            mv "$f" "out/md2pdfX-$version-${f#out/md2pdfX-}"
+          done
+          ls out
+          gh release create "$TAG" out/* \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Nightly $TAG" \
-            --notes "Nightly build of ${GITHUB_SHA::7}. Install: Extensions → … → Install from VSIX."
+            --notes "Nightly build of ${GITHUB_SHA::7}. Extension: Extensions → … → Install from VSIX. CLI: unpack md2pdfX-<version>-<platform>-<arch> and run \`md2pdf doc.md\`."

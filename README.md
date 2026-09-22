@@ -1,6 +1,8 @@
 md2pdf
 ======
 
+![social-preview](.github/social-preview.svg)
+
 Markdown → PDF: GitHub Flavored Markdown, синтаксис Obsidian, диаграммы
 Mermaid, формулы LaTeX. A4, номера страниц «N / M» и заголовок документа в
 нижнем колонтитуле.
@@ -31,7 +33,7 @@ Markdown разбирает markdown-it, формулы рисует KaTeX, а h
 
 Установка: скачать `.vsix` со страницы
 [Releases](https://github.com/Kseen715/md2pdfX/releases), затем в VS Code
-Extensions › «…» › Install from VSIX… или `code --install-extension md2pdfx-vX.Y.Z.vsix`.
+Extensions › «…» › Install from VSIX… или `code --install-extension md2pdfX-X.Y.Z.vsix`.
 
 Настройки:
 
@@ -74,6 +76,14 @@ npm run package:ext                      # → dist/md2pdfx-<версия>.vsix
 Один исполняемый файл
 ---------------------
 
+Готовые файлы для Linux (x64, arm64), Windows (x64) и macOS (arm64) лежат в
+[Releases](https://github.com/Kseen715/md2pdfX/releases): распаковать
+`md2pdfX-<версия>-<платформа>-<arch>.tar.gz` (Windows — `.zip`) и запускать
+`md2pdf doc.md`. Под Linux arm64 нужен
+системный Chromium: Google Chrome под эту платформу не выпускается.
+
+Собрать самому:
+
 ```bash
 npm run build:exe                        # → dist/md2pdf (на Windows dist/md2pdf.exe)
 ./dist/md2pdf doc.md
@@ -95,15 +105,19 @@ Chrome не входит ни в бинарник, ни в расширение.
 - **Nightly** ([nightly.yml](.github/workflows/nightly.yml)): каждый коммит
   и PR проверяются сборкой примеров и упаковкой `.vsix`. Коммит в `main`
   публикует пре-релиз на GitHub с тегом `vYYYYMMDD.N` (N — номер сборки за
-  день). Версия внутри такого `.vsix` — из `package.json`.
+  день): `.vsix` и исполняемые файлы под все платформы. Версия внутри такого
+  `.vsix` — из `package.json`.
 - **Релиз** ([release.yml](.github/workflows/release.yml)): запускается
   вручную (Actions › release › Run workflow). Берёт версию из `package.json`
-  и создаёт релиз `vX.Y.Z` с `.vsix`. Перед запуском поднять `version` в
+  и создаёт релиз `vX.Y.Z` с `.vsix` и исполняемыми файлами. Перед запуском поднять `version` в
   `package.json` и дописать `CHANGELOG.md`: если релиз с такой версией уже
   есть, workflow остановится.
 
 Секреты не нужны: хватает встроенного токена GitHub. В VS Code Marketplace
 расширение не публикуется.
+
+Картинка для соцсетей — [.github/social-preview.png](.github/social-preview.png)
+(исходник рядом, `.svg`); загружается в Settings › General › Social preview.
 
 Оформление
 ----------

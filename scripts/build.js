@@ -29,6 +29,11 @@ const targets = {
       disableExperimentalSEAWarning: true,
     }, null, 2));
     execFileSync(process.execPath, ['--build-sea', config], { stdio: 'inherit' });
+    // На macOS внедрение ассетов ломает подпись node, а неподписанный
+    // бинарник система не запустит. Хватает ad-hoc подписи.
+    if (process.platform === 'darwin') {
+      execFileSync('codesign', ['--sign', '-', '--force', exe], { stdio: 'inherit' });
+    }
     console.log(`${path.relative(root, exe)}: ${(fs.statSync(exe).size / 2 ** 20).toFixed(0)} МБ`);
   },
 };

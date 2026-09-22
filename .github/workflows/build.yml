@@ -1,4 +1,5 @@
-# Общая сборка для nightly и релиза: проверка на примерах и упаковка .vsix.
+# Общая сборка для nightly и релиза: .vsix и исполняемые файлы под каждую
+# платформу. Всё, что попадает в релиз, выкладывается артефактами dist-*.
 name: build
 
 on:
@@ -24,6 +25,57 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: vsix
+          name: dist-vsix
           path: dist/*.vsix
+          if-no-files-found: error
+
+  exe:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, platform: linux, arch: x64 }
+          - { os: ubuntu-24.04-arm, platform: linux, arch: arm64 }
+          - { os: windows-latest, platform: windows, arch: x64 }
+          - { os: macos-latest, platform: macos, arch: arm64 }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # node --build-sea появился в Node 25.5.
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm run build:exe
+
+      - name: Smoke test
+        run: |
+          exe=dist/md2pdf; [ "$RUNNER_OS" = Windows ] && exe=dist/md2pdf.exe
+          "$exe" --version
+          # Под Linux arm64 нет ни Google Chrome, ни chrome-headless-shell:
+          # там бинарнику нужен системный Chromium, на раннере его нет.
+          if [ "${{ matrix.platform }}-${{ matrix.arch }}" != linux-arm64 ]; then
+            "$exe" examples/math.md -o "$RUNNER_TEMP/"
+          fi
+
+      # Сам бинарник ~150 МБ (внутри Node.js), в архиве — втрое меньше.
+      # Версию в имя вставляет задача релиза: только она знает тег.
+      - name: Archive
+        run: |
+          name=md2pdfX-${{ matrix.platform }}-${{ matrix.arch }}
+          mkdir -p out
+          if [ "$RUNNER_OS" = Windows ]; then
+            7z a -tzip "out/$name.zip" ./dist/md2pdf.exe
+          else
+            tar -czf "out/$name.tar.gz" -C dist md2pdf
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist-${{ matrix.platform }}-${{ matrix.arch }}
+          path: out/*
           if-no-files-found: error

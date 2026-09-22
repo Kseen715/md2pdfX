@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <!-- Social preview для GitHub (Settings › General › Social preview). Стиль и
+       иконка — как в images/icon.svg. Всё значимое — внутри безопасной зоны
+       шаблона GitHub (отступ 80 px от краёв, 80..1200 × 80..560), за её
+       пределами только декор. -->
+  <style>
+    text { font-family: "JetBrainsMono NFM", "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+    .title { font-size: 120px; font-weight: 800; fill: #fff; letter-spacing: -4px; }
+    .sub { font-size: 32px; font-weight: 600; fill: #fff; }
+    .chip { font-size: 22px; font-weight: 700; fill: #fff; letter-spacing: 1.5px; }
+    .meta { font-size: 18px; fill: #8a8a8a; letter-spacing: 3px; }
+  </style>
+  <rect width="1280" height="640" fill="#0a0a0a"/>
+  <path d="M1130 640L1280 490L1280 500L1140 640ZM1152 640L1280 512L1280 522L1162 640ZM1174 640L1280 534L1280 544L1184 640ZM1196 640L1280 556L1280 566L1206 640ZM1218 640L1280 578L1280 588L1228 640ZM1240 640L1280 600L1280 610L1250 640ZM1262 640L1280 622L1280 632L1272 640ZM1284 640L1280 644L1280 654L1294 640Z" fill="#c6ff00"/>
+  <path d="M0 150L150 0H176L0 176Z" fill="#c6ff00"/>
+  <path d="M0 210L210 0H216L0 216Z" fill="#fff" opacity="0.5"/>
+  <path d="M28 604H98M28 614H68" stroke="#fff" stroke-width="4"/>
+  <path d="M1236 28V60M1220 44H1252" stroke="#c6ff00" stroke-width="4"/>
+
+  <g transform="translate(100 128) scale(1.5)">
+  
+  <defs>
+    <clipPath id="icon-bg"><path d="M28 0H256V228L228 256H0V28Z"/></clipPath>
+  </defs>
+
+  <path d="M28 0H256V228L228 256H0V28Z" fill="#0a0a0a"/>
+  <g clip-path="url(#icon-bg)">
+    <path d="M156 256L256 156L256 163L163 256ZM172 256L256 172L256 179L179 256ZM188 256L256 188L256 195L195 256ZM204 256L256 204L256 211L211 256ZM220 256L256 220L256 227L227 256ZM236 256L256 236L256 243L243 256ZM252 256L256 252L256 259L259 256Z" fill="#c6ff00"/>
+    <path d="M0 96L96 0H112L0 112Z" fill="#c6ff00"/>
+    <path d="M0 124L124 0H128L0 128Z" fill="#fff" opacity="0.5"/>
+  </g>
+  <path d="M14 238H40M14 244H30" stroke="#fff" stroke-width="3"/>
+  <path d="M226 18V34M218 26H234" stroke="#c6ff00" stroke-width="3"/>
+
+  
+  <path d="M64 40H160L200 80V216H64Z" fill="#fff"/>
+  <path d="M160 40V80H200Z" fill="#c6ff00"/>
+
+  
+  <path d="M80 130V80H90L103 97L116 80H126V130H116V98L103 114L90 98V130Z" fill="#0a0a0a"/>
+  <path fill="#0a0a0a" fill-rule="evenodd"
+        d="M136 80H164L176 92V118L164 130H136Z M146 90V120H159L166 113V97L159 90Z"/>
+
+  
+  <path d="M36 150H206L220 164V200H50L36 186Z" fill="#c6ff00" stroke="#0a0a0a" stroke-width="4"/>
+  <g fill="#0a0a0a" fill-rule="evenodd">
+    <path d="M70 190V160H90L96 166V174L90 180H78V190Z M78 167V173H87L88 172V168L87 167Z"/>
+    <path d="M106 160H126L134 168V182L126 190H106Z M114 167V183H123L126 180V170L123 167Z"/>
+    <path d="M144 160H168V167H152V172H164V179H152V190H144Z"/>
+    <path d="M178 166L186 175L178 184H184L192 175L184 166Z"/>
+    <path d="M190 166L198 175L190 184H196L204 175L196 166Z"/>
+  </g>
+</g>
+
+  <text x="544" y="262" class="title">md2pdf<tspan fill="#c6ff00">X</tspan></text>
+  <path d="M548 290H1128L1140 302H548Z" fill="#c6ff00"/>
+  <text x="548" y="366" class="sub">Markdown → PDF // CLI · VS Code</text>
+  <path d="M548 432H666L678 444V472H560L548 460Z" fill="none" stroke="#fff" stroke-width="3"/><text x="613.0" y="460" text-anchor="middle" class="chip">GITHUB</text><path d="M692 432H840L852 444V472H704L692 460Z" fill="none" stroke="#fff" stroke-width="3"/><text x="772.0" y="460" text-anchor="middle" class="chip">OBSIDIAN</text><path d="M866 432H999L1011 444V472H878L866 460Z" fill="none" stroke="#fff" stroke-width="3"/><text x="938.5" y="460" text-anchor="middle" class="chip">MERMAID</text><path d="M1025 432H1128L1140 444V472H1037L1025 460Z" fill="none" stroke="#fff" stroke-width="3"/><text x="1082.5" y="460" text-anchor="middle" class="chip">LATEX</text>
+  <text x="548" y="524" class="meta">NO PANDOC · NO TEX · SINGLE BINARY</text>
+</svg>
