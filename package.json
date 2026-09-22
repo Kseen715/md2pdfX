@@ -1,13 +1,127 @@
 {
-  "name": "mios-md2pdf",
+  "name": "md2pdfx",
+  "displayName": "md2pdfX — Markdown to PDF",
+  "description": "Export Markdown to PDF: GitHub, Obsidian, Mermaid diagrams, LaTeX formulas, page numbers",
   "version": "1.0.0",
-  "private": true,
-  "description": "Сборка PDF из markdown с отрисовкой диаграмм Mermaid",
+  "publisher": "Kseen715",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kseen715/md2pdfX.git"
+  },
+  "homepage": "https://github.com/Kseen715/md2pdfX#readme",
+  "bugs": {
+    "url": "https://github.com/Kseen715/md2pdfX/issues"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "pdf",
+    "obsidian",
+    "mermaid",
+    "latex",
+    "katex",
+    "export"
+  ],
+  "type": "module",
+  "main": "./dist/extension.cjs",
+  "bin": {
+    "md2pdf": "src/cli.js"
+  },
+  "engines": {
+    "node": ">=22",
+    "vscode": "^1.95.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "md2pdfx.export",
+        "title": "%command.export%",
+        "category": "md2pdfX",
+        "icon": "$(file-pdf)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "md2pdfx.export",
+          "when": "editorLangId == markdown"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "md2pdfx.export",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "md2pdfx.export",
+          "when": "resourceLangId == markdown",
+          "group": "1_md2pdfx"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "md2pdfx.export",
+          "when": "resourceLangId == markdown || explorerResourceIsFolder",
+          "group": "1_md2pdfx"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "%config.title%",
+      "properties": {
+        "md2pdfx.chromePath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "%config.chromePath%"
+        },
+        "md2pdfx.extraCss": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "%config.extraCss%"
+        },
+        "md2pdfx.outputDirectory": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "%config.outputDirectory%"
+        }
+      }
+    }
+  },
   "scripts": {
-    "build": "node build.js"
+    "start": "node src/cli.js",
+    "examples": "node src/cli.js examples -o examples/out/",
+    "build:ext": "node scripts/build.js extension",
+    "build:exe": "node scripts/build.js exe",
+    "package:ext": "vsce package --no-dependencies -o dist/",
+    "vscode:prepublish": "npm run build:ext"
   },
   "dependencies": {
+    "@puppeteer/browsers": "^3.2.2",
+    "@vscode/markdown-it-katex": "^1.1.2",
+    "highlight.js": "^11.12.0",
+    "katex": "^0.18.7",
+    "markdown-it": "^15.0.2",
+    "markdown-it-emoji": "^3.1.0",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-mark": "^4.0.0",
     "mermaid": "^12.0.0",
-    "puppeteer": "^25.11.0"
+    "puppeteer-core": "^25.11.0"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2"
   }
 }

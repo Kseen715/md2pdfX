@@ -1,0 +1,29 @@
+# Общая сборка для nightly и релиза: проверка на примерах и упаковка .vsix.
+name: build
+
+on:
+  workflow_call:
+
+jobs:
+  vsix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      # Заодно проверка конвейера целиком: на раннере стоит Google Chrome.
+      - name: Build examples
+        run: npm run examples
+
+      - name: Package extension
+        run: npm run package:ext
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vsix
+          path: dist/*.vsix
+          if-no-files-found: error

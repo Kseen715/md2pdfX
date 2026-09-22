@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Расширение",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "${workspaceFolder}/examples"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.cjs"
+      ],
+      "preLaunchTask": "md2pdf: собрать расширение"
+    },
+    {
+      "name": "md2pdf: текущий файл",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/cli.js",
+      "args": [
+        "${file}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "md2pdf: примеры",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/cli.js",
+      "args": [
+        "examples",
+        "-o",
+        "examples/out/"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}

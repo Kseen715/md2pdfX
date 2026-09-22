@@ -1,0 +1,128 @@
+// Расширение VS Code: команда «Export to PDF» для .md-файлов и папок.
+// Конвейер тот же, что у CLI; прогресс и результат — в строке состояния,
+// всплывают только ошибки.
+import fs from 'node:fs';
+import path from 'node:path';
+import * as vscode from 'vscode';
+import { renderMarkdown } from './markdown.js';
+import { findBrowser } from './browser.js';
+import { launchBrowser, printPdf } from './pdf.js';
+
+let log;
+
+export function activate(context) {
+  log = vscode.window.createOutputChannel('md2pdfX');
+  context.subscriptions.push(
+    log,
+    vscode.commands.registerCommand('md2pdfx.export', exportCommand),
+  );
+}
+
+export function deactivate() {}
+
+// Из меню проводника приходят (кликнутый uri, все выделенные), из заголовка
+// редактора — только uri, из палитры команд — ничего.
+async function exportCommand(uri, selected) {
+  const targets = selected?.length ? selected : [uri ?? vscode.window.activeTextEditor?.document.uri];
+  const files = (await Promise.all(targets.filter(Boolean).map(markdownFiles))).flat();
+  if (!files.length) {
+    vscode.window.showWarningMessage('md2pdfX: no Markdown files to export.');
+    return;
+  }
+
+  const failed = [];
+  const done = [];
+  await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Window, title: 'md2pdfX' },
+    async progress => {
+      let browser;
+      try {
+        // Chrome запускается на одну команду: держать его в фоне между
+        // экспортами — лишняя память ради секунды на запуск.
+        browser = await startBrowser(files[0], progress);
+        for (const file of files) {
+          progress.report({ message: path.basename(file.fsPath) });
+          try {
+            done.push(await exportFile(browser, file));
+          } catch (e) {
+            failed.push(file);
+            log.appendLine(`${file.fsPath}: ${e.message}`);
+          }
+        }
+      } catch (e) {
+        // Сюда попадают только ошибки запуска Chrome: до файлов дело не дошло.
+        failed.push(...files);
+        log.appendLine(e.message);
+      } finally {
+        await browser?.close().catch(() => {});
+      }
+    },
+  );
+
+  if (failed.length) {
+    const choice = await vscode.window.showErrorMessage(
+      `md2pdfX: failed to export ${failed.map(f => path.basename(f.fsPath)).join(', ')}.`,
+      'Show Log',
+    );
+    if (choice) log.show(true);
+  } else {
+    const names = done.map(f => path.basename(f)).join(', ');
+    vscode.window.setStatusBarMessage(`$(check) md2pdfX: ${names}`, 5000);
+  }
+}
+
+async function markdownFiles(uri) {
+  if (uri.scheme !== 'file') return [];
+  const stat = await vscode.workspace.fs.stat(uri);
+  if (stat.type & vscode.FileType.Directory) {
+    const entries = await vscode.workspace.fs.readDirectory(uri);
+    return entries
+      .filter(([name, type]) => type === vscode.FileType.File && /\.md$/i.test(name))
+      .map(([name]) => vscode.Uri.joinPath(uri, name));
+  }
+  return /\.md$/i.test(uri.fsPath) ? [uri] : [];
+}
+
+async function startBrowser(file, progress) {
+  const chromePath = settings(file).get('chromePath') || process.env.MD2PDF_CHROME;
+  const options = await findBrowser(chromePath, {
+    log: message => log.appendLine(message),
+    onProgress: (bytes, total) => progress.report({
+      message: `downloading Chrome ${Math.round((bytes / total) * 100)}%`,
+    }),
+  });
+  return launchBrowser(options);
+}
+
+async function exportFile(browser, file) {
+  const config = settings(file);
+  // Несохранённые правки тоже попадают в PDF.
+  const open = vscode.workspace.textDocuments.find(d => d.uri.toString() === file.toString());
+  const src = open ? open.getText() : fs.readFileSync(file.fsPath, 'utf8');
+  const { html, title } = renderMarkdown(src, file.fsPath);
+
+  const outDir = config.get('outputDirectory');
+  const name = path.basename(file.fsPath).replace(/\.md$/i, '') + '.pdf';
+  const output = outDir ? path.join(resolvePath(file, outDir), name) : file.fsPath.replace(/\.md$/i, '.pdf');
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+
+  const css = config.get('extraCss');
+  const extraCss = css ? fs.readFileSync(resolvePath(file, css), 'utf8') : '';
+
+  const { diagrams, errors } = await printPdf(browser, {
+    html, output, extraCss, title: title ?? path.basename(file.fsPath, '.md'),
+  });
+  log.appendLine(`${output}${diagrams ? ` (diagrams: ${diagrams})` : ''}`);
+  if (errors.length) log.appendLine(`  page errors: ${errors.join('; ')}`);
+  return output;
+}
+
+function settings(file) {
+  return vscode.workspace.getConfiguration('md2pdfx', file);
+}
+
+// Относительные пути в настройках — от папки рабочей области файла.
+function resolvePath(file, p) {
+  const base = vscode.workspace.getWorkspaceFolder(file)?.uri.fsPath ?? path.dirname(file.fsPath);
+  return path.resolve(base, p);
+}

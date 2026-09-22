@@ -1,0 +1,7 @@
+{
+  "command.export": "Экспорт в PDF",
+  "config.title": "md2pdfX",
+  "config.chromePath": "Путь к Chrome, Chromium или Edge. Пусто: искать в кэше puppeteer и в системе, если не найден — скачать chrome-headless-shell.",
+  "config.extraCss": "CSS-файл поверх встроенных стилей. Относительный путь — от папки рабочей области.",
+  "config.outputDirectory": "Папка для PDF. Пусто: рядом с файлом Markdown. Относительный путь — от папки рабочей области."
+}

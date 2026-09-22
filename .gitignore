@@ -1,3 +1,5 @@
 node_modules/
-.doc.html
 input/
+dist/
+examples/out/
+*.pdf

@@ -1,0 +1,110 @@
+@page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+
+body {
+  font-family: "DejaVu Sans", "Lato", sans-serif, "Noto Color Emoji", "Segoe UI Emoji", "Apple Color Emoji";
+  font-size: 10.5pt; line-height: 1.5; color: #1a1a1a; margin: 0;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+h1 { font-size: 20pt; margin: 0 0 4mm; color: #0b3c5d; }
+h2 {
+  font-size: 15pt; margin: 0 0 4mm; padding-bottom: 2mm; color: #0b3c5d;
+  border-bottom: 2px solid #0b3c5d; page-break-after: avoid;
+}
+h2 + p, h2 + ul, h2 + table { page-break-before: avoid; }
+/* Каждый раздел с новой страницы, кроме первого: он остаётся под заголовком
+   документа (обычно это «Содержание» или введение). */
+h2 ~ h2 { page-break-before: always; }
+h3 { font-size: 12pt; margin: 6mm 0 2mm; color: #14507a; page-break-after: avoid; }
+/* Вводный абзац не должен отрываться от диаграммы, которая идёт за ним. */
+h3 + p { page-break-after: avoid; }
+
+p, ul, ol { margin: 0 0 3mm; }
+li { margin-bottom: 1mm; }
+/* Линии вокруг заголовков разделов лишние: раздел и так начинается с новой
+   страницы, а у h2 есть своя черта. */
+hr { border: none; border-top: 1px solid #dfe3e8; margin: 4mm 0; }
+hr:has(+ h2), h2 + hr { display: none; }
+h4, h5, h6 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: #14507a; page-break-after: avoid; }
+img { max-width: 100%; }
+p:empty { display: none; }
+
+a { color: #14507a; text-decoration: none; }
+
+code {
+  font-family: "DejaVu Sans Mono", monospace; font-size: 9pt;
+  background: #f2f4f6; padding: 0.4mm 1.2mm; border-radius: 2px;
+}
+pre {
+  background: #f7f8fa; border: 1px solid #dfe3e8; border-left: 3px solid #0b3c5d;
+  border-radius: 3px; padding: 3mm; margin: 0 0 4mm;
+  page-break-inside: avoid; white-space: pre-wrap; word-wrap: break-word;
+}
+pre code { background: none; padding: 0; font-size: 8.5pt; line-height: 1.35; }
+
+table {
+  border-collapse: collapse; width: 100%; margin: 0 0 4mm;
+  font-size: 9.5pt; page-break-inside: avoid;
+}
+th, td { border: 1px solid #ccd3da; padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; }
+th { background: #0b3c5d; color: #fff; font-weight: 600; }
+tr:nth-child(even) td { background: #f7f8fa; }
+
+blockquote {
+  margin: 0 0 4mm; padding: 2.5mm 4mm; background: #fff8e6;
+  border-left: 4px solid #d9a441; page-break-inside: avoid;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+pre.mermaid, div.mermaid {
+  background: none; border: none; padding: 0; text-align: center;
+  page-break-inside: avoid; margin: 0 0 5mm;
+}
+pre.mermaid svg, div.mermaid svg { max-width: 100%; height: auto; }
+
+/* --- Формулы KaTeX --- */
+.katex { font-size: 1.1em; }
+.katex-block { text-align: center; margin: 0 0 4mm; overflow-x: auto; page-break-inside: avoid; }
+.katex-error { color: #b3261e; }
+
+/* --- GitHub: задачи, сноски, прочее --- */
+li.task-list-item { list-style: none; }
+li.task-list-item input { margin: 0 1.5mm 0 -5mm; vertical-align: -0.5mm; }
+.footnotes { font-size: 9pt; color: #444; }
+.footnotes-sep { display: block; margin: 6mm 0 2mm; width: 40%; }
+.footnote-ref a, .footnote-backref { color: #14507a; }
+mark { background: #fff1a8; padding: 0 0.5mm; }
+kbd {
+  font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt;
+  border: 1px solid #c3c9d0; border-bottom-width: 2px; border-radius: 3px; padding: 0 1.2mm;
+}
+details { margin: 0 0 4mm; }
+summary { font-weight: 600; margin-bottom: 2mm; }
+del { color: #7a848d; }
+
+/* --- Obsidian --- */
+.wikilink { color: #6a3fb5; }
+.wikilink.missing { color: #b3261e; text-decoration: underline dotted; }
+.tag {
+  display: inline-block; font-size: 8.5pt; color: #6a3fb5; background: #f0ebfa;
+  border-radius: 8pt; padding: 0 2mm;
+}
+.embed { border-left: 3px solid #b9a6e0; padding: 0 0 0 4mm; margin: 0 0 4mm; }
+.embed h2 { page-break-before: auto; }
+
+/* Callout'ы Obsidian и алерты GitHub: > [!note] */
+.callout {
+  --c: #2f6fc0;
+  margin: 0 0 4mm; padding: 2.5mm 4mm; border-left: 4px solid var(--c);
+  background: color-mix(in srgb, var(--c) 8%, white); border-radius: 2px;
+  page-break-inside: avoid;
+}
+.callout-title { font-weight: 600; color: var(--c); margin-bottom: 1.5mm; }
+.callout > :last-child { margin-bottom: 0; }
+.callout-teal { --c: #138a8a; }
+.callout-green { --c: #2e8540; }
+.callout-yellow { --c: #b7860b; }
+.callout-orange { --c: #d0661a; }
+.callout-red { --c: #c62828; }
+.callout-purple { --c: #7b4fc4; }
+.callout-gray { --c: #6b7680; }
