@@ -11,6 +11,19 @@ markdown-it parses the Markdown, KaTeX renders the formulas, and headless
 Chrome draws the mermaid.js diagrams and prints the PDF. No external tools
 (pandoc, LaTeX) are needed, so the app builds into a single executable.
 
+Themes
+------
+
+| `classic` (default) | `vectorheart` |
+| :-----------------: | :-----------: |
+| ![classic theme](docs/previews/classic.png) | ![vectorheart theme](docs/previews/vectorheart.png) |
+
+Both pages are [examples/showcase.md](examples/showcase.md) printed with
+`--watermark PREVIEW`. CI regenerates them on every change to `main`
+([previews.yml](.github/workflows/previews.yml)); locally:
+`node scripts/previews.js` (needs `poppler-utils`). The script fails if the
+showcase no longer fits on one page.
+
 What is supported
 -----------------
 

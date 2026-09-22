@@ -1,0 +1,47 @@
+# Картинки тем в README (docs/previews/*.png): examples/showcase.md печатается
+# в каждой теме, изменившиеся картинки коммитятся в main. Коммит сделан
+# GITHUB_TOKEN, поэтому других workflow он не запускает.
+name: previews
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'examples/showcase.md'
+      - 'scripts/previews.js'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+concurrency:
+  group: previews
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install poppler
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Render previews
+        run: node scripts/previews.js
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- docs/previews && [ -z "$(git ls-files --others -- docs/previews)" ]; then
+            echo "Previews are up to date"; exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/previews
+          git commit -m 'docs: update theme previews'
+          git push
