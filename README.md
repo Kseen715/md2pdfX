@@ -137,30 +137,6 @@ in this order: `--chrome` or `MD2PDF_CHROME` → the puppeteer cache
 installed on the system. If none is found, `chrome-headless-shell` is
 downloaded into the puppeteer cache (once, about 100 MB).
 
-Builds and releases
--------------------
-
-- **Nightly** ([nightly.yml](.github/workflows/nightly.yml)): every commit and
-  PR is checked by building the examples and packaging the `.vsix`. A commit
-  to `main` publishes a GitHub pre-release tagged `vYYYYMMDD.N` (N is the
-  build number within the day) with the `.vsix` and executables for every
-  platform. Only the latest nightly is kept: once the new one is published,
-  the previous nightly releases and their tags are deleted. The version inside such a `.vsix` comes from `package.json`.
-- **Release** ([release.yml](.github/workflows/release.yml)): started manually
-  (Actions › release › Run workflow). It takes the version from
-  `package.json` and creates the `vX.Y.Z` release with the `.vsix` and the
-  executables. Its notes list the changes since the previous `vX.Y.Z` release
-  (nightlies are ignored); the first release lists every commit. Before running it, bump `version` in `package.json` and update
-  `CHANGELOG.md`: if a release with that version already exists, the workflow
-  stops.
-
-No secrets are needed: the built-in GitHub token is enough. The extension is
-not published to the VS Code Marketplace.
-
-The social media image is [.github/social-preview.png](.github/social-preview.png)
-(its `.svg` source is next to it); upload it under Settings › General ›
-Social preview.
-
 Layout
 ------
 
