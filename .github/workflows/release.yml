@@ -37,6 +37,10 @@ jobs:
     env:
       TAG: ${{ needs.check.outputs.tag }}
     steps:
+      # Полная история — для заметок к первому релизу.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
           pattern: dist-*
@@ -55,6 +59,20 @@ jobs:
             mv "$f" "out/md2pdfX-$version-${f#out/md2pdfX-}"
           done
           ls out
+
+          # Заметки — изменения с прошлого релиза vX.Y.Z. Сам GitHub взял бы
+          # за точку отсчёта последний nightly и показал бы только его хвост.
+          prev=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 \
+                   --exclude-pre-releases --json tagName --jq '.[].tagName' \
+                 | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)
+          if [ -n "$prev" ]; then
+            notes=(--generate-notes --notes-start-tag "$prev")
+          else
+            # Первый релиз: сравнивать не с чем — все коммиты до этого.
+            printf '## Changes\n\n' > notes.md
+            git log --reverse --pretty='- %s (%h)' "$GITHUB_SHA" >> notes.md
+            notes=(--notes-file notes.md)
+          fi
           gh release create "$TAG" out/* \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "$TAG" --generate-notes
+            --title "$TAG" "${notes[@]}"

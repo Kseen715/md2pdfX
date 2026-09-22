@@ -1,5 +1,6 @@
 # Nightly: сборка на каждый коммит. Для коммитов в main — пре-релиз на GitHub
-# с тегом vYYYYMMDD.N, где N — номер сборки за день.
+# с тегом vYYYYMMDD.N, где N — номер сборки за день; предыдущий nightly при
+# этом удаляется.
 name: nightly
 
 on:
@@ -56,3 +57,19 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Nightly $TAG" \
             --notes "Nightly build of ${GITHUB_SHA::7}. Extension: Extensions → … → Install from VSIX. CLI: unpack md2pdfX-<version>-<platform>-<arch> and run \`md2pdf doc.md\`."
+
+      # Хранится только последний nightly: предыдущие пре-релизы удаляются
+      # вместе с тегами. Задача запускается лишь после успешной сборки, а
+      # удаление — после создания нового релиза, так что хотя бы один рабочий
+      # nightly есть всегда. Релизы vX.Y.Z под шаблон vYYYYMMDD.N не подходят.
+      - name: Delete older nightlies
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq '.[].tagName' \
+            | grep -E '^v[0-9]{8}\.[0-9]+$' | grep -vxF "$TAG" \
+            | while read -r old; do
+                echo "Deleting $old"
+                gh release delete "$old" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
+              done

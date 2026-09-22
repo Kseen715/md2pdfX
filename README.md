@@ -144,11 +144,13 @@ Builds and releases
   PR is checked by building the examples and packaging the `.vsix`. A commit
   to `main` publishes a GitHub pre-release tagged `vYYYYMMDD.N` (N is the
   build number within the day) with the `.vsix` and executables for every
-  platform. The version inside such a `.vsix` comes from `package.json`.
+  platform. Only the latest nightly is kept: once the new one is published,
+  the previous nightly releases and their tags are deleted. The version inside such a `.vsix` comes from `package.json`.
 - **Release** ([release.yml](.github/workflows/release.yml)): started manually
   (Actions › release › Run workflow). It takes the version from
   `package.json` and creates the `vX.Y.Z` release with the `.vsix` and the
-  executables. Before running it, bump `version` in `package.json` and update
+  executables. Its notes list the changes since the previous `vX.Y.Z` release
+  (nightlies are ignored); the first release lists every commit. Before running it, bump `version` in `package.json` and update
   `CHANGELOG.md`: if a release with that version already exists, the workflow
   stops.
 
