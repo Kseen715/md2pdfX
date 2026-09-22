@@ -91,7 +91,7 @@ npm run examples                         # examples → examples/out/
 npm link                                 # puts the md2pdf command on PATH
 ```
 
-In VS Code, the "Расширение" (Extension) configuration in Run and Debug opens
+In VS Code, the Extension configuration in Run and Debug opens
 a window with the extension loaded from source; the default build task
 (`Ctrl+Shift+B`) builds a PDF from the open file through the CLI.
 
