@@ -1,7 +1,7 @@
 md2pdf
 ======
 
-![social-preview](.github/social-preview.svg)
+![social-preview](.github/social-preview.png)
 
 Markdown → PDF: GitHub Flavored Markdown, синтаксис Obsidian, диаграммы
 Mermaid, формулы LaTeX. A4, номера страниц «N / M» и заголовок документа в
