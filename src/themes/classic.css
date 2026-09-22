@@ -1,0 +1,32 @@
+/* Тема Classic (по умолчанию): синие заголовки, текст без засечек.
+   Ложится поверх style.css. */
+body { color: #1a1a1a; }
+
+h1, h2 { color: #0b3c5d; }
+h2 { border-bottom: 2px solid #0b3c5d; }
+h3, h4, h5, h6 { color: #14507a; }
+
+hr { border-top: 1px solid #dfe3e8; }
+a { color: #14507a; text-decoration: none; }
+
+code { background: #f2f4f6; border-radius: 2px; }
+pre {
+  background: #f7f8fa; border: 1px solid #dfe3e8; border-left: 3px solid #0b3c5d;
+  border-radius: 3px;
+}
+
+th, td { border: 1px solid #ccd3da; }
+th { background: #0b3c5d; color: #fff; }
+tr:nth-child(even) td { background: #f7f8fa; }
+
+blockquote { background: #fff8e6; border-left: 4px solid #d9a441; }
+
+.footnote-ref a, .footnote-backref { color: #14507a; }
+mark { background: #fff1a8; }
+kbd { border: 1px solid #c3c9d0; border-bottom-width: 2px; border-radius: 3px; }
+del { color: #7a848d; }
+
+.wikilink { color: #6a3fb5; }
+.tag { color: #6a3fb5; background: #f0ebfa; border-radius: 8pt; }
+.embed { border-left: 3px solid #b9a6e0; }
+.callout { border-radius: 2px; }

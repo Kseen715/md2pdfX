@@ -3,5 +3,18 @@
   "config.title": "md2pdfX",
   "config.chromePath": "Path to Chrome, Chromium or Edge. Empty: search the puppeteer cache and the system, download chrome-headless-shell if nothing is found.",
   "config.extraCss": "CSS file applied on top of the built-in styles. Relative paths resolve from the workspace folder.",
-  "config.outputDirectory": "Folder for PDF files. Empty: next to the Markdown file. Relative paths resolve from the workspace folder."
+  "config.outputDirectory": "Folder for PDF files. Empty: next to the Markdown file. Relative paths resolve from the workspace folder.",
+  "config.theme": "PDF look.",
+  "config.theme.vectorheart": "Black and white with an acid-lime accent, 45° cuts, monospace headings.",
+  "config.watermark": "Text in the middle of the page footer, e.g. `CONFIDENTIAL`. Empty: no watermark.",
+  "config.theme.classic": "Blue headings, sans-serif text.",
+  "config.orientation": "Page orientation (A4).",
+  "config.orientation.portrait": "Portrait",
+  "config.orientation.landscape": "Landscape",
+  "command.exportWithOptions": "Export to PDF with Options…",
+  "config.align": "Text alignment. Code and tables stay left-aligned.",
+  "config.align.justify": "Justify",
+  "config.align.left": "Left",
+  "config.align.center": "Center",
+  "config.align.right": "Right"
 }

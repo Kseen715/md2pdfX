@@ -1,5 +1,4 @@
-// Стили и скрипты, которые встраиваются в печатаемую страницу. Откуда они
-// берутся:
+// Стили, скрипты и шрифты печатаемой страницы. Откуда они берутся:
 //   - исполняемый файл — ассеты SEA;
 //   - расширение VS Code — каталог assets/ рядом с бандлом;
 //   - исходники — src/ и node_modules.
@@ -9,12 +8,16 @@ import path from 'node:path';
 import sea from 'node:sea';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { collectFonts } from './fonts.js';
 
 const sources = {
   'style.css': () => fs.readFileSync(fileURLToPath(new URL('./style.css', import.meta.url)), 'utf8'),
+  'theme-classic.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/classic.css', import.meta.url)), 'utf8'),
+  'theme-vectorheart.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/vectorheart.css', import.meta.url)), 'utf8'),
   'mermaid.js': () => fs.readFileSync(resolve('mermaid/dist/mermaid.min.js'), 'utf8'),
   'katex.css': () => inlineFonts(resolve('katex/dist/katex.min.css')),
   'highlight.css': () => fs.readFileSync(resolve('highlight.js/styles/github.min.css'), 'utf8'),
+  'fonts.css': () => collectFonts().css,
 };
 
 export const assetNames = Object.keys(sources);
@@ -34,6 +37,27 @@ function readAsset(name) {
   if (sea.isSea?.()) return sea.getAsset(name, 'utf8');
   const prebuilt = fileURLToPath(new URL(`./assets/${name}`, import.meta.url));
   return fs.existsSync(prebuilt) ? fs.readFileSync(prebuilt, 'utf8') : buildAsset(name);
+}
+
+// Файл шрифта из fonts.css (Buffer) или null, если такого нет. В SEA шрифты
+// лежат ассетами fonts/<имя>, в расширении — в assets/fonts/.
+const fonts = new Map();
+let devFonts;
+
+export function loadFont(file) {
+  if (!/^[\w.-]+\.woff2$/.test(file)) return null;
+  if (!fonts.has(file)) fonts.set(file, readFont(file));
+  return fonts.get(file);
+}
+
+function readFont(file) {
+  if (sea.isSea?.()) {
+    try { return Buffer.from(sea.getAsset(`fonts/${file}`)); } catch { return null; }
+  }
+  const prebuilt = fileURLToPath(new URL(`./assets/fonts/${file}`, import.meta.url));
+  if (fs.existsSync(prebuilt)) return fs.readFileSync(prebuilt);
+  devFonts ??= collectFonts().files;
+  return devFonts[file] ? fs.readFileSync(devFonts[file]) : null;
 }
 
 function resolve(id) {

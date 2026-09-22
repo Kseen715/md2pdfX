@@ -3,5 +3,18 @@
   "config.title": "md2pdfX",
   "config.chromePath": "Путь к Chrome, Chromium или Edge. Пусто: искать в кэше puppeteer и в системе, если не найден — скачать chrome-headless-shell.",
   "config.extraCss": "CSS-файл поверх встроенных стилей. Относительный путь — от папки рабочей области.",
-  "config.outputDirectory": "Папка для PDF. Пусто: рядом с файлом Markdown. Относительный путь — от папки рабочей области."
+  "config.outputDirectory": "Папка для PDF. Пусто: рядом с файлом Markdown. Относительный путь — от папки рабочей области.",
+  "config.theme": "Оформление PDF.",
+  "config.theme.vectorheart": "Чёрно-белая с кислотно-лаймовым акцентом, срезы под 45°, моноширинные заголовки.",
+  "config.watermark": "Надпись по центру нижнего колонтитула, например `CONFIDENTIAL`. Пусто — без надписи.",
+  "config.theme.classic": "Синие заголовки, текст без засечек.",
+  "config.orientation": "Ориентация листа (A4).",
+  "config.orientation.portrait": "Книжная",
+  "config.orientation.landscape": "Альбомная",
+  "command.exportWithOptions": "Экспорт в PDF с параметрами…",
+  "config.align": "Выравнивание текста. Код и таблицы всегда по левому краю.",
+  "config.align.justify": "По ширине",
+  "config.align.left": "По левому краю",
+  "config.align.center": "По центру",
+  "config.align.right": "По правому краю"
 }

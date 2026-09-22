@@ -45,6 +45,12 @@
         "title": "%command.export%",
         "category": "md2pdfX",
         "icon": "$(file-pdf)"
+      },
+      {
+        "command": "md2pdfx.exportWithOptions",
+        "title": "%command.exportWithOptions%",
+        "category": "md2pdfX",
+        "icon": "$(file-pdf)"
       }
     ],
     "menus": {
@@ -52,18 +58,28 @@
         {
           "command": "md2pdfx.export",
           "when": "editorLangId == markdown"
+        },
+        {
+          "command": "md2pdfx.exportWithOptions",
+          "when": "editorLangId == markdown"
         }
       ],
       "editor/title": [
         {
           "command": "md2pdfx.export",
           "when": "resourceLangId == markdown",
-          "group": "navigation"
+          "group": "navigation",
+          "alt": "md2pdfx.exportWithOptions"
         }
       ],
       "editor/context": [
         {
           "command": "md2pdfx.export",
+          "when": "resourceLangId == markdown",
+          "group": "1_md2pdfx"
+        },
+        {
+          "command": "md2pdfx.exportWithOptions",
           "when": "resourceLangId == markdown",
           "group": "1_md2pdfx"
         }
@@ -73,12 +89,73 @@
           "command": "md2pdfx.export",
           "when": "resourceLangId == markdown || explorerResourceIsFolder",
           "group": "1_md2pdfx"
+        },
+        {
+          "command": "md2pdfx.exportWithOptions",
+          "when": "resourceLangId == markdown || explorerResourceIsFolder",
+          "group": "1_md2pdfx"
         }
       ]
     },
     "configuration": {
       "title": "%config.title%",
       "properties": {
+        "md2pdfx.theme": {
+          "type": "string",
+          "default": "classic",
+          "enum": [
+            "classic",
+            "vectorheart"
+          ],
+          "enumItemLabels": [
+            "Classic",
+            "Neo-Vectorheart"
+          ],
+          "markdownEnumDescriptions": [
+            "%config.theme.classic%",
+            "%config.theme.vectorheart%"
+          ],
+          "scope": "resource",
+          "markdownDescription": "%config.theme%"
+        },
+        "md2pdfx.orientation": {
+          "type": "string",
+          "default": "portrait",
+          "enum": [
+            "portrait",
+            "landscape"
+          ],
+          "enumItemLabels": [
+            "%config.orientation.portrait%",
+            "%config.orientation.landscape%"
+          ],
+          "scope": "resource",
+          "markdownDescription": "%config.orientation%"
+        },
+        "md2pdfx.align": {
+          "type": "string",
+          "default": "justify",
+          "enum": [
+            "justify",
+            "left",
+            "center",
+            "right"
+          ],
+          "enumItemLabels": [
+            "%config.align.justify%",
+            "%config.align.left%",
+            "%config.align.center%",
+            "%config.align.right%"
+          ],
+          "scope": "resource",
+          "markdownDescription": "%config.align%"
+        },
+        "md2pdfx.watermark": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "%config.watermark%"
+        },
         "md2pdfx.chromePath": {
           "type": "string",
           "default": "",
@@ -121,6 +198,19 @@
     "puppeteer-core": "^25.11.0"
   },
   "devDependencies": {
+    "@fontsource-variable/noto-sans": "^5.3.0",
+    "@fontsource-variable/noto-sans-arabic": "^5.3.0",
+    "@fontsource-variable/noto-sans-armenian": "^5.3.0",
+    "@fontsource-variable/noto-sans-bengali": "^5.3.0",
+    "@fontsource-variable/noto-sans-devanagari": "^5.3.0",
+    "@fontsource-variable/noto-sans-ethiopic": "^5.3.0",
+    "@fontsource-variable/noto-sans-georgian": "^5.3.0",
+    "@fontsource-variable/noto-sans-hebrew": "^5.3.0",
+    "@fontsource-variable/noto-sans-tamil": "^5.3.0",
+    "@fontsource-variable/noto-sans-thai": "^5.3.0",
+    "@fontsource/noto-sans-jp": "^5.3.0",
+    "@fontsource/noto-sans-kr": "^5.3.0",
+    "@fontsource/noto-sans-sc": "^5.3.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2"
   }

@@ -4,10 +4,78 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer-core';
-import { loadAsset } from './assets.js';
+import { loadAsset, loadFont } from './assets.js';
+import { FONT_ORIGIN } from './fonts.js';
 import { escapeHtml } from './obsidian.js';
 
 const MARGIN = { top: '18mm', bottom: '20mm', left: '16mm', right: '16mm' };
+
+
+// Встроенные шрифты (src/fonts.js). Noto Sans для других письменностей и
+// CJK подхватывают символы, которых нет в основном шрифте; эмодзи — последними.
+const FALLBACK = [
+  'Noto Sans Arabic Variable', 'Noto Sans Hebrew Variable', 'Noto Sans Devanagari Variable',
+  'Noto Sans Bengali Variable', 'Noto Sans Tamil Variable', 'Noto Sans Thai Variable',
+  'Noto Sans Georgian Variable', 'Noto Sans Armenian Variable', 'Noto Sans Ethiopic Variable',
+  'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Color Emoji',
+].map(f => `"${f}"`).join(', ');
+const SANS = `"Noto Sans Variable", ${FALLBACK}, sans-serif`;
+const MONO = `"JetBrainsMono Nerd Font", ${FALLBACK}, monospace`;
+
+// Тема: CSS поверх style.css, настройки mermaid и вид нижнего колонтитула.
+// Колонтитул Chrome рисует отдельно от страницы, стили ему только инлайном.
+export const THEMES = {
+  classic: {
+    label: 'Classic',
+    css: 'theme-classic.css',
+    mermaid: { theme: 'neutral', themeVariables: { fontFamily: SANS } },
+    footer: { font: SANS, color: '#7a848d', page: '' },
+  },
+  vectorheart: {
+    label: 'Neo-Vectorheart',
+    css: 'theme-vectorheart.css',
+    mermaid: {
+      theme: 'base',
+      themeVariables: {
+        fontFamily: MONO,
+        primaryColor: '#ffffff', primaryTextColor: '#0a0a0a', primaryBorderColor: '#0a0a0a',
+        secondaryColor: '#c6ff00', tertiaryColor: '#f3f3f3', lineColor: '#0a0a0a',
+        noteBkgColor: '#c6ff00', noteBorderColor: '#0a0a0a',
+        actorBkg: '#0a0a0a', actorTextColor: '#ffffff', actorBorder: '#0a0a0a',
+        pie1: '#0a0a0a', pie2: '#c6ff00', pie3: '#8a8a8a', pie4: '#5c7a00',
+        // Гант: у темы base нет цветов для состояний задач, и активная
+        // выходит белой без рамки — на белом листе её не видно.
+        taskBkgColor: '#ffffff', taskBorderColor: '#0a0a0a',
+        taskTextColor: '#0a0a0a', taskTextDarkColor: '#0a0a0a',
+        taskTextLightColor: '#0a0a0a', taskTextOutsideColor: '#0a0a0a',
+        activeTaskBkgColor: '#c6ff00', activeTaskBorderColor: '#0a0a0a',
+        doneTaskBkgColor: '#d9d9d9', doneTaskBorderColor: '#0a0a0a',
+        critBkgColor: '#ffd6d0', critBorderColor: '#c62828',
+        sectionBkgColor: '#f3f3f3', altSectionBkgColor: '#ffffff', sectionBkgColor2: '#f3f3f3',
+        gridColor: '#8a8a8a', todayLineColor: '#5c7a00',
+      },
+    },
+    footer: {
+      font: MONO, color: '#0a0a0a',
+      page: 'background:#0a0a0a;color:#c6ff00;padding:0.5mm 2mm;',
+    },
+  },
+};
+
+// Параметры печати с фиксированным набором значений; первое — по умолчанию.
+export const CHOICES = {
+  theme: Object.keys(THEMES),
+  orientation: ['portrait', 'landscape'],
+  // justify — по ширине: край ровный с обеих сторон.
+  align: ['justify', 'left', 'center', 'right'],
+};
+export const DEFAULTS = Object.fromEntries(Object.entries(CHOICES).map(([k, v]) => [k, v[0]]));
+
+export function checkChoice(name, value) {
+  if (!CHOICES[name].includes(value)) {
+    throw new Error(`Неизвестное значение ${name}: «${value}». Есть: ${CHOICES[name].join(', ')}`);
+  }
+}
 
 export function launchBrowser({ executablePath, headless }) {
   return puppeteer.launch({
@@ -16,16 +84,36 @@ export function launchBrowser({ executablePath, headless }) {
   });
 }
 
-// → { diagrams: число отрисованных диаграмм, errors: ошибки JS на странице }
-export async function printPdf(browser, { html, title, output, extraCss = '' }) {
+// → { diagrams: число отрисованных диаграмм, errors: ошибки JS на странице }.
+// theme, orientation, align — из CHOICES; watermark — текст по центру
+// колонтитула (пусто — нет).
+export async function printPdf(browser, {
+  html, title, output, extraCss = '', watermark = '',
+  theme = DEFAULTS.theme, orientation = DEFAULTS.orientation, align = DEFAULTS.align,
+}) {
+  checkChoice('theme', theme);
+  checkChoice('orientation', orientation);
+  checkChoice('align', align);
+  const look = THEMES[theme];
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'md2pdf-'));
   const file = path.join(dir, 'doc.html');
-  fs.writeFileSync(file, page(html, extraCss));
+  fs.writeFileSync(file, page(html, look, align, extraCss));
 
   const tab = await browser.newPage();
   try {
     const errors = [];
     tab.on('pageerror', e => errors.push(e.message));
+    // Шрифты отдаются из памяти (см. fonts.js). Страница открыта с file://,
+    // так что для неё это сторонний адрес — нужен заголовок CORS.
+    await tab.setRequestInterception(true);
+    tab.on('request', request => {
+      if (!request.url().startsWith(FONT_ORIGIN)) return request.continue();
+      const font = loadFont(request.url().slice(FONT_ORIGIN.length));
+      return font
+        ? request.respond({ status: 200, contentType: 'font/woff2', body: font,
+            headers: { 'Access-Control-Allow-Origin': '*' } })
+        : request.respond({ status: 404 });
+    });
     await tab.goto(pathToFileURL(file).href, { waitUntil: 'load' });
 
     const result = await tab.evaluate(() => window.__ready);
@@ -36,15 +124,11 @@ export async function printPdf(browser, { html, title, output, extraCss = '' }) 
     });
 
     await tab.pdf({
-      path: output, format: 'A4', printBackground: true, margin: MARGIN,
+      path: output, format: 'A4', landscape: orientation === 'landscape',
+      printBackground: true, margin: MARGIN,
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
-      footerTemplate: `<div style="width:100%;font-size:7pt;color:#7a848d;
-          font-family:'DejaVu Sans',sans-serif;padding:0 ${MARGIN.left};
-          display:flex;justify-content:space-between;">
-          <span>${escapeHtml(title)}</span>
-          <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-        </div>`,
+      footerTemplate: footer(look.footer, title, watermark),
     });
     return { diagrams, errors };
   } finally {
@@ -53,12 +137,28 @@ export async function printPdf(browser, { html, title, output, extraCss = '' }) 
   }
 }
 
-function page(body, extraCss) {
+// Три колонки: заголовок слева, водяной знак ровно по центру, номер справа.
+function footer({ font, color, page }, title, watermark) {
+  // Колонтитул — отдельный документ, встроенные шрифты ему недоступны: там
+  // работают только системные, а список семейств — лишь с одинарными кавычками.
+  return `<div style="width:100%;font-size:7pt;color:${color};font-family:${font.replaceAll('"', "'")};
+      padding:0 ${MARGIN.left};display:grid;grid-template-columns:1fr auto 1fr;
+      align-items:center;gap:4mm;-webkit-print-color-adjust:exact;">
+      <span>${escapeHtml(title)}</span>
+      <span style="font-weight:bold;letter-spacing:0.08em;">${escapeHtml(watermark)}</span>
+      <span style="justify-self:end;${page}"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+    </div>`;
+}
+
+function page(body, look, align, extraCss) {
   return `<!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
+<style>${loadAsset('fonts.css')}</style>
+<style>:root { --font-sans: ${SANS}; --font-mono: ${MONO}; --text-align: ${align}; }</style>
 <style>${loadAsset('katex.css')}</style>
 <style>${loadAsset('highlight.css')}</style>
 <style>${loadAsset('style.css')}</style>
+<style>${loadAsset(look.css)}</style>
 <style>${extraCss}</style>
 </head><body>
 ${body}
@@ -66,13 +166,24 @@ ${body}
 <script>
   // Свёрнутый <details> на бумаге не раскрыть — печатаем раскрытым.
   document.querySelectorAll('details').forEach(d => { d.open = true; });
+  // Шрифт темы — и для рисования, и для замеров: у диаграмм последовательностей
+  // свои настройки шрифтов (по умолчанию Trebuchet), и без них рамки заметок
+  // и участников считаются под другой шрифт и текст из них вылезает.
+  const font = ${JSON.stringify(look.mermaid.themeVariables.fontFamily)};
   window.mermaid.initialize({
-    startOnLoad: false, theme: 'neutral',
-    flowchart: { useMaxWidth: true }, sequence: { useMaxWidth: true },
+    ...${JSON.stringify(look.mermaid)},
+    startOnLoad: false, fontFamily: font,
+    flowchart: { useMaxWidth: true },
+    sequence: { useMaxWidth: true, actorFontFamily: font, noteFontFamily: font, messageFontFamily: font },
   });
-  // Ошибка разбора диаграммы — не Error, а объект с полем str.
-  window.__ready = window.mermaid.run().then(() => true)
-    .catch(e => (e && (e.message || e.str)) || String(e));
+  window.__ready = (async () => {
+    // mermaid меряет подписи при отрисовке: шрифт для них должен быть уже
+    // загружен, иначе подписи не влезут в рамки.
+    const text = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent).join(' ');
+    if (text) await Promise.all(['400', '700'].map(w => document.fonts.load(w + ' 16px ' + font, text)));
+    await window.mermaid.run();
+    return true;
+  })().catch(e => (e && (e.message || e.str)) || String(e));  // ошибка разбора — объект с полем str
 </script>
 </body></html>`;
 }

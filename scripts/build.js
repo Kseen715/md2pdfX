@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { assetNames, buildAsset } from '../src/assets.js';
+import { collectFonts } from '../src/fonts.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = path.join(root, 'dist');
@@ -61,13 +62,25 @@ async function bundle(entry, outName, { external = [] } = {}) {
   return outfile;
 }
 
-// → { имя: путь } для конфигурации SEA
+// → { имя: путь } для конфигурации SEA. Шрифты — в assets/fonts/.
 function writeAssets() {
   const dir = path.join(dist, 'assets');
-  fs.mkdirSync(dir, { recursive: true });
-  return Object.fromEntries(assetNames.map(name => {
-    const file = path.join(dir, name);
-    fs.writeFileSync(file, buildAsset(name));
-    return [name, file];
-  }));
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(path.join(dir, 'fonts'), { recursive: true });
+  const assets = {};
+  for (const name of assetNames) {
+    assets[name] = path.join(dir, name);
+    fs.writeFileSync(assets[name], buildAsset(name));
+  }
+  for (const [name, source] of Object.entries(collectFonts().files)) {
+    assets[`fonts/${name}`] = path.join(dir, 'fonts', name);
+    fs.copyFileSync(source, assets[`fonts/${name}`]);
+  }
+  // OFL требует распространять шрифты вместе с текстом лицензии.
+  for (const license of fs.readdirSync(path.join(root, 'src/fonts')).filter(f => f.endsWith('.txt'))) {
+    fs.copyFileSync(path.join(root, 'src/fonts', license), path.join(dir, 'fonts', license));
+  }
+  fs.copyFileSync(path.join(root, 'node_modules/@fontsource-variable/noto-sans/LICENSE'),
+    path.join(dir, 'fonts', 'NotoSans-OFL.txt'));
+  return assets;
 }

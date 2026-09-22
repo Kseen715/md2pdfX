@@ -1,0 +1,115 @@
+/* Тема Neo-Vectorheart: чёрно-белая основа, кислотный акцент, срезы под 45°,
+   моноширинные заголовки. Ложится поверх style.css.
+
+   Лайм #c6ff00 на белом не читается, поэтому он только заливка под чёрным
+   текстом; для текста — тёмная версия #5c7a00. */
+:root {
+  --ink: #0a0a0a;
+  --acid: #c6ff00;
+  --acid-text: #5c7a00;
+  --paper-2: #f3f3f3;
+  --mono: var(--font-mono);
+  --cut: polygon(0 0, calc(100% - 3mm) 0, 100% 3mm, 100% 100%, 3mm 100%, 0 calc(100% - 3mm));
+}
+
+/* Рамка со срезанными углами. clip-path отрезает обычную border вместе с
+   углом, поэтому рамка здесь — фон блока (--frame), а заливка (--fill) —
+   слой ::before, утопленный на толщину рамки и со своим, меньшим срезом:
+   так рамка той же толщины идёт и по диагонали.
+   --cut-tr / --cut-bl — срез правого верхнего и левого нижнего углов,
+   --bt --br --bb --bl — толщина рамки по сторонам. */
+pre:not(.mermaid), blockquote, .callout {
+  --cut-tr: 3mm; --cut-bl: 3mm;
+  --bt: 1.5px; --br: 1.5px; --bb: 1.5px; --bl: 5px;
+  --frame: var(--ink);
+  position: relative; border: none; border-radius: 0; background: var(--frame);
+  padding-left: calc(4mm + var(--bl));
+  clip-path: polygon(0 0, calc(100% - var(--cut-tr)) 0, 100% var(--cut-tr), 100% 100%,
+    var(--cut-bl) 100%, 0 calc(100% - var(--cut-bl)));
+}
+pre:not(.mermaid)::before, blockquote::before, .callout::before {
+  /* Срез заливки: диагональ рамки отстоит от внешней на полусумму
+     толщин соседних сторон. */
+  --in-tr: max(0px, calc(var(--cut-tr) - var(--bt) - var(--br) + (var(--bt) + var(--br)) * 0.7071));
+  --in-bl: max(0px, calc(var(--cut-bl) - var(--bl) - var(--bb) + (var(--bl) + var(--bb)) * 0.7071));
+  content: ""; position: absolute; z-index: -1;
+  inset: var(--bt) var(--br) var(--bb) var(--bl);
+  background: var(--fill);
+  clip-path: polygon(0 0, calc(100% - var(--in-tr)) 0, 100% var(--in-tr), 100% 100%,
+    var(--in-bl) 100%, 0 calc(100% - var(--in-bl)));
+}
+
+body { color: var(--ink); }
+
+h1, h2, h3, h4, h5, h6 { font-family: var(--mono); color: var(--ink); letter-spacing: -0.02em; }
+
+h1 {
+  font-size: 22pt; font-weight: 800; text-transform: uppercase;
+  background: var(--ink); color: #fff; padding: 4mm 6mm 4mm 5mm; margin: 0 0 2mm;
+  clip-path: var(--cut);
+}
+/* Полоса под заголовком документа */
+h1::after {
+  content: ""; display: block; height: 1.6mm; width: 40%; margin-top: 3mm;
+  background: var(--acid);
+}
+
+h2 {
+  font-size: 14pt; font-weight: 800; text-transform: uppercase;
+  border-bottom: 3px solid var(--ink); padding: 0 0 1.5mm 0;
+}
+/* Маркер раздела: лаймовый квадрат со срезанным углом. Рисуется SVG, чтобы
+   обводка шла и по срезу. */
+h2::before {
+  content: ""; display: inline-block; width: 4.4mm; height: 4.4mm; margin-right: 3mm;
+  vertical-align: -0.4mm;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M1 1H19V19H8L1 12Z' fill='%23c6ff00' stroke='%230a0a0a' stroke-width='2'/%3E%3C/svg%3E") no-repeat;
+}
+
+h3 { font-size: 11.5pt; font-weight: 700; }
+h3::before { content: "// "; color: var(--acid-text); }
+h4, h5, h6 { font-weight: 700; }
+h4::before, h5::before, h6::before { content: "› "; color: var(--acid-text); }
+
+a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--acid-text);
+    text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+
+hr { border-top: 2px dashed var(--ink); }
+
+code { font-family: var(--mono); background: var(--paper-2); border-radius: 0; }
+pre:not(.mermaid) {
+  --cut-tr: 4mm; --cut-bl: 0mm; --bt: 2px; --br: 2px; --bb: 2px; --bl: 6px;
+  --fill: var(--paper-2);
+}
+pre code { font-family: var(--mono); }
+
+th, td { border: 1.5px solid var(--ink); }
+th {
+  background: var(--ink); color: var(--acid); font-family: var(--mono);
+  text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.04em;
+}
+tr:nth-child(even) td { background: var(--paper-2); }
+
+blockquote { --fill: color-mix(in srgb, var(--acid) 14%, white); }
+
+mark { background: var(--acid); }
+kbd { font-family: var(--mono); border: 1.5px solid var(--ink); border-bottom-width: 3px; border-radius: 0; }
+del { color: #777; }
+summary { font-family: var(--mono); text-transform: uppercase; }
+
+.footnotes-sep { border: none; border-top: 2px solid var(--ink); }
+.footnote-ref a, .footnote-backref { color: var(--acid-text); }
+
+li.task-list-item input { accent-color: var(--ink); }
+
+/* Obsidian */
+.wikilink { color: var(--ink); border-bottom: 2px solid var(--acid); }
+.tag {
+  font-family: var(--mono); color: var(--acid); background: var(--ink); border-radius: 0;
+  clip-path: polygon(1.5mm 0, 100% 0, 100% 100%, 0 100%, 0 1.5mm);
+}
+.embed { border-left: 3px dashed var(--ink); }
+
+/* Callout'ы: рамка цвета типа, форма — со срезом */
+.callout { --frame: var(--c); --fill: color-mix(in srgb, var(--c) 9%, white); }
+.callout-title { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.03em; }
