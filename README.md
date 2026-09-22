@@ -14,15 +14,18 @@ Chrome draws the mermaid.js diagrams and prints the PDF. No external tools
 Themes
 ------
 
-| `classic` (default) | `vectorheart` |
-| :-----------------: | :-----------: |
-| ![classic theme](docs/previews/classic.png) | ![vectorheart theme](docs/previews/vectorheart.png) |
-
-Both pages are [examples/showcase.md](examples/showcase.md) printed with
-`--watermark PREVIEW`. CI regenerates them on every change to `main`
-([previews.yml](.github/workflows/previews.yml)); locally:
-`node scripts/previews.js` (needs `poppler-utils`). The script fails if the
-showcase no longer fits on one page.
+<!-- Ширина задана явно: столбцы таблицы Markdown GitHub подгоняет под
+     длину заголовков, и картинки выходили разного размера. -->
+<table>
+  <tr>
+    <th><code>classic</code> (default)</th>
+    <th><code>vectorheart</code></th>
+  </tr>
+  <tr>
+    <td><img src="docs/previews/classic.png" alt="classic theme" width="400"></td>
+    <td><img src="docs/previews/vectorheart.png" alt="vectorheart theme" width="400"></td>
+  </tr>
+</table>
 
 What is supported
 -----------------
@@ -34,8 +37,6 @@ What is supported
 | Mermaid  | every mermaid 12 diagram type                                                                       | [mermaid.md](examples/mermaid.md)             |
 | LaTeX    | `$…$`, `$$…$$`, ` ```math ` blocks                                                                  | [math.md](examples/math.md)                   |
 | All together | a typical technical document                                                                    | [backend-guide.md](examples/backend-guide.md) |
-
-The examples are written in Russian.
 
 VS Code extension
 -----------------
@@ -168,13 +169,6 @@ Layout
   icons included, ligatures off); Noto Color Emoji. Only the glyphs a document
   uses end up in the PDF. The footer is drawn separately by Chrome and uses
   system fonts.
-- Two themes: `classic`, the default (blue headings, sans-serif text;
-  [src/themes/classic.css](src/themes/classic.css)), and `vectorheart`
-  (Neo-Vectorheart: black and white with an acid-lime accent, 45° cuts,
-  monospace headings; [src/themes/vectorheart.css](src/themes/vectorheart.css)).
-  Both sit on top of the shared layout in [src/style.css](src/style.css).
-  Mermaid diagrams and the footer follow the theme. The footer shows the
-  document title, the watermark if set, and "N / M" page numbers.
 - Every `##` section except the first starts on a new page. `---` rules around
   `##` headings are hidden, other rules are shown. To break a page anywhere:
   `<div style="page-break-after: always;"></div>`.
@@ -192,17 +186,3 @@ Markup pitfalls
   `<br/>` and move extra participants into the text.
 - A `[[Note]]` link to a note that is not embedded in the document stays plain
   text in the PDF: there is nowhere for it to point.
-
-Project layout
---------------
-
-| File                                       | What it does                                        |
-| ------------------------------------------ | --------------------------------------------------- |
-| [src/cli.js](src/cli.js)                   | CLI: argument parsing, file iteration               |
-| [src/extension.js](src/extension.js)       | VS Code extension                                   |
-| [src/markdown.js](src/markdown.js)         | markdown-it, GFM plugins, KaTeX, mermaid, anchors   |
-| [src/obsidian.js](src/obsidian.js)         | Obsidian syntax                                     |
-| [src/pdf.js](src/pdf.js)                   | HTML page and printing through Chrome               |
-| [src/browser.js](src/browser.js)           | finding or downloading Chrome                       |
-| [src/assets.js](src/assets.js)             | styles and scripts: from node_modules or the binary |
-| [scripts/build.js](scripts/build.js)       | extension and executable bundles                    |
