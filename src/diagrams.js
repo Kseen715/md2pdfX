@@ -18,8 +18,9 @@ const PX = 96 / 25.4;  // px в мм
 
 // Типы, которые mermaid рисует в холсте фиксированного размера с большими
 // пустыми полями: venn — в 800×450, как бы мало ни было кругов, C4 — с
-// запасом сверху. Холст обрезается по содержимому, и диаграмма крупнее.
-const PADDED = /^\s*(venn(-beta)?|C4(Context|Container|Component|Dynamic|Deployment))\b/;
+// запасом сверху, у timeline ось тянется далеко за последний раздел. Холст
+// обрезается по содержимому, и диаграмма крупнее.
+const PADDED = /^\s*(venn(-beta)?|timeline|C4(Context|Container|Component|Dynamic|Deployment))\b/;
 
 // Типы, у которых есть направление и раскладка на выбор.
 const LAYOUT = /^\s*(flowchart|graph|erDiagram|classDiagram|stateDiagram(-v2)?)\b/;
@@ -34,6 +35,7 @@ window.fitDiagrams = async (sources, sheets) => {
   const normal = room(sheets.normal), wide = room(sheets.wide);
   for (const [i, box] of [...document.querySelectorAll('pre.mermaid')].entries()) {
     if (!PADDED.test(sources[i])) continue;
+    if (/^\s*timeline/.test(sources[i])) axis(box);
     trim(box);
     // Размер текста зависит от масштаба, а масштаб — от холста, обрезанного
     // уже по тексту: два прохода сходятся с точностью до долей пункта.
@@ -150,6 +152,17 @@ function blocks() {
     e.matches('.chapter') ? [...e.children] : e.matches('script') ? [] : [e]);
 }
 
+// Ось timeline — до последнего раздела и чуть дальше, под наконечник.
+function axis(box) {
+  const svg = box.querySelector('svg');
+  const line = [...svg.querySelectorAll('.lineWrapper line')]
+    .find(l => l.getAttribute('y1') === l.getAttribute('y2'));
+  if (!line) return;
+  // Правый край разделов — в координатах самой линии: они в группах со сдвигом.
+  const { x1: right } = bounds(svg, svg.querySelectorAll('rect, text'), line);
+  if (right > +line.getAttribute('x1')) line.setAttribute('x2', right + 40);
+}
+
 // Холст SVG — по содержимому, с полем в 8 единиц. getBBox всего SVG не
 // годится: пустые подписи (у venn — у каждого пересечения) стоят в (0, 0)
 // и растягивают рамку до угла холста. Поэтому — объединение рамок видимых
@@ -166,20 +179,29 @@ function trim(box) {
       if (v?.endsWith('%')) e.setAttribute(attr, start + parseFloat(v) / 100 * size);
     }
   }
-  const toSvg = svg.getScreenCTM().inverse();
+  const { x0, y0, x1, y1 } = bounds(svg,
+    svg.querySelectorAll('path, rect, circle, ellipse, line, polygon, polyline, text, image'), svg);
+  if (!(x1 > x0 && y1 > y0)) return;
+  svg.setAttribute('viewBox', `${x0 - 8} ${y0 - 8} ${x1 - x0 + 16} ${y1 - y0 + 16}`);
+  svg.style.maxWidth = '';
+}
+
+// Общая рамка видимых элементов в координатах элемента space (самого SVG
+// или элемента внутри него). Пустые (без ширины и высоты) и служебные — из
+// defs и маркеров — не в счёт; у горизонтальной линии высоты нет, но она видна.
+function bounds(svg, elements, space) {
+  const to = (space === svg ? svg.getScreenCTM() : space.getScreenCTM()).inverse();
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  for (const e of svg.querySelectorAll('path, rect, circle, ellipse, line, polygon, polyline, text, image')) {
+  for (const e of elements) {
     const b = e.getBBox();
-    if (!b.width || !b.height || e.closest('defs, marker')) continue;
-    const m = toSvg.multiply(e.getScreenCTM());
+    if ((!b.width && !b.height) || e.closest('defs, marker')) continue;
+    const m = to.multiply(e.getScreenCTM());
     for (const [px, py] of [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]]) {
       const p = new DOMPoint(px, py).matrixTransform(m);
       x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y);
     }
   }
-  if (!(x1 > x0 && y1 > y0)) return;
-  svg.setAttribute('viewBox', `${x0 - 8} ${y0 - 8} ${x1 - x0 + 16} ${y1 - y0 + 16}`);
-  svg.style.maxWidth = '';
+  return { x0, y0, x1, y1 };
 }
 
 // Подписи venn mermaid задаёт в долях холста, и в обрезанном холсте на всю
