@@ -22,7 +22,6 @@
   --tag-color: var(--highlight);
   --tag-bg: var(--accent);
   --embed-border: 3px dashed var(--line);
-  --cut: polygon(0 0, calc(100% - 3mm) 0, 100% 3mm, 100% 100%, 3mm 100%, 0 calc(100% - 3mm));
 }
 
 /* Рамка со срезанными углами. clip-path отрезает обычную border вместе с
@@ -54,10 +53,18 @@ pre:not(.mermaid)::before, blockquote::before, .callout::before {
 
 h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
 
+/* Заголовок документа — полая рамка со срезанными углами, толстой левой
+   гранью, как у callout'ов, а чёрная плашка — только под строками текста:
+   сплошной чёрный блок на полстраницы съедал картридж. */
 h1 {
-  font-size: 22pt; font-weight: 800; text-transform: uppercase;
-  background: var(--accent); color: var(--paper); padding: 4mm 6mm 4mm 5mm; margin: 0 0 2mm;
-  clip-path: var(--cut);
+  font-size: 22pt; font-weight: 800; text-transform: uppercase; line-height: 1.5; text-align: left;
+  border: 1.5px solid var(--accent); border-left-width: 5px;
+  border-top-right-radius: 3mm; border-bottom-left-radius: 3mm; corner-shape: bevel;
+  padding: 3mm 5mm 3.5mm; margin: 0 0 2mm;
+}
+h1 .heading-text {
+  background: var(--accent); color: var(--paper); padding: 0.3mm 2mm;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 /* Полоса под заголовком документа */
 h1::after {

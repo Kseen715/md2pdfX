@@ -41,6 +41,13 @@ md.core.ruler.after('inline', 'empty_paragraphs', emptyParagraphs);
 // После text_join: иначе «\eqref{…}» разбит на несколько текстовых токенов.
 md.core.ruler.push('equations', equations);
 
+// Текст заголовка документа — в <span class="heading-text">: темы могут
+// оформить сами строки, а не весь блок (плашка под текстом).
+md.renderer.rules.heading_open = (tokens, idx, options, env, self) =>
+  self.renderToken(tokens, idx, options) + (tokens[idx].tag === 'h1' ? '<span class="heading-text">' : '');
+md.renderer.rules.heading_close = (tokens, idx, options, env, self) =>
+  (tokens[idx].tag === 'h1' ? '</span>' : '') + self.renderToken(tokens, idx, options);
+
 // Диаграмма остаётся текстом в <pre class="mermaid">, mermaid.js заменит его на SVG.
 // У кода язык — в data-lang блока <pre>: темы подписывают им блок.
 const fence = md.renderer.rules.fence;

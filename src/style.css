@@ -97,8 +97,10 @@ code {
   font-family: var(--font-mono); font-size: 9pt; padding: 0.4mm 1.2mm;
   background: var(--code-bg); border-radius: var(--radius);
 }
+/* Отступ справа в 1px — как у таблиц ниже: правая рамка шириной ровно в
+   колонку частично уходила за её дробный край и терялась. */
 pre {
-  text-align: left; padding: 3mm; margin: 0 0 4mm;
+  text-align: left; padding: 3mm; margin: 0 1px 4mm 0;
   background: var(--pre-bg); border: var(--pre-border); border-left: var(--pre-border-left);
   border-radius: calc(var(--radius) * 1.5);
   white-space: pre-wrap; word-wrap: break-word;
