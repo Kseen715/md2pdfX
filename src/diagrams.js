@@ -8,6 +8,10 @@
 // режется на куски по листу, только поперёк: кусок всегда во всю ширину
 // диаграммы, пусть и мельче MIN_SCALE.
 const MIN_SCALE = 0.6;
+// Диаграмма, которой чуть-чуть не хватает места до конца листа, может
+// ужаться до SQUEEZE своего размера и остаться на нём — иначе она уходит на
+// следующий лист вместе с заголовком, а этот остаётся почти пустым.
+const SQUEEZE = 0.85;
 const PX = 96 / 25.4;  // px в мм
 
 // Типы, у которых есть направление и раскладка на выбор.
@@ -72,7 +76,57 @@ window.fitDiagrams = async (sources, sheets) => {
   for (const box of boxes)
     if (!box.classList.contains('mermaid-split'))
       reserve(box, box.classList.contains('mermaid-wide') ? sheets.wide : sheets.normal);
+  squeeze(sheets.normal);
 };
+
+// Раскладка по листам прикидкой: листов до печати нет, поэтому идём по
+// блокам документа в колонке листа и считаем, где кончается лист. Разрывы —
+// принудительные (break-before/after: page, альбомные листы), неразрывные
+// блоки переходят на новый лист целиком, остальные рвутся где угодно.
+// Ошибка прикидки безвредна: не влезшая диаграмма уходит на следующий лист,
+// как и без неё, только чуть мельче.
+function squeeze(sheet) {
+  document.body.style.width = sheet.width + 'mm';
+  const height = sheet.height * PX;
+  let pageTop = null;
+  for (const e of blocks()) {
+    if (!e.getClientRects().length) continue;
+    const style = getComputedStyle(e);
+    const rect = e.getBoundingClientRect();
+    const top = rect.top - parseFloat(style.marginTop);
+    const wide = e.classList.contains('mermaid-wide');
+    // Альбомный лист — свой, со своей раскладкой: следующий блок — с нового.
+    if (wide || pageTop === null || style.breakBefore === 'page') pageTop = wide ? null : top;
+    if (wide) continue;
+    const overflow = rect.bottom - (pageTop + height);
+    if (overflow > 0) {
+      if (e.matches('pre.mermaid:not(.mermaid-split)') && shrink(e, overflow)) continue;
+      const kept = style.breakInside === 'avoid' || e.matches('pre.mermaid');
+      // Неразрывный уходит на новый лист вместе с заголовками и вступлением.
+      const start = (intro(e).at(-1) ?? e).getBoundingClientRect().top;
+      if (kept) pageTop = start > pageTop ? start : pageTop + height;
+      else while (rect.bottom > pageTop + height) pageTop += height;
+    }
+    if (style.breakAfter === 'page') pageTop = null;
+  }
+  document.body.style.width = '';
+}
+
+// Уменьшить диаграмму на overflow px (и 2 мм запаса), если выйдет не мельче SQUEEZE.
+function shrink(box, overflow) {
+  const svg = box.querySelector('svg');
+  const now = svg.getBoundingClientRect().height;
+  const target = now - overflow - 2 * PX;
+  if (target < now * SQUEEZE) return false;
+  svg.style.maxHeight = target + 'px';
+  return true;
+}
+
+// Блоки документа по порядку; главы книги — по их содержимому.
+function blocks() {
+  return [...document.body.children].flatMap(e =>
+    e.matches('.chapter') ? [...e.children] : e.matches('script') ? [] : [e]);
+}
 
 // Вступление прямо над диаграммой и заголовки над ним, снизу вверх: их
 // разрывы держат их на одном листе с диаграммой (style.css).
