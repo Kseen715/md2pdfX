@@ -35,7 +35,7 @@ li:first-child { page-break-after: avoid; }
    страницы, а у h2 есть своя черта. */
 hr { border: none; margin: 4mm 0; }
 hr:has(+ h2), h2 + hr { display: none; }
-/* Картинки и диаграммы неразрывны: выше ~60% листа — и перед ними почти
+/* Картинки неразрывны: выше ~60% листа — и перед ними почти
    всегда остаётся пустое место. 150mm — с запасом и для альбомного листа. */
 img { max-width: 100%; max-height: 150mm; }
 p:empty { display: none; }
@@ -58,6 +58,8 @@ table {
 /* Длинная таблица рвётся по строкам, а не уезжает целиком на следующий лист;
    шапку Chrome повторяет сам. */
 tr { page-break-inside: avoid; }
+/* Не меньше 4 строк текста таблицы на листе — src/tables.js. */
+:is(h2, h3, h4, h5, h6) + table { page-break-before: avoid; }
 th, td { padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; }
 th { font-weight: 600; }
 /* Шапка таблицы в темах тёмная: светлый фон кода из темы с её светлым
@@ -71,7 +73,24 @@ pre.mermaid, div.mermaid {
   background: none; border: none; padding: 0; text-align: center;
   page-break-inside: avoid; margin: 0 0 5mm; clip-path: none;
 }
-pre.mermaid svg, div.mermaid svg { max-width: 100%; max-height: 150mm; height: auto; }
+/* Диаграмма — не выше рабочей области листа (--page-height задаёт pdf.js),
+   с запасом на округление. Слишком мелкие src/diagrams.js поворачивает или
+   режет на куски — те идут каждый на своём листе, если не помещаются вместе. */
+/* Блочная, без зазора под строку текста: иначе диаграмма в высоту листа
+   вылезает за него и за ней остаётся пустой лист. */
+pre.mermaid svg, div.mermaid svg {
+  display: block; margin: 0 auto;
+  max-width: 100%; max-height: calc(var(--page-height) - 2mm - var(--intro, 0px)); height: auto;
+}
+/* Широкая — на своём альбомном листе (@page wide задаёт pdf.js), с
+   заголовком и вступлением над ней. */
+.mermaid-wide { page: wide; }
+pre.mermaid-wide svg { max-height: calc(var(--wide-height) - 2mm - var(--intro, 0px)); }
+pre.mermaid-split { page-break-inside: auto; }
+pre.mermaid-split svg { page-break-inside: avoid; }
+/* Подсказки mermaid на бумаге не нужны, а пустой div в конце body после
+   диаграммы в высоту листа выносится на отдельный пустой лист. */
+.mermaidTooltip { display: none; }
 
 /* --- Формулы KaTeX --- */
 .katex { font-size: 1.1em; }

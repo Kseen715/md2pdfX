@@ -20,15 +20,11 @@ Themes
   <tr>
     <th><code>classic</code> (default)</th>
     <th><code>vectorheart</code></th>
+    <th><code>gost</code> (ГОСТ Р 7.0.97-2025)</th>
   </tr>
   <tr>
     <td><img src="docs/previews/classic.png" alt="classic theme" width="290"></td>
     <td><img src="docs/previews/vectorheart.png" alt="vectorheart theme" width="290"></td>
-  </tr>
-  <tr>
-    <th><code>gost</code> (ГОСТ Р 7.0.97-2025)</th>
-  </tr>
-  <tr>
     <td><img src="docs/previews/gost.png" alt="gost theme" width="290"></td>
   </tr>
 </table>
@@ -167,8 +163,13 @@ Markup pitfalls
 
 - A heading written as `1. Title` is read by Markdown as a **list item**, not
   a heading, both in the PDF and on GitHub. Write `## 1. Title`.
-- Very long labels in Mermaid diagrams stretch the diagram, which then shrinks
-  to fit the page width and becomes unreadable. Break long labels with
-  `<br/>` and move extra participants into the text.
+- Very long labels in Mermaid diagrams stretch the diagram. A diagram that
+  would shrink below 60% gets a landscape page of its own in a portrait
+  document, together with the heading and intro above it. If it doesn't fit
+  there either, it is redrawn in the other direction (top-down ⇄
+  left-right), with the dagre layout instead of ELK, or both. Failing that,
+  it is cut across into page-high pieces, each as wide as the diagram. Pieces are
+  harder to read than one diagram: break long labels with `<br/>`, move
+  extra participants into the text, split big diagrams yourself.
 - A `[[Note]]` link to a note that is not embedded in the document stays plain
   text in the PDF: there is nowhere for it to point.

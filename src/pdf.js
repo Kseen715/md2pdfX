@@ -149,9 +149,19 @@ export async function printPdf(browser, {
   checkChoice('align', align);
   checkChoice('sections', sections);
   const look = THEMES[theme];
+  const margin = look.margin ?? MARGIN;
+  // Рабочая область листа A4, мм: поля везде в мм. wide — альбомный лист для
+  // диаграмм, которым тесно на книжном (см. diagrams.js).
+  const area = o => {
+    const [width, height] = o === 'landscape' ? [297, 210] : [210, 297];
+    return { orientation: o,
+      width: width - parseFloat(margin.left) - parseFloat(margin.right),
+      height: height - parseFloat(margin.top) - parseFloat(margin.bottom) };
+  };
+  const sheets = { normal: area(orientation), wide: orientation === 'portrait' ? area('landscape') : null };
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'md2pdf-'));
   const file = path.join(dir, 'doc.html');
-  fs.writeFileSync(file, page(html, look, align, sections, extraCss));
+  fs.writeFileSync(file, page(html, look, align, sections, sheets, extraCss));
 
   const tab = await browser.newPage();
   try {
@@ -174,15 +184,16 @@ export async function printPdf(browser, {
     if (result !== true) throw new Error('mermaid: ' + result);
     const diagrams = await tab.evaluate(async () => {
       await document.fonts.ready;
-      return document.querySelectorAll('.mermaid svg').length;
+      return document.querySelectorAll('.mermaid:has(svg)').length;  // разрезанная — одна
     });
 
     await tab.pdf({
-      path: output, format: 'A4', landscape: orientation === 'landscape',
-      printBackground: true, margin: look.margin ?? MARGIN,
+      // Размер листа — из @page: у диаграмм бывает свой, альбомный.
+      path: output, preferCSSPageSize: true,
+      printBackground: true, margin,
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
-      footerTemplate: footer(look.footer, look.margin ?? MARGIN, title, watermark),
+      footerTemplate: footer(look.footer, margin, title, watermark),
     });
     return { diagrams, errors };
   } finally {
@@ -204,11 +215,14 @@ function footer({ font, color, page, number = true }, margin, title, watermark) 
     </div>`;
 }
 
-function page(body, look, align, sections, extraCss) {
+function page(body, look, align, sections, sheets, extraCss) {
   return `<!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <style>${loadAsset('fonts.css')}</style>
-<style>:root { --font-sans: ${SANS}; --font-mono: ${MONO}; --text-align: ${align}; }</style>
+<style>:root { --font-sans: ${SANS}; --font-mono: ${MONO}; --text-align: ${align};
+  --page-height: ${sheets.normal.height}mm; --wide-height: ${sheets.wide?.height}mm; }
+@page { size: A4 ${sheets.normal.orientation}; }
+@page wide { size: A4 landscape; }</style>
 <style>${loadAsset('katex.css')}</style>
 <style>${loadAsset('highlight.css')}</style>
 <style>${loadAsset('style.css')}</style>
@@ -217,6 +231,8 @@ function page(body, look, align, sections, extraCss) {
 </head><body class="sections-${sections}">
 ${body}
 <script>${loadAsset('mermaid.js')}</script>
+<script>${loadAsset('diagrams.js')}</script>
+<script>${loadAsset('tables.js')}</script>
 <script>
   // Свёрнутый <details> на бумаге не раскрыть — печатаем раскрытым.
   document.querySelectorAll('details').forEach(d => { d.open = true; });
@@ -233,9 +249,13 @@ ${body}
   window.__ready = (async () => {
     // mermaid меряет подписи при отрисовке: шрифт для них должен быть уже
     // загружен, иначе подписи не влезут в рамки.
-    const text = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent).join(' ');
+    const sources = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent);
+    const text = sources.join(' ');
     if (text) await Promise.all(['400', '700'].map(w => document.fonts.load(w + ' 16px ' + font, text)));
     await window.mermaid.run();
+    await window.fitDiagrams(sources, ${JSON.stringify(sheets)});
+    await document.fonts.ready;
+    window.keepTables(${JSON.stringify(sheets.normal)});
     return true;
   })().catch(e => (e && (e.message || e.str)) || String(e));  // ошибка разбора — объект с полем str
 </script>
