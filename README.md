@@ -42,8 +42,8 @@ What is supported
 | Charts   | bar/line, sankey, quadrant, radar, treemap, timeline, journey, venn                                  | [charts.md](examples/charts.md)               |
 | Engineering | architecture, C4, block, packet, gitGraph, kanban, requirements, ishikawa                         | [engineering.md](examples/engineering.md)     |
 | Scripts  | 15 writing systems, right-to-left text, color emoji, Nerd Font icons in code                         | [languages.md](examples/languages.md)         |
-| Big diagrams | a diagram too big for the page moves to a landscape page or is cut between messages          | [big-diagrams.md](examples/big-diagrams.md)   |
-| Book     | linked notes exported as one PDF with chapters: `md2pdf Кругосветка.md --book`                       | [book/](examples/book/Кругосветка.md)          |
+| Big diagrams | a diagram too big for the page moves to a landscape page, turns, wraps into rows or is cut between messages | [big-diagrams.md](examples/big-diagrams.md)   |
+| Book     | linked notes exported as one PDF with chapters: `md2pdf "Around the World.md" --book`                | [book/](examples/book/Around%20the%20World.md) |
 | All together | a typical technical document                                                                    | [backend-guide.md](examples/backend-guide.md) |
 | Lecture notes | formulas, charts, callouts and footnotes in one article                                        | [science.md](examples/science.md)             |
 

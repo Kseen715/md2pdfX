@@ -3,9 +3,10 @@
 // колонки и в высоту листа (max-height из style.css). Мельче MIN_SCALE текст
 // не прочитать. Тогда, по порядку, пока не влезет: та же диаграмма на
 // альбомном листе — это ближе к задуманному, чем поворот; перерисованная — с
-// другим направлением, раскладкой dagre, обоими сразу — на книжном, потом на
-// альбомном. Не помогло — режется на куски по листу, только поперёк: кусок
-// всегда во всю ширину диаграммы, пусть и мельче MIN_SCALE.
+// другим направлением, раскладкой dagre, обоими сразу, перенесённая змейкой
+// в обоих направлениях — на книжном, потом на альбомном. Не помогло —
+// режется на куски по листу, только поперёк: кусок всегда во всю ширину
+// диаграммы, пусть и мельче MIN_SCALE.
 const MIN_SCALE = 0.6;
 const PX = 96 / 25.4;  // px в мм
 
@@ -32,13 +33,18 @@ window.fitDiagrams = async (sources, sheets) => {
       normal: scale(box, normal), wide: wide ? scale(box, wide) : 0,
       across: fit(box, normal), wideAcross: wide ? fit(box, wide) : 0 });
     const turned = LAYOUT.test(sources[i]) && turn(sources[i]);
-    const variants = turned ? [turned, dagre(sources[i]), dagre(turned)] : [];
+    const wrap = wrapping(normal);
+    const variants = turned
+      ? [[turned], [dagre(sources[i])], [dagre(turned)], [sources[i], wrap], [turned, wrap]] : [];
     const drawn = [sizes()];
-    for (const [k, source] of variants.entries()) {
+    for (const [k, [source, elk]] of variants.entries()) {
+      window.md2pdfElk = elk;
       try {
         box.innerHTML = (await window.mermaid.render(`md2pdf-${i}-${k}`, source)).svg;
       } catch {
         continue;
+      } finally {
+        delete window.md2pdfElk;
       }
       drawn.push(sizes());
       if (drawn.at(-1).normal >= MIN_SCALE) break;
@@ -103,6 +109,14 @@ function reserve(box, sheet) {
 // конце: в начале она сломала бы frontmatter, а mermaid ищет её везде.
 function dagre(source) {
   return source + '\n%%{init: {"layout": "dagre"}}%%';
+}
+
+// Параметры ELK (assets.js вставляет их в корень графа), с которыми он
+// переносит слишком длинный граф змейкой: ряды у LR, колонки у TB — и сам
+// проводит все линии между ними. Пропорции — как у листа. На раскладку
+// dagre не действуют.
+function wrapping(room) {
+  return { 'elk.layered.wrapping.strategy': 'MULTI_EDGE', 'elk.aspectRatio': String(room.width / room.height) };
 }
 
 function measure(box) {

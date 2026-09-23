@@ -1,55 +1,55 @@
 # GitHub Flavored Markdown
 
-Пример основных возможностей GFM. Lorem ipsum dolor sit amet, consectetur
+A tour of the main GFM features. Lorem ipsum dolor sit amet, consectetur
 adipiscing elit.
 
-## Текст и ссылки
+## Text and links
 
-**Жирный**, *курсив*, ***оба***, ~~зачёркнутый~~, `код`, <kbd>Ctrl</kbd>+<kbd>C</kbd>,
-H<sub>2</sub>O, x<sup>2</sup>, эмодзи :rocket: :white_check_mark: :warning:.
+**Bold**, *italic*, ***both***, ~~strikethrough~~, `code`, <kbd>Ctrl</kbd>+<kbd>C</kbd>,
+H<sub>2</sub>O, x<sup>2</sup>, emoji :rocket: :white_check_mark: :warning:.
 
-- Обычная ссылка: [markdown-it](https://github.com/markdown-it/markdown-it)
-- Автоссылка: https://github.com и <https://example.org>
-- Якорь на заголовок с кириллицей: [Таблицы и код](#таблицы-и-код)
-- Якорь на повтор заголовка: [второй «Повтор»](#повтор-1)
-- Картинка по относительному пути:
+- Plain link: [markdown-it](https://github.com/markdown-it/markdown-it)
+- Autolink: https://github.com and <https://example.org>
+- Anchor to a heading: [Tables and code](#tables-and-code)
+- Anchor to a repeated heading: [the second “Repeat”](#repeat-1)
+- Image by relative path:
 
-![Схема конвейера](attachments/diagram.svg)
+![Pipeline diagram](attachments/diagram.svg)
 
-### Повтор
+### Repeat
 
 Lorem ipsum.
 
-### Повтор
+### Repeat
 
-Одинаковые заголовки получают якоря `повтор` и `повтор-1`, как на GitHub.
+Identical headings get the anchors `repeat` and `repeat-1`, as on GitHub.
 
-## Списки и задачи
+## Lists and tasks
 
-1. Первый пункт
-2. Второй пункт
-   - вложенный маркированный
-   - ещё один
-     1. и нумерованный глубже
-3. Третий пункт
+1. First item
+2. Second item
+   - nested bullet
+   - another one
+     1. and a numbered one deeper
+3. Third item
 
-- [x] Сделанная задача
-- [ ] Несделанная задача
-  - [x] вложенная задача
+- [x] Done task
+- [ ] Open task
+  - [x] nested task
 
-> Обычная цитата. Sed ut perspiciatis unde omnis iste natus error sit
+> A plain quote. Sed ut perspiciatis unde omnis iste natus error sit
 > voluptatem accusantium doloremque laudantium.
 
-## Таблицы и код
+## Tables and code
 
-| Слева | По центру | Справа |
+| Left  |  Center   |  Right |
 | :---- | :-------: | -----: |
 | lorem |   ipsum   |   1.00 |
 | dolor |    sit    |  10.50 |
 | amet  |  `code`   | 100.25 |
 
 ```js
-// Подсветка синтаксиса — highlight.js
+// Syntax highlighting — highlight.js
 export function slugify(text) {
   return text.trim().toLowerCase().replace(/ /g, '-');
 }
@@ -61,41 +61,41 @@ def greet(name: str) -> str:
 ```
 
 ```diff
-- удалённая строка
-+ добавленная строка
+- removed line
++ added line
 ```
 
-## Алерты
+## Alerts
 
 > [!NOTE]
-> Полезная информация, которую стоит знать даже при беглом чтении.
+> Useful information that users should know, even when skimming content.
 
 > [!TIP]
-> Совет, как сделать лучше или проще.
+> Helpful advice for doing things better or more easily.
 
 > [!IMPORTANT]
-> Ключевая информация, необходимая для достижения цели.
+> Key information users need to know to achieve their goal.
 
 > [!WARNING]
-> Срочная информация, требующая немедленного внимания.
+> Urgent info that needs immediate user attention to avoid problems.
 
 > [!CAUTION]
-> Предупреждение о рисках или негативных последствиях.
+> Advises about risks or negative outcomes of certain actions.
 
-## Сноски и прочее
+## Footnotes and more
 
-Утверждение со сноской[^1] и ещё одной[^note].
+A statement with a footnote[^1] and another one[^note].
 
-[^1]: Текст первой сноски.
-[^note]: Сноски собираются в конце документа.
+[^1]: Text of the first footnote.
+[^note]: Footnotes are collected at the end of the document.
 
 <details>
-<summary>Раскрывающийся блок</summary>
+<summary>Collapsible block</summary>
 
-В PDF печатается раскрытым. Lorem ipsum dolor sit amet.
+Printed expanded in the PDF. Lorem ipsum dolor sit amet.
 
 </details>
 
 ---
 
-Горизонтальная черта выше видна: скрываются только линии вокруг `##`.
+The horizontal rule above is visible: only the lines around `##` are hidden.

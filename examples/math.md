@@ -1,26 +1,26 @@
-# Формулы LaTeX
+# LaTeX math
 
-Формулы рисует KaTeX при сборке, браузеру остаётся только шрифт. Синтаксис —
-как на GitHub и в Obsidian.
+KaTeX renders formulas at build time, the browser only needs the font. The
+syntax is the same as on GitHub and in Obsidian.
 
-## Строчные и блочные
+## Inline and block
 
-Строчная формула: $E = mc^2$, дробь $\frac{a}{b}$, корень $\sqrt[3]{x}$,
-греческие $\alpha, \beta, \Gamma$. Знак доллара без формулы экранируется: \$5.
+Inline formula: $E = mc^2$, a fraction $\frac{a}{b}$, a root $\sqrt[3]{x}$,
+Greek letters $\alpha, \beta, \Gamma$. A dollar sign without a formula is escaped: \$5.
 
-Блочная формула:
+Block formula:
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
 $$
 
-Блок ` ```math ` — вариант GitHub:
+A ` ```math ` block is the GitHub variant:
 
 ```math
 \sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
 ```
 
-## Матрицы, системы, выравнивание
+## Matrices, systems, alignment
 
 $$
 A = \begin{pmatrix} a_{11} & a_{12} \\ a_{21} & a_{22} \end{pmatrix},
@@ -41,11 +41,11 @@ $$
 \end{aligned}
 $$
 
-Формула в таблице:
+A formula in a table:
 
-| Величина | Формула                        |
+| Quantity | Formula                        |
 | -------- | ------------------------------ |
-| Площадь  | $S = \pi r^2$                  |
-| Энтропия | $H = -\sum_i p_i \log_2 p_i$   |
+| Area     | $S = \pi r^2$                  |
+| Entropy  | $H = -\sum_i p_i \log_2 p_i$   |
 
-Ошибка в формуле не ломает сборку, а подсвечивается: $\frac{1}{$.
+An error in a formula does not break the build, it is highlighted: $\frac{1}{$.

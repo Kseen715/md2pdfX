@@ -1,21 +1,21 @@
 ---
-title: Инженерная документация
+title: Engineering documentation
 ---
 
-# Инженерная документация
+# Engineering documentation
 
-Архитектура, протоколы, процессы и планы — в одном `.md`, который живёт в
-репозитории рядом с кодом и собирается в PDF одной командой.
+Architecture, protocols, processes and plans — in one `.md` that lives in the
+repository next to the code and builds into a PDF with one command.
 
-## Архитектура
+## Architecture
 
 ```mermaid
 architecture-beta
-    group cloud(cloud)[Облако]
+    group cloud(cloud)[Cloud]
     service lb(internet)[nginx] in cloud
     service api(server)[API] in cloud
     service db(database)[PostgreSQL] in cloud
-    service s3(disk)[Хранилище] in cloud
+    service s3(disk)[Storage] in cloud
     lb:R --> L:api
     api:R --> L:db
     api:B --> T:s3
@@ -23,10 +23,10 @@ architecture-beta
 
 ```mermaid
 C4Context
-    title Контекст системы экспорта
-    Person(user, "Автор", "Пишет заметки в VS Code или Obsidian")
+    title Export system context
+    Person(user, "Author", "Writes notes in VS Code or Obsidian")
     System(md2pdf, "md2pdfX", "Markdown → PDF")
-    System_Ext(chrome, "Chrome", "Рисует страницы и печатает PDF")
+    System_Ext(chrome, "Chrome", "Renders pages and prints the PDF")
     Rel(user, md2pdf, "Export to PDF")
     Rel(md2pdf, chrome, "HTML", "CDP")
 ```
@@ -42,18 +42,18 @@ block
     chrome --> pdf
 ```
 
-## Протокол
+## Protocol
 
-Формат пакета — наглядно, до бита:
+A packet format, laid out down to the bit:
 
 ```mermaid
 packet
-    title Заголовок UDP
-    0-15: "Порт отправителя"
-    16-31: "Порт получателя"
-    32-47: "Длина"
-    48-63: "Контрольная сумма"
-    64-95: "Данные (переменной длины)"
+    title UDP header
+    0-15: "Source port"
+    16-31: "Destination port"
+    32-47: "Length"
+    48-63: "Checksum"
+    64-95: "Data (variable length)"
 ```
 
 ```http
@@ -61,71 +61,71 @@ POST /api/export HTTP/1.1
 Host: example.org
 Content-Type: application/json
 
-{"source": "notes/отчёт.md", "theme": "gost", "watermark": "ЧЕРНОВИК"}
+{"source": "notes/report.md", "theme": "gost", "watermark": "DRAFT"}
 ```
 
-## Разработка
+## Development
 
 ```mermaid
 gitGraph
     commit id: "init"
-    commit id: "парсер"
+    commit id: "parser"
     branch feature/book
     checkout feature/book
-    commit id: "ссылки между файлами"
-    commit id: "главы"
+    commit id: "cross-file links"
+    commit id: "chapters"
     checkout main
-    commit id: "fix: шрифты"
+    commit id: "fix: fonts"
     merge feature/book tag: "v1.4.0"
-    commit id: "тема ГОСТ" tag: "v1.4.4"
+    commit id: "GOST theme" tag: "v1.4.4"
 ```
 
 ```mermaid
 kanban
-    todo[Сделать]
-        t1[Тема для презентаций]
-    doing[В работе]
-        t2[Оглавление в PDF]@{ assigned: 'dev', priority: 'High' }
-    done[Готово]
-        t3[Экспорт книгой]
-        t4[Водяной знак]
+    todo[To do]
+        t1[Presentation theme]
+    doing[In progress]
+        t2[PDF table of contents]@{ assigned: 'dev', priority: 'High' }
+    done[Done]
+        t3[Export as a book]
+        t4[Watermark]
 ```
 
 ```mermaid
 requirementDiagram
     requirement pdf_look {
         id: 1
-        text: "PDF выглядит одинаково на любой машине"
+        text: "The PDF looks the same on any machine"
         risk: high
         verifymethod: test
     }
     element fonts {
-        type: "встроенные шрифты"
+        type: "embedded fonts"
     }
     fonts - satisfies -> pdf_look
 ```
 
-## Разбор инцидента
+## Incident analysis
 
 ```mermaid
 ishikawa
-    Диаграмма обрезана в PDF
-    Люди
-        Длинные подписи
-        Нет переносов br
-    Инструмент
-        Ширина листа
-        Раскладка ELK
-    Данные
-        30 узлов в ряд
+    Diagram cut off in the PDF
+    People
+        Long labels
+        No br line breaks
+    Tool
+        Page width
+        ELK layout
+    Data
+        30 nodes in a row
 ```
 
-> [!success] Как md2pdfX это решает
-> Диаграмма, которая не влезает, сама уходит на альбомный лист, потом
-> перерисовывается в другом направлении, и только в крайнем случае режется
-> на куски. См. [big-diagrams.md](big-diagrams.md).
+> [!success] How md2pdfX solves it
+> A diagram that does not fit moves to a landscape page on its own, then
+> gets redrawn in another direction, and only as a last resort is cut into
+> pieces. See [big-diagrams.md](big-diagrams.md).
 
-## Код
+## Code
 
 ```rust
 use std::collections::HashMap;
@@ -158,6 +158,6 @@ LIMIT 10;
 ```
 
 ```yaml
-# .github/workflows/docs.yml — PDF документации в каждом релизе
+# .github/workflows/docs.yml — documentation PDF in every release
 - run: npx md2pdf docs/ -o dist/ --theme gost --watermark "v${{ github.ref_name }}"
 ```

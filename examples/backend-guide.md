@@ -1,22 +1,22 @@
-Lorem ipsum — руководство для разработчика
-===========================================
+Lorem ipsum — developer guide
+=============================
 
 Lorem ipsum dolor sit amet, **consectetur adipiscing elit, sed do eiusmod
 tempor**. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
 nisi ut aliquip ex ea commodo consequat.
 
-Duis aute irure dolor in reprehenderit (см. соседний `README.md`); здесь —
-только то, что нужно знать со стороны приложения.
+Duis aute irure dolor in reprehenderit (see the neighboring `README.md`); here —
+only what you need to know from the application side.
 
-Содержание
-----------
+Contents
+--------
 
 1. [Lorem ipsum dolor](#1-lorem-ipsum-dolor)
-2. [Две точки входа](#2-две-точки-входа)
+2. [Two entry points](#2-two-entry-points)
 3. [Consectetur adipiscing](#3-consectetur-adipiscing)
 4. [Sed do eiusmod](#4-sed-do-eiusmod)
-5. [Процессы](#5-процессы)
-6. [Ограничения](#6-ограничения)
+5. [Processes](#5-processes)
+6. [Limitations](#6-limitations)
 
 ---
 
@@ -28,37 +28,36 @@ Duis aute irure dolor in reprehenderit (см. соседний `README.md`); з�
 adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna
 aliqua: ut enim ad minim veniam, quis nostrud exercitation.
 
-| Бакет       | Что хранит        | Модель доступа                               |
+| Bucket      | What it stores    | Access model                                 |
 | ----------- | ----------------- | -------------------------------------------- |
-| `alpha`     | lorem ipsum       | запись только server-side, чтение по ссылке  |
-| `beta`      | dolor sit amet    | чтение и запись по подписанной ссылке        |
+| `alpha`     | lorem ipsum       | server-side writes only, reads by link       |
+| `beta`      | dolor sit amet    | reads and writes by signed link              |
 
-Схема сети:
+Network diagram:
 
 ```mermaid
 graph LR
-    B["Браузер"] -->|"HTTPS 443"| N["nginx<br/>lorem-proxy"]
+    B["Browser"] -->|"HTTPS 443"| N["nginx<br/>lorem-proxy"]
     N -->|"/api/ → 10.0.0.1:8000"| W["Backend<br/>lorem-web"]
     N -->|"/alpha/ /beta/<br/>→ 10.0.0.1:8333"| S["Storage<br/>lorem-s3"]
     W -.->|"server-side S3"| S
 ```
 
-Ключевой момент: **хранилище слушает только внутренний адрес** (`10.0.0.1`).
+The key point: **storage listens only on the internal address** (`10.0.0.1`).
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.
 
 ---
 
-## 2. Две точки входа
+## 2. Two entry points
 
 ---
 
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
 doloremque laudantium:
 
-- `http://10.0.0.1:8333` — внутренний. Nemo enim ipsam voluptatem:
+- `http://10.0.0.1:8333` — internal. Nemo enim ipsam voluptatem:
   `put_object`, `head_object`, `delete_object`.
-- `https://files.example.org` — публичный. Используется **только для
-  подписи URL**.
+- `https://files.example.org` — public. Used **only for signing URLs**.
 
 ```python
 # lorem/clients.py
@@ -78,22 +77,22 @@ internal_client = boto3.client("s3", endpoint_url="http://10.0.0.1:8333", config
 
 ---
 
-**Анонимного доступа нет.** Ut enim ad minima veniam, quis nostrum
+**There is no anonymous access.** Ut enim ad minima veniam, quis nostrum
 exercitationem ullam corporis suscipit laboriosam.
 
-| Основание          | Где применяется     | Кто проверяет        |
+| Credential         | Where it applies    | Who checks it        |
 | ------------------ | ------------------- | -------------------- |
-| Подписанная ссылка | `/alpha/`, `/beta/` | хранилище            |
-| HTTP Basic         | всё остальное       | nginx                |
+| Signed link        | `/alpha/`, `/beta/` | storage              |
+| HTTP Basic         | everything else     | nginx                |
 
 ```bash
 ssh <host> 'cat /opt/lorem/secrets.yml'
 ```
 
-> **Lorem — временная мера.** Quis autem vel eum iure reprehenderit qui in ea
-> voluptate velit esse quam nihil molestiae consequatur (см. §6).
+> **Lorem is a temporary measure.** Quis autem vel eum iure reprehenderit qui
+> in ea voluptate velit esse quam nihil molestiae consequatur (see §6).
 
-### Расхождение со спецификацией
+### Deviation from the specification
 
 At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
 praesentium voluptatum deleniti atque corrupti.
@@ -104,7 +103,7 @@ praesentium voluptatum deleniti atque corrupti.
 
 ---
 
-### Переменные окружения
+### Environment variables
 
 ```bash
 S3_INTERNAL_ENDPOINT=http://10.0.0.1:8333
@@ -126,45 +125,45 @@ STORAGES = {
 
 ---
 
-## 5. Процессы
+## 5. Processes
 
 ---
 
-### 5.1 Загрузка — через приложение
+### 5.1 Upload through the application
 
 Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus.
 
 ```mermaid
 sequenceDiagram
-    participant C as Клиент
+    participant C as Client
     participant D as Backend
     participant S as Storage
 
     C->>D: POST /api/lorem (multipart, JWT)
-    D->>D: проверка, ресайз, sha256
+    D->>D: validate, resize, sha256
     D->>S: put_object (internal_client)
     S-->>D: OK
     D-->>C: 200 {"url": "<presigned>"}
 ```
 
-### 5.2 Загрузка напрямую — три шага
+### 5.2 Direct upload in three steps
 
 ```mermaid
 sequenceDiagram
-    participant C as Клиент
+    participant C as Client
     participant D as Backend
     participant S as Storage
 
     C->>D: POST /api/upload-url + JWT
     D-->>C: {id, url}
-    C->>S: PUT по подписанной ссылке
-    Note over C,S: Content-Type обязан<br/>совпасть с подписанным
+    C->>S: PUT to the signed link
+    Note over C,S: Content-Type must<br/>match the signed one
     S-->>C: 200
     C->>D: POST /api/{id}/complete
     D->>S: head_object
-    alt размер совпал
+    alt size matches
         D-->>C: 200
-    else не совпал
+    else does not match
         D->>S: delete_object
         D-->>C: 400
     end
@@ -172,15 +171,15 @@ sequenceDiagram
 
 ---
 
-## 6. Ограничения
+## 6. Limitations
 
 ---
 
-| Тема          | Что важно                                                                   |
-| ------------- | --------------------------------------------------------------------------- |
+| Topic         | What matters                                                                 |
+| ------------- | ---------------------------------------------------------------------------- |
 | `Host`        | Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit |
-| Content-Type  | Itaque earum rerum hic tenetur a sapiente delectus, иначе `403`             |
-| Размер        | `client_max_body_size 20m`. Больше — `413`                                   |
+| Content-Type  | Itaque earum rerum hic tenetur a sapiente delectus, otherwise `403`          |
+| Size          | `client_max_body_size 20m`. Larger — `413`                                   |
 
-- **Резервное копирование.** Lorem ipsum dolor sit amet.
-- **Квоты** — считать в приложении.
+- **Backups.** Lorem ipsum dolor sit amet.
+- **Quotas** — count them in the application.

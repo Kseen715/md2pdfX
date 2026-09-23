@@ -1,58 +1,58 @@
 ---
-title: Пример синтаксиса Obsidian
-tags: [пример, obsidian]
+title: Obsidian syntax example
+tags: [example, obsidian]
 ---
 
 # Obsidian
 
-Свойства (frontmatter) в PDF не выводятся, но `title` из них становится
-подписью в колонтитуле. Переносы строк — как на GitHub: одиночный перевод
-строки абзац не разрывает.
+Properties (frontmatter) are not printed in the PDF, but their `title`
+becomes the header caption. Line breaks work as on GitHub: a single newline
+does not break a paragraph.
 
-## Ссылки, теги, подсветка
+## Links, tags, highlights
 
-- Вики-ссылка на другую заметку: [[Встраиваемая заметка]]
-- С подписью: [[Встраиваемая заметка|другая заметка]]
-- На заголовок этого документа: [[#Callout'ы]], с подписью: [[#Встраивание|к встраиванию]]
-- На заголовок другой заметки: [[Встраиваемая заметка#Раздел А]]
-- Несуществующая заметка при встраивании подсвечивается: ![[Нет такой]]
+- Wiki link to another note: [[Embedded note]]
+- With an alias: [[Embedded note|another note]]
+- To a heading in this document: [[#Callouts]], with an alias: [[#Embeds|to embeds]]
+- To a heading in another note: [[Embedded note#Section A]]
+- A missing note is highlighted when embedded: ![[No such note]]
 
-Теги: #пример #obsidian/pdf #lorem_ipsum. А это не теги: C#, #1, `#код`.
+Tags: #example #obsidian/pdf #lorem_ipsum. These are not tags: C#, #1, `#code`.
 
-Подсветка: Lorem ipsum ==dolor sit amet==, consectetur adipiscing elit.
+Highlight: Lorem ipsum ==dolor sit amet==, consectetur adipiscing elit.
 
-Комментарии не попадают в PDF: видно%% — а этого не видно %% только это.
+Comments do not end up in the PDF: visible%% — and this is hidden %% only this.
 
 %%
-Многострочный комментарий.
+A multi-line comment.
 
-Lorem ipsum dolor sit amet — тоже скрыт.
+Lorem ipsum dolor sit amet — hidden too.
 %%
 
-## Callout'ы
+## Callouts
 
 > [!note]
-> Callout без заголовка получает название типа. Lorem ipsum dolor sit amet.
+> A callout without a title gets the type name. Lorem ipsum dolor sit amet.
 
-> [!tip] Свой заголовок с **разметкой**
+> [!tip] Custom title with **markup**
 > Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
 
-> [!warning]- Сворачиваемый (в PDF печатается раскрытым)
+> [!warning]- Foldable (printed expanded in the PDF)
 > Duis aute irure dolor in reprehenderit in voluptate velit esse.
 
-> [!danger] Только заголовок
+> [!danger] Title only
 
-> [!example] Вложенность и содержимое
-> - список внутри callout'а
-> - `код` и $E = mc^2$
+> [!example] Nesting and content
+> - a list inside a callout
+> - `code` and $E = mc^2$
 >
-> > [!quote] Вложенный callout
+> > [!quote] Nested callout
 > > Excepteur sint occaecat cupidatat non proident.
 
-Остальные типы: 
+Other types:
 
 > [!info] info
-> [!abstract], [!todo], [!success], [!question], [!failure], [!bug], [!quote] — у каждого свой цвет.
+> [!abstract], [!todo], [!success], [!question], [!failure], [!bug], [!quote] — each has its own color.
 
 > [!success] success
 
@@ -60,23 +60,24 @@ Lorem ipsum dolor sit amet — тоже скрыт.
 
 > [!bug] bug
 
-## Встраивание
+## Embeds
 
-Картинка из хранилища (ищется по имени во всём хранилище) и она же шириной 120px:
+An image from the vault (looked up by name across the whole vault) and the
+same one 120px wide:
 
 ![[diagram.svg]]
 ![[diagram.svg|120]]
 
-Заметка целиком:
+A whole note:
 
-![[Встраиваемая заметка]]
+![[Embedded note]]
 
-Только раздел заметки:
+Only a section of a note:
 
-![[Встраиваемая заметка#Раздел Б]]
+![[Embedded note#Section B]]
 
-Принудительный разрыв страницы, как в экспорте Obsidian:
+A forced page break, as in Obsidian's export:
 
 <div style="page-break-after: always;"></div>
 
-Lorem ipsum dolor sit amet — этот абзац начинается с новой страницы.
+Lorem ipsum dolor sit amet — this paragraph starts on a new page.

@@ -1,36 +1,36 @@
 ---
-title: Данные и графики
+title: Data and charts
 ---
 
-# Данные и графики
+# Data and charts
 
-Отчёт с графиками без Excel и без картинок: всё рисует mermaid прямо из
-текста, а в PDF попадает вектор — графики остаются чёткими при любом
-увеличении. Цифры ниже выдуманы.
+A report with charts, without Excel and without images: mermaid draws
+everything straight from text, and the PDF gets vectors — charts stay sharp
+at any zoom. The numbers below are made up.
 
-## Выручка и динамика
+## Revenue and trend
 
 ```mermaid
 xychart
-    title "Выручка по месяцам, млн ₽"
-    x-axis ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
-    y-axis "млн ₽" 0 --> 120
+    title "Monthly revenue, $M"
+    x-axis ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    y-axis "$M" 0 --> 120
     bar [42, 48, 55, 51, 63, 70, 74, 79, 88, 94, 103, 117]
     line [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]
 ```
 
-| Квартал | Выручка, млн ₽ | Рост к прошлому году | План выполнен |
-| :------ | -------------: | -------------------: | :-----------: |
-| I       |          145,0 |              +18,2 % |      ✅       |
-| II      |          184,0 |              +22,7 % |      ✅       |
-| III     |          241,0 |              +31,4 % |      ✅       |
-| IV      |          314,0 |              +40,1 % |      🚀       |
-| **Год** |      **884,0** |          **+29,6 %** |               |
+| Quarter  | Revenue, $M | Year-over-year growth | Plan met |
+| :------- | ----------: | --------------------: | :------: |
+| Q1       |       145.0 |               +18.2 % |    ✅    |
+| Q2       |       184.0 |               +22.7 % |    ✅    |
+| Q3       |       241.0 |               +31.4 % |    ✅    |
+| Q4       |       314.0 |               +40.1 % |    🚀    |
+| **Year** |   **884.0** |           **+29.6 %** |          |
 
-## Куда уходят деньги
+## Where the money goes
 
-Диаграмма Санкея — поток денег. Её разбор в mermaid 12 понимает только
-латиницу, поэтому подписи здесь английские:
+A Sankey diagram shows the flow of money. Note that its parser in mermaid 12
+understands only Latin labels:
 
 ```mermaid
 sankey
@@ -46,88 +46,88 @@ Marketing,Conferences,40
 ```
 
 ```mermaid
-pie showData title Структура расходов
-    "Зарплаты" : 410
-    "Инфраструктура" : 160
-    "Маркетинг" : 120
+pie showData title Expense breakdown
+    "Salaries" : 410
+    "Infrastructure" : 160
+    "Marketing" : 120
 ```
 
-## Продукты: где мы и куда идём
+## Products: where we are and where we are going
 
 ```mermaid
 quadrantChart
-    title Портфель продуктов
-    x-axis Низкая доля рынка --> Высокая доля рынка
-    y-axis Медленный рост --> Быстрый рост
-    quadrant-1 Звёзды
-    quadrant-2 Знаки вопроса
-    quadrant-3 Собаки
-    quadrant-4 Дойные коровы
+    title Product portfolio
+    x-axis Low market share --> High market share
+    y-axis Slow growth --> Fast growth
+    quadrant-1 Stars
+    quadrant-2 Question marks
+    quadrant-3 Dogs
+    quadrant-4 Cash cows
     md2pdfX: [0.78, 0.86]
-    Плагин для Obsidian: [0.32, 0.74]
+    Obsidian plugin: [0.32, 0.74]
     CLI: [0.62, 0.41]
-    Старый конвертер: [0.18, 0.15]
+    Old converter: [0.18, 0.15]
 ```
 
 ```mermaid
 radar-beta
-    title Сравнение конвертеров
-    axis math["Формулы"], diag["Диаграммы"], obs["Obsidian"], fonts["Шрифты"], speed["Скорость"], setup["Установка"]
+    title Converter comparison
+    axis math["Math"], diag["Diagrams"], obs["Obsidian"], fonts["Fonts"], speed["Speed"], setup["Setup"]
     curve a["md2pdfX"]{5, 5, 5, 5, 4, 5}
     curve b["Pandoc"]{5, 2, 1, 4, 3, 2}
-    curve c["Браузер"]{2, 1, 1, 3, 5, 5}
+    curve c["Browser"]{2, 1, 1, 3, 5, 5}
     max 5
 ```
 
 ```mermaid
 treemap-beta
-"Пользователи"
+"Users"
     "VS Code"
         "Windows": 48
         "Linux": 31
         "macOS": 22
     "CLI"
         "CI/CD": 27
-        "Скрипты": 14
-    "Бинарник": 19
+        "Scripts": 14
+    "Binary": 19
 ```
 
-## История проекта
+## Project history
 
 ```mermaid
 timeline
-    title Путь md2pdfX
-    2026-08 : Первый PDF из Markdown
-            : Формулы KaTeX
-    2026-09 : Диаграммы mermaid 12
-            : Синтаксис Obsidian
-            : Расширение для VS Code
-    1.4     : Экспорт книгой
-            : Тема ГОСТ
-            : Водяной знак
+    title The md2pdfX journey
+    2026-08 : First PDF from Markdown
+            : KaTeX math
+    2026-09 : mermaid 12 diagrams
+            : Obsidian syntax
+            : VS Code extension
+    1.4     : Export as a book
+            : GOST theme
+            : Watermark
 ```
 
 ```mermaid
 journey
-    title Путь пользователя: от заметки до PDF
-    section Пишет
-      Открыл заметку: 5: Автор
-      Вставил формулы и схемы: 4: Автор
-    section Экспортирует
-      Нажал «Export to PDF»: 5: Автор
-      Выбрал тему ГОСТ: 5: Автор
-    section Отправляет
-      Отправил научруку: 3: Автор
-      Получил «принято»: 5: Автор, Научрук
+    title User journey: from note to PDF
+    section Writes
+      Opened a note: 5: Author
+      Added formulas and diagrams: 4: Author
+    section Exports
+      Clicked “Export to PDF”: 5: Author
+      Picked the GOST theme: 5: Author
+    section Sends
+      Sent it to the supervisor: 3: Author
+      Got “accepted”: 5: Author, Supervisor
 ```
 
 ```mermaid
 venn-beta
-    title Что умеет md2pdfX
+    title What md2pdfX can do
     set A["GitHub"]
     set B["Obsidian"]
     set C["LaTeX"]
-    union A,B["таблицы, сноски"]
-    union B,C["$…$ в заметках"]
+    union A,B["tables, footnotes"]
+    union B,C["$…$ in notes"]
     union A,B,C["md2pdfX"]
 ```

@@ -1,36 +1,36 @@
-# Диаграммы Mermaid
+# Mermaid diagrams
 
-Блок ` ```mermaid ` превращается в SVG. Длинные подписи разбивайте через
-`<br/>`, иначе схема ужмётся под ширину страницы.
+A ` ```mermaid ` block turns into SVG. Break long labels with `<br/>`,
+otherwise the diagram shrinks to fit the page width.
 
-## Блок-схема и последовательность
+## Flowchart and sequence
 
 ```mermaid
 flowchart TD
-    A([Начало]) --> B{Есть .md?}
-    B -->|да| C[markdown-it]
-    B -->|нет| X([Ошибка])
-    subgraph Браузер
+    A([Start]) --> B{Is there an .md?}
+    B -->|yes| C[markdown-it]
+    B -->|no| X([Error])
+    subgraph Browser
         C --> D[mermaid.js]
-        D --> E[печать PDF]
+        D --> E[print PDF]
     end
-    E --> F([Готово])
+    E --> F([Done])
 ```
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as Пользователь
+    participant U as User
     participant M as md2pdf
     participant C as Chrome
     U->>M: md2pdf doc.md
     M->>C: HTML
     C-->>M: PDF
-    Note right of C: номера страниц<br/>в колонтитуле
+    Note right of C: page numbers<br/>in the footer
     M-->>U: doc.pdf
 ```
 
-## Классы, состояния, ER
+## Classes, states, ER
 
 ```mermaid
 classDiagram
@@ -41,16 +41,16 @@ classDiagram
     class Pdf {
         +int pages
     }
-    Document --> Pdf : печатается в
+    Document --> Pdf : is printed to
 ```
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Черновик
-    Черновик --> Ревью: отправить
-    Ревью --> Черновик: правки
-    Ревью --> Опубликован: одобрить
-    Опубликован --> [*]
+    [*] --> Draft
+    Draft --> Review: submit
+    Review --> Draft: changes
+    Review --> Published: approve
+    Published --> [*]
 ```
 
 ```mermaid
@@ -63,7 +63,7 @@ erDiagram
     }
 ```
 
-## Графики и планы
+## Charts and plans
 
 ```mermaid
 pie title Lorem ipsum
@@ -74,13 +74,13 @@ pie title Lorem ipsum
 
 ```mermaid
 gantt
-    title План
+    title Plan
     dateFormat YYYY-MM-DD
-    section Разработка
-    Парсер      :done, a1, 2026-09-01, 7d
-    Печать      :active, a2, after a1, 5d
-    section Выпуск
-    Бинарник    :a3, after a2, 3d
+    section Development
+    Parser      :done, a1, 2026-09-01, 7d
+    Printing    :active, a2, after a1, 5d
+    section Release
+    Binary      :a3, after a2, 3d
 ```
 
 ```mermaid
@@ -89,7 +89,7 @@ mindmap
     Markdown
       GitHub
       Obsidian
-    Графика
+    Graphics
       Mermaid
       KaTeX
 ```

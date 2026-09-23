@@ -1,73 +1,75 @@
 ---
-title: Все языки мира
+title: All the world's languages
 ---
 
-# Все языки мира
+# All the world's languages
 
-Шрифты встроены в PDF, поэтому документ выглядит одинаково на любой машине —
-даже там, где нет ни одного из этих шрифтов. В файл попадают только
-использованные глифы, так что PDF остаётся лёгким.
+Fonts are embedded in the PDF, so the document looks the same on any machine —
+even one that has none of these fonts. Only the glyphs actually used end up
+in the file, so the PDF stays small.
 
-## «Привет, мир» на разных письменностях
+## “Hello, world” in different scripts
 
-| Язык        | Письменность | Текст                              |
+| Language    | Script       | Text                               |
 | :---------- | :----------- | :--------------------------------- |
-| Русский     | кириллица    | Привет, мир!                       |
-| English     | латиница     | Hello, world!                      |
-| Ελληνικά    | греческое    | Γειά σου, κόσμε!                   |
-| العربية     | арабское     | مرحبا بالعالم!                     |
-| עברית       | иврит        | שלום עולם!                         |
-| हिन्दी        | деванагари   | नमस्ते दुनिया!                      |
-| বাংলা        | бенгальское  | ওহে বিশ্ব!                           |
-| தமிழ்        | тамильское   | வணக்கம் உலகம்!                     |
-| ไทย         | тайское      | สวัสดีชาวโลก!                       |
-| ქართული    | грузинское   | გამარჯობა, მსოფლიო!              |
-| Հայերեն     | армянское    | Բարեւ, աշխարհ!                     |
-| አማርኛ        | эфиопское    | ሰላም ልዑል!                          |
-| 中文        | китайское    | 你好，世界！                         |
-| 日本語      | японское     | こんにちは、世界！                   |
-| 한국어      | корейское    | 안녕하세요, 세계!                    |
+| English     | Latin        | Hello, world!                      |
+| Русский     | Cyrillic     | Привет, мир!                       |
+| Ελληνικά    | Greek        | Γειά σου, κόσμε!                   |
+| العربية     | Arabic       | مرحبا بالعالم!                     |
+| עברית       | Hebrew       | שלום עולם!                         |
+| हिन्दी        | Devanagari   | नमस्ते दुनिया!                      |
+| বাংলা        | Bengali      | ওহে বিশ্ব!                           |
+| தமிழ்        | Tamil        | வணக்கம் உலகம்!                     |
+| ไทย         | Thai         | สวัสดีชาวโลก!                       |
+| ქართული    | Georgian     | გამარჯობა, მსოფლიო!              |
+| Հայերեն     | Armenian     | Բարեւ, աշխարհ!                     |
+| አማርኛ        | Ethiopic     | ሰላም ልዑል!                          |
+| 中文        | Chinese      | 你好，世界！                         |
+| 日本語      | Japanese     | こんにちは、世界！                   |
+| 한국어      | Korean       | 안녕하세요, 세계!                    |
 
-Направление письма справа налево — тоже:
+Right-to-left text works too:
 
 <p dir="rtl">اللغة العربية تُكتب من اليمين إلى اليسار، والأرقام 2026 من اليسار.</p>
 
 <p dir="rtl">עברית נכתבת מימין לשמאל.</p>
 
-## Типографика
+## Typography
 
-Кавычки «ёлочки» и „лапки“, “English quotes”, тире — и дефис-минус, ½ ¾ ‰,
-€ £ ¥ ₽ ₿, ≠ ≈ ≤ ≥ ∞ ∑ ∫ √, стрелки ← ↑ → ↓ ⇄, ударение: мо́локо, диакритика:
-café, naïve, Ærøskøbing, Łódź, Straße, İstanbul.
+“English quotes”, ‘single quotes’, «guillemets» and „German quotes“, em dash —
+en dash – and hyphen-minus, ½ ¾ ‰, € £ ¥ ₽ ₿, ≠ ≈ ≤ ≥ ∞ ∑ ∫ √,
+arrows ← ↑ → ↓ ⇄, stress mark: мо́локо, diacritics: café, naïve, Ærøskøbing,
+Łódź, Straße, İstanbul.
 
-Эмодзи — цветные, как на телефоне: 🚀 🎉 📚 🧪 🌍 🇷🇺 🇺🇸 🇯🇵 👩‍💻 👨‍👩‍👧 🏳️‍🌈 🤝🏽
+Emoji in color, like on a phone: 🚀 🎉 📚 🧪 🌍 🇬🇧 🇺🇸 🇯🇵 👩‍💻 👨‍👩‍👧 🏳️‍🌈 🤝🏽
 
-## Иконки Nerd Font в коде
+## Nerd Font icons in code
 
-Моноширинный шрифт — JetBrains Mono с иконками Nerd Font, поэтому
-приглашения терминала выглядят как в терминале:
+The monospace font is JetBrains Mono with Nerd Font icons, so terminal
+prompts look like they do in a terminal:
 
 ```text
   ~/projects/md2pdfX   main ✓   v22.11.0 
 ❯ md2pdf notes/ -o out/ --theme vectorheart
-   notes/лекция.md  →   out/лекция.pdf  12 стр.
-   notes/отчёт.md   →   out/отчёт.pdf   34 стр.
- готово  4,2 с
+   notes/lecture.md  →   out/lecture.pdf  12 pp.
+   notes/report.md   →   out/report.pdf   34 pp.
+ done  4.2 s
 ```
 
-## Стихи
+## Poetry
+
+> Two roads diverged in a wood, and I —\
+> I took the one less traveled by,\
+> And that has made all the difference.
+>
+> — *Robert Frost*
+
+> 古池や　蛙飛び込む　水の音
+>
+> — *松尾芭蕉*
 
 > Мороз и солнце; день чудесный!\
 > Ещё ты дремлешь, друг прелестный —\
 > Пора, красавица, проснись…
 >
 > — *А. С. Пушкин*
-
-> 古池や　蛙飛び込む　水の音
->
-> — *松尾芭蕉*
-
-> Two roads diverged in a wood, and I —\
-> I took the one less traveled by.
->
-> — *Robert Frost*

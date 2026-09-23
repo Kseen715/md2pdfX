@@ -17,11 +17,22 @@ const sources = {
   'theme-vectorheart.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/vectorheart.css', import.meta.url)), 'utf8'),
   'diagrams.js': () => fs.readFileSync(fileURLToPath(new URL('./diagrams.js', import.meta.url)), 'utf8'),
   'tables.js': () => fs.readFileSync(fileURLToPath(new URL('./tables.js', import.meta.url)), 'utf8'),
-  'mermaid.js': () => fs.readFileSync(resolve('mermaid/dist/mermaid.min.js'), 'utf8'),
+  'mermaid.js': () => elkOptions(fs.readFileSync(resolve('mermaid/dist/mermaid.min.js'), 'utf8')),
   'katex.css': () => inlineFonts(resolve('katex/dist/katex.min.css')),
   'highlight.css': () => fs.readFileSync(resolve('highlight.js/styles/github.min.css'), 'utf8'),
   'fonts.css': () => collectFonts().css,
 };
+
+// Свои параметры ELK для раскладки диаграмм: mermaid передаёт в ELK только
+// алгоритм, а перенос графа змейкой (diagrams.js) задаётся в корне графа.
+// Вставка берёт их из window.md2pdfElk. Не нашлось места для вставки (другая
+// версия mermaid) — падаем здесь, а не теряем перенос молча.
+const ELK_ROOT = '"elk.layered.unnecessaryBendpoints":!0,';
+
+function elkOptions(code) {
+  if (code.split(ELK_ROOT).length !== 2) throw new Error('mermaid.min.js: не найдены параметры корня ELK');
+  return code.replace(ELK_ROOT, ELK_ROOT + '...window.md2pdfElk,');
+}
 
 export const assetNames = Object.keys(sources);
 
