@@ -68,6 +68,8 @@ export const CHOICES = {
   orientation: ['portrait', 'landscape'],
   // justify — по ширине: край ровный с обеих сторон.
   align: ['justify', 'left', 'center', 'right'],
+  // page — каждый раздел (h2) с новой страницы, flow — сплошным текстом.
+  sections: ['page', 'flow'],
 };
 export const DEFAULTS = Object.fromEntries(Object.entries(CHOICES).map(([k, v]) => [k, v[0]]));
 
@@ -85,19 +87,21 @@ export function launchBrowser({ executablePath, headless }) {
 }
 
 // → { diagrams: число отрисованных диаграмм, errors: ошибки JS на странице }.
-// theme, orientation, align — из CHOICES; watermark — текст по центру
+// theme, orientation, align, sections — из CHOICES; watermark — текст по центру
 // колонтитула (пусто — нет).
 export async function printPdf(browser, {
   html, title, output, extraCss = '', watermark = '',
   theme = DEFAULTS.theme, orientation = DEFAULTS.orientation, align = DEFAULTS.align,
+  sections = DEFAULTS.sections,
 }) {
   checkChoice('theme', theme);
   checkChoice('orientation', orientation);
   checkChoice('align', align);
+  checkChoice('sections', sections);
   const look = THEMES[theme];
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'md2pdf-'));
   const file = path.join(dir, 'doc.html');
-  fs.writeFileSync(file, page(html, look, align, extraCss));
+  fs.writeFileSync(file, page(html, look, align, sections, extraCss));
 
   const tab = await browser.newPage();
   try {
@@ -150,7 +154,7 @@ function footer({ font, color, page }, title, watermark) {
     </div>`;
 }
 
-function page(body, look, align, extraCss) {
+function page(body, look, align, sections, extraCss) {
   return `<!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <style>${loadAsset('fonts.css')}</style>
@@ -160,7 +164,7 @@ function page(body, look, align, extraCss) {
 <style>${loadAsset('style.css')}</style>
 <style>${loadAsset(look.css)}</style>
 <style>${extraCss}</style>
-</head><body>
+</head><body class="sections-${sections}">
 ${body}
 <script>${loadAsset('mermaid.js')}</script>
 <script>

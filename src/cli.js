@@ -19,6 +19,8 @@ const USAGE = `md2pdf ${pkg.version} — Markdown (GitHub, Obsidian, Mermaid, La
       --orientation  ${CHOICES.orientation.join(' | ')} — ориентация листа
       --align        ${CHOICES.align.join(' | ')} — выравнивание текста
                      (justify — по ширине)
+      --sections     ${CHOICES.sections.join(' | ')} — раздел (h2) с новой
+                     страницы или сплошным текстом
                      По умолчанию — первое значение в каждом списке.
       --watermark <текст>  надпись по центру нижнего колонтитула
       --css      дополнительные стили поверх встроенных
@@ -38,6 +40,7 @@ async function main() {
       theme: { type: 'string', default: DEFAULTS.theme },
       orientation: { type: 'string', default: DEFAULTS.orientation },
       align: { type: 'string', default: DEFAULTS.align },
+      sections: { type: 'string', default: DEFAULTS.sections },
       watermark: { type: 'string', default: '' },
       chrome: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
@@ -74,7 +77,7 @@ async function main() {
         fs.mkdirSync(path.dirname(output), { recursive: true });
         const { diagrams, errors } = await printPdf(browser, {
           html, output, extraCss, theme: opts.theme, watermark: opts.watermark,
-          orientation: opts.orientation, align: opts.align,
+          orientation: opts.orientation, align: opts.align, sections: opts.sections,
           title: title ?? path.basename(input, '.md'),
         });
         console.log(`${output}${diagrams ? `: диаграмм отрисовано ${diagrams}` : ''}`);

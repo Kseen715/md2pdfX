@@ -46,11 +46,12 @@ const LABELS = {
   theme: Object.fromEntries(Object.entries(THEMES).map(([k, t]) => [k, t.label])),
   orientation: { portrait: 'Portrait', landscape: 'Landscape' },
   align: { justify: 'Justify', left: 'Left', center: 'Center', right: 'Right' },
+  sections: { page: 'Each section on a new page', flow: 'Continuous' },
 };
-const TITLES = { theme: 'Theme', orientation: 'Orientation', align: 'Text alignment' };
+const TITLES = { theme: 'Theme', orientation: 'Orientation', align: 'Text alignment', sections: 'Sections' };
 
 // Шаги по очереди, текущее значение из настроек — первым и отмечено.
-// Escape на любом шаге отменяет экспорт. → { theme, orientation, align, watermark } | undefined
+// Escape на любом шаге отменяет экспорт. → { theme, orientation, align, sections, watermark } | undefined
 async function askOptions(file) {
   const config = settings(file);
   const names = Object.keys(CHOICES);
@@ -162,7 +163,7 @@ async function exportFile(browser, file, overrides) {
   const { diagrams, errors } = await printPdf(browser, {
     html, output, extraCss,
     theme: option('theme'), orientation: option('orientation'), align: option('align'),
-    watermark: option('watermark'),
+    sections: option('sections'), watermark: option('watermark'),
     title: title ?? path.basename(file.fsPath, '.md'),
   });
   log.appendLine(`${output}${diagrams ? ` (diagrams: ${diagrams})` : ''}`);

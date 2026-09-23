@@ -77,10 +77,15 @@ a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--
 hr { border-top: 2px dashed var(--ink); }
 
 code { font-family: var(--mono); background: var(--paper-2); border-radius: 0; }
+/* Код рвётся между страницами, а clip-path режет каждый кусок заново — срез
+   и верхняя черта появились бы и на продолжении. Поэтому здесь рамка обычная
+   (на разрыве Chrome её не рисует), а срез — скос угла самой рамкой. */
 pre:not(.mermaid) {
-  --cut-tr: 4mm; --cut-bl: 0mm; --bt: 2px; --br: 2px; --bb: 2px; --bl: 6px;
-  --fill: var(--paper-2);
+  background: var(--paper-2); border: 2px solid var(--ink); border-left-width: 6px;
+  border-top-right-radius: 4mm; corner-shape: bevel;
+  padding-left: 4mm; clip-path: none;
 }
+pre:not(.mermaid)::before { content: none; }
 pre code { font-family: var(--mono); }
 
 th, td { border: 1.5px solid var(--ink); }
@@ -100,7 +105,12 @@ summary { font-family: var(--mono); text-transform: uppercase; }
 .footnotes-sep { border: none; border-top: 2px solid var(--ink); }
 .footnote-ref a, .footnote-backref { color: var(--acid-text); }
 
-li.task-list-item input { accent-color: var(--ink); }
+ul > li::marker { color: var(--acid-text); font-weight: 700; }
+li.task-list-item input { border: 1.5px solid var(--ink); border-radius: 0; }
+li.task-list-item input:checked {
+  background-color: var(--acid);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.8 5.2 4.2 7.6 8.4 2.6' fill='none' stroke='%230a0a0a' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");
+}
 
 /* Obsidian */
 .wikilink { color: var(--ink); border-bottom: 2px solid var(--acid); }

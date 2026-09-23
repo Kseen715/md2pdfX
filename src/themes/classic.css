@@ -19,6 +19,13 @@ th, td { border: 1px solid #ccd3da; }
 th { background: #0b3c5d; color: #fff; }
 tr:nth-child(even) td { background: #f7f8fa; }
 
+ul > li::marker { color: #14507a; }
+li.task-list-item input { border: 1.5px solid #0b3c5d; border-radius: 2px; }
+li.task-list-item input:checked {
+  background-color: #0b3c5d;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.2 7.4 8 2.8' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+
 blockquote { background: #fff8e6; border-left: 4px solid #d9a441; }
 
 .footnote-ref a, .footnote-backref { color: #14507a; }

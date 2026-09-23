@@ -16,5 +16,8 @@
   "config.align.justify": "Justify",
   "config.align.left": "Left",
   "config.align.center": "Center",
-  "config.align.right": "Right"
+  "config.align.right": "Right",
+  "config.sections": "Where sections (`##` headings) start. Continuous leaves less empty space on pages.",
+  "config.sections.page": "Each section on a new page",
+  "config.sections.flow": "Continuous"
 }

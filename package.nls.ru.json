@@ -16,5 +16,8 @@
   "config.align.justify": "По ширине",
   "config.align.left": "По левому краю",
   "config.align.center": "По центру",
-  "config.align.right": "По правому краю"
+  "config.align.right": "По правому краю",
+  "config.sections": "Где начинаются разделы (заголовки `##`). Сплошным текстом — меньше пустого места на страницах.",
+  "config.sections.page": "Каждый с новой страницы",
+  "config.sections.flow": "Сплошным текстом"
 }

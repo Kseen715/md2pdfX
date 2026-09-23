@@ -14,26 +14,38 @@ h1 { font-size: 20pt; margin: 0 0 4mm; }
 h2 { font-size: 15pt; margin: 0 0 4mm; padding-bottom: 2mm; page-break-after: avoid; }
 h2 + p, h2 + ul, h2 + table { page-break-before: avoid; }
 /* Каждый раздел с новой страницы, кроме первого: он остаётся под заголовком
-   документа (обычно это «Содержание» или введение). */
+   документа (обычно это «Содержание» или введение). sections=flow — сплошняком. */
 h2 ~ h2 { page-break-before: always; }
+.sections-flow h2 { page-break-before: auto; }
 h3 { font-size: 12pt; margin: 6mm 0 2mm; page-break-after: avoid; }
-/* Вводный абзац не должен отрываться от диаграммы, которая идёт за ним. */
-h3 + p { page-break-after: avoid; }
+/* Заголовок с первым абзацем не остаются одни внизу листа: держатся за
+   следующим блоком, а тот из-за orphans приносит с собой не меньше 4 строк.
+   Между h2 и абзацем бывает скрытый hr. */
+:is(h2, h3, h4, h5, h6) + p, h2 + hr + p { page-break-after: avoid; }
+/* Вступление («…:») не отрывается от списка, кода, таблицы или диаграммы под ним. */
+p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) { page-break-after: avoid; }
 h4, h5, h6 { font-size: 10.5pt; margin: 4mm 0 1.5mm; page-break-after: avoid; }
 
 p, ul, ol { margin: 0 0 3mm; }
 li { margin-bottom: 1mm; }
+/* Внизу листа — не меньше 4 строк абзаца; список не рвётся после первого пункта. */
+p, li { orphans: 4; }
+li:first-child { page-break-after: avoid; }
 /* Линии вокруг заголовков разделов лишние: раздел и так начинается с новой
    страницы, а у h2 есть своя черта. */
 hr { border: none; margin: 4mm 0; }
 hr:has(+ h2), h2 + hr { display: none; }
-img { max-width: 100%; }
+/* Картинки и диаграммы неразрывны: выше ~60% листа — и перед ними почти
+   всегда остаётся пустое место. 150mm — с запасом и для альбомного листа. */
+img { max-width: 100%; max-height: 150mm; }
 p:empty { display: none; }
 
 code { font-family: var(--font-mono); font-size: 9pt; padding: 0.4mm 1.2mm; }
 pre {
   text-align: left; padding: 3mm; margin: 0 0 4mm;
-  page-break-inside: avoid; white-space: pre-wrap; word-wrap: break-word;
+  white-space: pre-wrap; word-wrap: break-word;
+  /* Длинный код рвётся; внизу листа остаётся не меньше 4 строк, вверху следующего — 3. */
+  orphans: 4; widows: 3;
 }
 pre code { background: none; padding: 0; font-size: 8.5pt; line-height: 1.35; }
 /* Лигатуры JetBrains Mono (!= → ≠) в документации путают: код печатается как написан. */
@@ -41,8 +53,11 @@ code, kbd { font-variant-ligatures: none; }
 
 table {
   border-collapse: collapse; width: 100%; margin: 0 0 4mm;
-  font-size: 9.5pt; page-break-inside: avoid;
+  font-size: 9.5pt;
 }
+/* Длинная таблица рвётся по строкам, а не уезжает целиком на следующий лист;
+   шапку Chrome повторяет сам. */
+tr { page-break-inside: avoid; }
 th, td { padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; }
 th { font-weight: 600; }
 
@@ -53,7 +68,7 @@ pre.mermaid, div.mermaid {
   background: none; border: none; padding: 0; text-align: center;
   page-break-inside: avoid; margin: 0 0 5mm; clip-path: none;
 }
-pre.mermaid svg, div.mermaid svg { max-width: 100%; height: auto; }
+pre.mermaid svg, div.mermaid svg { max-width: 100%; max-height: 150mm; height: auto; }
 
 /* --- Формулы KaTeX --- */
 .katex { font-size: 1.1em; }
@@ -62,7 +77,12 @@ pre.mermaid svg, div.mermaid svg { max-width: 100%; height: auto; }
 
 /* --- GitHub: задачи, сноски, прочее --- */
 li.task-list-item { list-style: none; }
-li.task-list-item input { margin: 0 1.5mm 0 -5mm; vertical-align: -0.5mm; }
+ul > li:not(.task-list-item)::marker { content: "– "; }
+/* Флажок задачи рисует тема: у системного (disabled) серый вид. */
+li.task-list-item input {
+  appearance: none; width: 3.2mm; height: 3.2mm; margin: 0 1.5mm 0 -5mm;
+  vertical-align: -0.5mm; background: #fff center / 80% no-repeat;
+}
 .footnotes { font-size: 9pt; color: #444; }
 .footnotes-sep { display: block; margin: 6mm 0 2mm; width: 40%; }
 mark { padding: 0 0.5mm; }

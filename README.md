@@ -48,7 +48,7 @@ unsaved edits are included. Progress and the result appear in the status bar;
 details are in Output › md2pdfX.
 
 **md2pdfX: Export to PDF with Options…** asks for the theme, orientation, text
-alignment and watermark before exporting; the current settings are
+alignment, section breaks and watermark before exporting; the current settings are
 preselected, and Escape cancels. It is in the same context menus and the
 Command Palette, and Alt-click (Option-click on macOS) on the editor title
 button runs it. The answers apply to this export only and don't change the
@@ -66,6 +66,7 @@ Settings:
 | `md2pdfx.theme`           | PDF look: `classic` (default) or `vectorheart` (Neo-Vectorheart)             |
 | `md2pdfx.orientation`     | page orientation: `portrait` (default) or `landscape`                 |
 | `md2pdfx.align`           | text alignment: `justify` (default), `left`, `center` or `right`      |
+| `md2pdfx.sections`        | `page` (default): each `##` section on a new page; `flow`: continuous |
 | `md2pdfx.watermark`       | text in the middle of the footer, e.g. `CONFIDENTIAL`; empty means none |
 | `md2pdfx.outputDirectory` | folder for PDFs; empty means next to the Markdown file                |
 | `md2pdfx.extraCss`        | CSS applied on top of the built-in styles                             |
@@ -108,6 +109,7 @@ Options:
 | `--css <file>`       | your own styles on top of the built-in ones ([src/style.css](src/style.css)) |
 | `--orientation <o>`  | `portrait` (default) or `landscape`                                 |
 | `--align <a>`        | `justify` (default), `left`, `center` or `right`                    |
+| `--sections <s>`     | `page` (default): each `##` section on a new page; `flow`: continuous |
 | `--chrome <path>`    | which browser to use                                                |
 
 Single executable

@@ -1,10 +1,18 @@
-# Релиз по ручному запуску: версия берётся из package.json (перед запуском её
-# нужно поднять), на GitHub появляется релиз vX.Y.Z с .vsix и исполняемыми
-# файлами под Linux, Windows и macOS.
+# Релиз при изменении package.json в main: версия берётся из package.json,
+# и если релиза vX.Y.Z ещё нет — на GitHub появляется релиз с .vsix и
+# исполняемыми файлами под Linux, Windows и macOS. Ручной запуск — для повтора.
 name: release
 
 on:
+  push:
+    branches: [main]
+    paths: [package.json]
   workflow_dispatch:
+
+# Два пуша подряд не должны создать один и тот же релиз дважды.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   check:
@@ -20,13 +28,14 @@ jobs:
         run: |
           tag="v$(node -p "require('./package.json').version")"
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "::error::Релиз $tag уже есть — поднимите version в package.json"
-            exit 1
+            echo "Релиз $tag уже есть — пропускаю"
+            exit 0
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
   build:
     needs: check
+    if: needs.check.outputs.tag != ''
     uses: ./.github/workflows/build.yml
 
   release:
