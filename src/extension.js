@@ -1,7 +1,7 @@
-// Расширение VS Code: команды «Export to PDF» (с параметрами из настроек) и
-// «Export to PDF with Options…» (параметры спрашиваются перед экспортом) для
-// .md-файлов и папок. Конвейер тот же, что у CLI; прогресс и результат — в
-// строке состояния, всплывают только ошибки.
+// Расширение VS Code: команды «Export to PDF» (с параметрами из настроек),
+// «Export to PDF with Options…» (параметры спрашиваются перед экспортом) и их
+// книжные варианты «Export as Book…» для .md-файлов и папок. Конвейер тот же,
+// что у CLI; прогресс и результат — в строке состояния, всплывают только ошибки.
 import fs from 'node:fs';
 import path from 'node:path';
 import * as vscode from 'vscode';
@@ -16,24 +16,20 @@ export function activate(context) {
   context.subscriptions.push(
     log,
     vscode.commands.registerCommand('md2pdfx.export', (uri, selected) => exportCommand(uri, selected)),
-    vscode.commands.registerCommand('md2pdfx.exportBook', async (uri, selected) => {
-      const files = await collectTargets(uri, selected);
-      if (files) await exportFiles(files, { book: true });
-    }),
-    vscode.commands.registerCommand('md2pdfx.exportWithOptions', async (uri, selected) => {
-      const files = await collectTargets(uri, selected);
-      if (!files) return;
-      const options = await askOptions(files[0]);
-      if (options) await exportFiles(files, options);
-    }),
+    vscode.commands.registerCommand('md2pdfx.exportBook', (uri, selected) => exportCommand(uri, selected, { book: true })),
+    vscode.commands.registerCommand('md2pdfx.exportWithOptions', (uri, selected) => exportCommand(uri, selected, { ask: true })),
+    vscode.commands.registerCommand('md2pdfx.exportBookWithOptions', (uri, selected) => exportCommand(uri, selected, { book: true, ask: true })),
   );
 }
 
 export function deactivate() {}
 
-async function exportCommand(uri, selected) {
+// ask — спросить параметры перед экспортом (askOptions).
+async function exportCommand(uri, selected, { book = false, ask = false } = {}) {
   const files = await collectTargets(uri, selected);
-  if (files) await exportFiles(files, {});
+  if (!files) return;
+  const options = ask ? await askOptions(files[0]) : {};
+  if (options) await exportFiles(files, { ...options, book });
 }
 
 // Из меню проводника приходят (кликнутый uri, все выделенные), из заголовка

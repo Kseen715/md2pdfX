@@ -62,6 +62,9 @@ following links in those files too. Each file is a chapter starting on a new
 page; links between them become jumps inside the PDF. A file already in the
 book is not added again, so cyclic links just point to its chapter.
 
+**md2pdfX: Export as Book to PDF with Options…** does the same, asking for the
+options first, like Export to PDF with Options….
+
 Install: download the `.vsix` from
 [Releases](https://github.com/Kseen715/md2pdfX/releases), then in VS Code use
 Extensions › "…" › Install from VSIX… or run
