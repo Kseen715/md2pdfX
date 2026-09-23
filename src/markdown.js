@@ -37,6 +37,7 @@ const md = new MarkdownIt({
 
 md.core.ruler.push('heading_ids', headingIds);
 md.core.ruler.after('inline', 'task_lists', taskLists);
+md.core.ruler.after('inline', 'empty_paragraphs', emptyParagraphs);
 
 // Диаграмма остаётся текстом в <pre class="mermaid">, mermaid.js заменит его на SVG.
 const fence = md.renderer.rules.fence;
@@ -133,6 +134,25 @@ function headingIds(state) {
     slugs.set(slug, (seen ?? -1) + 1);
     tokens[i].attrSet('id', (state.env.idPrefix ?? '') + (seen === undefined ? slug : `${slug}-${seen + 1}`));
     if (tokens[i].tag === 'h1') state.env.title ??= text;
+  }
+}
+
+// Пустые строки-распорки между абзацами (<br>, &nbsp;, одинокий «\»,
+// абзац из одного комментария %%…%%) дают в PDF пустое место — убираем.
+// Блоки кода — отдельные токены, их это не касается.
+const BLANK_HTML = /^(?:\s|&nbsp;|&#160;|<br\s*\/?>)*$/i;
+function emptyParagraphs(state) {
+  const tokens = state.tokens;
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    const t = tokens[i];
+    if (t.type === 'html_block' && BLANK_HTML.test(t.content)) {
+      tokens.splice(i, 1);
+    } else if (t.type === 'paragraph_open' && tokens[i + 1].children.every(c =>
+      c.type === 'hardbreak' || c.type === 'softbreak'
+        || ((c.type === 'text' || c.type === 'text_special') && /^\\?$/.test(c.content.trim()))
+        || (c.type === 'html_inline' && BLANK_HTML.test(c.content)))) {
+      tokens.splice(i, 3);
+    }
   }
 }
 

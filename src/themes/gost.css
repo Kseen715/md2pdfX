@@ -20,11 +20,15 @@
 body { color: #000; font-size: 14pt; line-height: 1.4; }
 
 p { text-indent: 1.25cm; margin: 0; }
-li p, td p, th p, blockquote p, .callout p, .footnotes p, .katex-block p, .mermaid p { text-indent: 0; }
+td p, th p, blockquote p, .callout p, .footnotes p, .katex-block p, .mermaid p { text-indent: 0; }
 ul, ol { margin: 0; padding-left: 0; }
-li { margin: 0 0 0 1.25cm; padding-left: 0.5em; }
-/* Отступ между блоками — одна пустая строка, как в документе на бланке. */
-ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid, img, details, .embed { margin-bottom: 1.4em; }
+/* Элемент списка — как абзац: тире с абзацного отступа, перенос — к левому полю. */
+li { margin: 0; list-style-position: inside; text-indent: 1.25cm; }
+li > p + p { text-indent: 0; }
+li ul, li ol { margin-left: 1.25cm; }
+/* Отступ между блоками — одна пустая строка, как в документе на бланке.
+   Списки — часть текста: идут без пустых строк, как абзацы. */
+pre, table, blockquote, .callout, .katex-block, .mermaid, img, details, .embed { margin-bottom: 1.4em; }
 p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) { margin-bottom: 0; }
 
 /* Заголовок к тексту — по центру; разделы и подразделы — с абзацного отступа.
@@ -55,7 +59,7 @@ blockquote { border-left: 1px solid #000; background: none; padding: 0 0 0 5mm; 
 .callout-title { color: #000; }
 
 ul > li:not(.task-list-item)::marker { color: #000; }
-li.task-list-item input { border: 1px solid #000; }
+li.task-list-item input { border: 1px solid #000; margin-left: 0; }
 li.task-list-item input:checked {
   background-color: #000;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.2 7.4 8 2.8' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E");
