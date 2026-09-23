@@ -48,6 +48,7 @@ hr { height: 0.5mm; border: none; background: linear-gradient(90deg, #ffffff, #8
 pre:not(.mermaid), blockquote, .callout { box-shadow: var(--card-shadow); border-radius: var(--radius); }
 pre:not(.mermaid) { position: relative; padding: 4mm; }
 /* Язык кода — плашкой в правом верхнем углу. */
+pre[data-lang] { padding-top: 6.5mm; }
 pre[data-lang]::before {
   content: attr(data-lang); position: absolute; top: 0; right: 0;
   padding: 0.4mm 2.2mm; border-bottom-left-radius: var(--radius);

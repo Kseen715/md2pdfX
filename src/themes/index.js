@@ -28,7 +28,10 @@ export const MONO = `"JetBrainsMono Nerd Font", ${FALLBACK}, monospace`;
 //   highlight  — выделение ==текста==, заметки на диаграммах;
 //   danger     — ошибки и критичное;
 //   series     — цвета рядов графиков и секторов pie, по порядку.
-// diagramFont — шрифт диаграмм; mermaid — переопределения выведенных цветов.
+// diagramFont — шрифт диаграмм; mermaid — переопределения выведенных цветов;
+// c4 — заливки элементов C4: { person, system, external }, по умолчанию
+// accent, accentText и muted. Текст на светлой заливке diagrams.js делает
+// цвета текста темы, на тёмной он белый.
 
 // Цвета ветвей mindmap и разделов timeline: [фон, текст] → cScaleN и
 // cScaleLabelN.
@@ -70,6 +73,7 @@ export const THEMES = {
       dropShadow: 'none', useGradient: false,
       edgeLabelBackground: '#e6e6e6', activeTaskBkgColor: '#d0d0d0',
     },
+    c4: { person: '#ffffff', system: '#ffffff', external: '#e6e6e6' },
     // Не меньше 20 мм слева (30 — для документов долгого хранения), 10 справа,
     // 20 сверху и снизу.
     margin: { top: '20mm', bottom: '20mm', left: '30mm', right: '10mm' },
@@ -87,6 +91,8 @@ export const THEMES = {
       series: ['#5c7a00', '#0a0a0a', '#c6ff00', '#8a8a8a'],
     },
     diagramFont: MONO,
+    // Лайм и белый под чёрной рамкой: тёмные блоки съедают краску.
+    c4: { person: '#c6ff00', system: '#ffffff', external: '#f3f3f3' },
     mermaid: {
       secondaryColor: '#c6ff00', edgeLabelBackground: '#c6ff00',
       actorBkg: '#0a0a0a', actorTextColor: '#ffffff',
@@ -119,6 +125,7 @@ export const THEMES = {
       series: ['#5e81ac', '#bf616a', '#a3be8c', '#d08770', '#b48ead', '#88c0d0'],
     },
     diagramFont: SANS,
+    c4: { person: '#5e81ac', system: '#88c0d0', external: '#e5e9f0' },
     mermaid: {
       primaryColor: '#eceff4', primaryBorderColor: '#81a1c1', lineColor: '#4c566a',
       // Ветви mindmap, разделы timeline, ряды radar, venn и treemap — Aurora и
@@ -144,6 +151,7 @@ export const THEMES = {
       series: ['#458588', '#d65d0e', '#98971a', '#b16286', '#689d6a', '#d79921'],
     },
     diagramFont: MONO,
+    c4: { person: '#d79921', system: '#458588', external: '#ebdbb2' },
     mermaid: {
       primaryColor: '#ebdbb2', primaryBorderColor: '#7c6f64', lineColor: '#504945',
       // Ветви mindmap, разделы timeline, ряды radar, venn и treemap. Подпись
@@ -177,9 +185,10 @@ export function footerStyle(theme) {
 // состояний задач Ганта, и активная выходит белой без рамки, а столбцы
 // xychart красятся от primaryColor — белым по белому: всё это задано явно.
 export function mermaidConfig(theme) {
-  const { palette: p, diagramFont, mermaid } = THEMES[theme];
+  const { palette: p, diagramFont, mermaid, c4 } = THEMES[theme];
   return {
     theme: 'base',
+    c4: c4Config(p, diagramFont, c4),
     themeVariables: {
       fontFamily: diagramFont, titleColor: p.text,
       primaryColor: p.paper, primaryTextColor: p.text, primaryBorderColor: p.accent,
@@ -204,4 +213,24 @@ export function mermaidConfig(theme) {
       ...mermaid,
     },
   };
+}
+
+// C4 рисуется не по themeVariables, а по своему разделу настроек: цвета и
+// шрифт каждого типа элемента отдельно.
+const C4_TYPES = ['person', 'system', 'system_db', 'system_queue', 'container', 'container_db',
+  'container_queue', 'component', 'component_db', 'component_queue'];
+
+function c4Config(p, font, colors = {}) {
+  const fill = { person: p.accent, system: p.accentText, external: p.muted, ...colors };
+  const config = { boundaryFontFamily: font, messageFontFamily: font };
+  for (const type of C4_TYPES) {
+    for (const external of [false, true]) {
+      const key = (external ? 'external_' : '') + type;
+      const bg = external ? fill.external : type === 'person' ? fill.person : fill.system;
+      Object.assign(config, {
+        [key + '_bg_color']: bg, [key + '_border_color']: p.accent, [key + 'FontFamily']: font,
+      });
+    }
+  }
+  return config;
 }

@@ -13,3 +13,12 @@
   --tag-bg: #f0ebfa;
   --embed-border: 3px solid #b9a6e0;
 }
+
+/* Язык кода — подписью в правом верхнем углу блока. */
+pre[data-lang] { position: relative; padding-top: 6mm; }
+pre[data-lang]::before {
+  content: attr(data-lang); position: absolute; top: 0; right: 0;
+  padding: 0.3mm 2.2mm; border-bottom-left-radius: 3px;
+  font: 600 7pt var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--accent-text); background: #dfe3e8;
+}

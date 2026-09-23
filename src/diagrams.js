@@ -22,6 +22,7 @@ const LAYOUT = /^\s*(flowchart|graph|erDiagram|classDiagram|stateDiagram(-v2)?)\
 // (null, если документ и так альбомный). Мерить колонку по самой странице
 // нельзя: до печати её ширина — ширина окна, а не листа.
 window.fitDiagrams = async (sources, sheets) => {
+  c4Text();
   const room = sheet => sheet && { width: sheet.width * PX, height: (sheet.height - 2) * PX };
   const normal = room(sheets.normal), wide = room(sheets.wide);
   const boxes = [...document.querySelectorAll('pre.mermaid')];
@@ -126,6 +127,20 @@ function shrink(box, overflow) {
 function blocks() {
   return [...document.body.children].flatMap(e =>
     e.matches('.chapter') ? [...e.children] : e.matches('script') ? [] : [e]);
+}
+
+// Текст элементов C4 mermaid всегда красит белым, и на светлой заливке темы
+// (src/themes/index.js) его не видно: там он — цвета текста документа.
+function c4Text() {
+  const dark = getComputedStyle(document.body).color;
+  for (const shape of document.querySelectorAll('pre.mermaid .c4-shape')) {
+    const fill = [...shape.querySelectorAll('.label-container, .label-container > *')]
+      .find(e => e.style.fill)?.style.fill;
+    const [r, g, b] = (fill?.match(/\d+(\.\d+)?/g) ?? []).map(Number);
+    if (r === undefined || 0.2126 * r + 0.7152 * g + 0.0722 * b < 150) continue;
+    for (const e of shape.querySelectorAll('.label, .label text'))
+      e.style.setProperty(e.tagName === 'text' ? 'fill' : 'color', dark, 'important');
+  }
 }
 
 // Вступление прямо над диаграммой и заголовки над ним, снизу вверх: их

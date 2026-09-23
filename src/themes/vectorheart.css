@@ -99,6 +99,16 @@ pre:not(.mermaid) {
   padding-left: 4mm; clip-path: none;
 }
 pre:not(.mermaid)::before { content: none; }
+/* Язык кода — чёрной вкладкой с лаймовой подписью в левом верхнем углу,
+   как шапка таблицы. */
+pre[data-lang] { padding-top: 7.5mm; }
+pre[data-lang]::after {
+  content: "// " attr(data-lang); position: absolute; top: 0; left: 0;
+  padding: 0.5mm 2.5mm 0.7mm 2mm;
+  font: 700 7.5pt var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--highlight); background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.5mm), calc(100% - 1.5mm) 100%, 0 100%);
+}
 
 th { font-family: var(--font-mono); text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.04em; }
 
