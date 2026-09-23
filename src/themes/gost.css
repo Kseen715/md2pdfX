@@ -1,0 +1,68 @@
+/* Тема ГОСТ Р 7.0.97-2025: оформление организационно-распорядительных
+   документов. Ложится поверх style.css. Поля листа (слева 30 мм, справа 10 мм,
+   сверху и снизу 20 мм) задаёт pdf.js. Из требований стандарта:
+   - шрифт № 12–14, в таблицах можно меньше; межстрочный интервал 1–1,5;
+   - абзацный отступ 1,25 см, текст выровнен по ширине;
+   - заголовки разделов — с абзацного отступа, полужирным;
+   - номера страниц — посередине верхнего поля, не ближе 10 мм к краю
+     листа, со второй страницы;
+   - документ чёрно-белый. */
+
+@page {
+  @top-center {
+    content: counter(page); vertical-align: top; padding-top: 10mm;
+    font-family: var(--font-sans); font-size: 12pt; color: #000;
+  }
+}
+@page :first { @top-center { content: none; } }
+
+/* line-height 1.4 у Noto Sans — это одинарный интервал: высота строки шрифта. */
+body { color: #000; font-size: 14pt; line-height: 1.4; }
+
+p { text-indent: 1.25cm; margin: 0; }
+li p, td p, th p, blockquote p, .callout p, .footnotes p, .katex-block p, .mermaid p { text-indent: 0; }
+ul, ol { margin: 0; padding-left: 0; }
+li { margin: 0 0 0 1.25cm; padding-left: 0.5em; }
+/* Отступ между блоками — одна пустая строка, как в документе на бланке. */
+ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid, img, details, .embed { margin-bottom: 1.4em; }
+p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) { margin-bottom: 0; }
+
+/* Заголовок к тексту — по центру; разделы и подразделы — с абзацного отступа.
+   Размер как у текста, выделение — полужирным. */
+h1, h2, h3, h4, h5, h6 {
+  font-size: 14pt; font-weight: 700; color: #000; line-height: 1.4;
+  text-align: left; text-indent: 1.25cm; margin: 1.4em 0; padding: 0; border: none;
+}
+h1 { text-align: center; text-indent: 0; margin-top: 0; }
+
+a { color: inherit; text-decoration: none; }
+hr { border-top: 1px solid #000; }
+del { color: inherit; }
+mark { background: none; font-weight: 700; }
+
+code, kbd { font-size: 12pt; background: none; color: #000; }
+pre { border: 1px solid #000; padding: 2mm 3mm; }
+pre code { font-size: 11pt; }
+/* У github.css есть составные селекторы (.hljs-title.function_) — перебиваем все. */
+pre [class*="hljs-"] { color: #000 !important; font-style: normal !important; }
+
+table { font-size: 12pt; line-height: 1.2; }
+th, td { border: 1px solid #000; padding: 1mm 2mm; }
+th { font-weight: 700; text-align: center; vertical-align: middle; }
+
+blockquote { border-left: 1px solid #000; background: none; padding: 0 0 0 5mm; }
+.callout { --c: #000; border-left: 1px solid #000; background: none; }
+.callout-title { color: #000; }
+
+ul > li:not(.task-list-item)::marker { color: #000; }
+li.task-list-item input { border: 1px solid #000; }
+li.task-list-item input:checked {
+  background-color: #000;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.2 7.4 8 2.8' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+
+.footnotes { font-size: 12pt; color: #000; }
+.footnotes-sep { border-top: 1px solid #000; }
+.katex-error, .wikilink, .wikilink.missing { color: #000; }
+.tag { color: #000; background: none; padding: 0; }
+.embed { border-left: 1px solid #000; }

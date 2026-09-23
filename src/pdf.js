@@ -22,14 +22,48 @@ const FALLBACK = [
 const SANS = `"Noto Sans Variable", ${FALLBACK}, sans-serif`;
 const MONO = `"JetBrainsMono Nerd Font", ${FALLBACK}, monospace`;
 
-// Тема: CSS поверх style.css, настройки mermaid и вид нижнего колонтитула.
-// Колонтитул Chrome рисует отдельно от страницы, стили ему только инлайном.
+// Тема: CSS поверх style.css, настройки mermaid, вид нижнего колонтитула и,
+// если нужно, свои поля листа. Колонтитул Chrome рисует отдельно от страницы,
+// стили ему только инлайном; number: false — без заголовка и номера страницы
+// (тема ставит номер сама, через @page в CSS).
 export const THEMES = {
   classic: {
     label: 'Classic',
     css: 'theme-classic.css',
     mermaid: { theme: 'neutral', themeVariables: { fontFamily: SANS } },
     footer: { font: SANS, color: '#7a848d', page: '' },
+  },
+  gost: {
+    label: 'ГОСТ Р 7.0.97-2025',
+    css: 'theme-gost.css',
+    // Не меньше 20 мм слева (30 — для документов долгого хранения), 10 справа,
+    // 20 сверху и снизу.
+    margin: { top: '20mm', bottom: '20mm', left: '30mm', right: '10mm' },
+    // Чёрно-белая, как и сам документ: белые блоки в чёрной рамке, подписи
+    // стрелок на сером — на белом подпись разрывает линию и теряется.
+    mermaid: {
+      theme: 'base',
+      themeVariables: {
+        fontFamily: SANS, dropShadow: 'none', useGradient: false,
+        primaryColor: '#ffffff', primaryTextColor: '#000000', primaryBorderColor: '#000000',
+        secondaryColor: '#ffffff', tertiaryColor: '#ffffff', lineColor: '#000000',
+        edgeLabelBackground: '#e6e6e6', clusterBkg: '#ffffff', clusterBorder: '#000000',
+        noteBkgColor: '#ffffff', noteBorderColor: '#000000', noteTextColor: '#000000',
+        actorBkg: '#ffffff', actorBorder: '#000000', actorTextColor: '#000000',
+        signalColor: '#000000', signalTextColor: '#000000',
+        pie1: '#000000', pie2: '#ffffff', pie3: '#808080', pie4: '#d0d0d0',
+        pieStrokeColor: '#000000', pieOuterStrokeColor: '#000000',
+        taskBkgColor: '#ffffff', taskBorderColor: '#000000',
+        taskTextColor: '#000000', taskTextDarkColor: '#000000',
+        taskTextLightColor: '#000000', taskTextOutsideColor: '#000000',
+        activeTaskBkgColor: '#d0d0d0', activeTaskBorderColor: '#000000',
+        doneTaskBkgColor: '#808080', doneTaskBorderColor: '#000000',
+        critBkgColor: '#000000', critBorderColor: '#000000',
+        sectionBkgColor: '#f0f0f0', altSectionBkgColor: '#ffffff', sectionBkgColor2: '#f0f0f0',
+        gridColor: '#808080', todayLineColor: '#000000',
+      },
+    },
+    footer: { font: SANS, color: '#000', page: '', number: false },
   },
   vectorheart: {
     label: 'Neo-Vectorheart',
@@ -129,10 +163,10 @@ export async function printPdf(browser, {
 
     await tab.pdf({
       path: output, format: 'A4', landscape: orientation === 'landscape',
-      printBackground: true, margin: MARGIN,
+      printBackground: true, margin: look.margin ?? MARGIN,
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
-      footerTemplate: footer(look.footer, title, watermark),
+      footerTemplate: footer(look.footer, look.margin ?? MARGIN, title, watermark),
     });
     return { diagrams, errors };
   } finally {
@@ -142,15 +176,15 @@ export async function printPdf(browser, {
 }
 
 // Три колонки: заголовок слева, водяной знак ровно по центру, номер справа.
-function footer({ font, color, page }, title, watermark) {
+function footer({ font, color, page, number = true }, margin, title, watermark) {
   // Колонтитул — отдельный документ, встроенные шрифты ему недоступны: там
   // работают только системные, а список семейств — лишь с одинарными кавычками.
   return `<div style="width:100%;font-size:7pt;color:${color};font-family:${font.replaceAll('"', "'")};
-      padding:0 ${MARGIN.left};display:grid;grid-template-columns:1fr auto 1fr;
+      padding:0 ${margin.right} 0 ${margin.left};display:grid;grid-template-columns:1fr auto 1fr;
       align-items:center;gap:4mm;-webkit-print-color-adjust:exact;">
-      <span>${escapeHtml(title)}</span>
+      <span>${number ? escapeHtml(title) : ''}</span>
       <span style="font-weight:bold;letter-spacing:0.08em;">${escapeHtml(watermark)}</span>
-      <span style="justify-self:end;${page}"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+      ${number ? `<span style="justify-self:end;${page}"><span class="pageNumber"></span> / <span class="totalPages"></span></span>` : ''}
     </div>`;
 }
 

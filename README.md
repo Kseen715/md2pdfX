@@ -22,8 +22,14 @@ Themes
     <th><code>vectorheart</code></th>
   </tr>
   <tr>
-    <td><img src="docs/previews/classic.png" alt="classic theme" width="400"></td>
-    <td><img src="docs/previews/vectorheart.png" alt="vectorheart theme" width="400"></td>
+    <td><img src="docs/previews/classic.png" alt="classic theme" width="290"></td>
+    <td><img src="docs/previews/vectorheart.png" alt="vectorheart theme" width="290"></td>
+  </tr>
+  <tr>
+    <th><code>gost</code> (ГОСТ Р 7.0.97-2025)</th>
+  </tr>
+  <tr>
+    <td><img src="docs/previews/gost.png" alt="gost theme" width="290"></td>
   </tr>
 </table>
 
@@ -63,7 +69,7 @@ Settings:
 
 | Setting                   | What it sets                                                          |
 | ------------------------- | --------------------------------------------------------------------- |
-| `md2pdfx.theme`           | PDF look: `classic` (default) or `vectorheart` (Neo-Vectorheart)             |
+| `md2pdfx.theme`           | PDF look: `classic` (default), `vectorheart` (Neo-Vectorheart) or `gost` (ГОСТ Р 7.0.97-2025) |
 | `md2pdfx.orientation`     | page orientation: `portrait` (default) or `landscape`                 |
 | `md2pdfx.align`           | text alignment: `justify` (default), `left`, `center` or `right`      |
 | `md2pdfx.sections`        | `page` (default): each `##` section on a new page; `flow`: continuous |
@@ -104,7 +110,7 @@ Options:
 
 | Option               | What it does                                                        |
 | -------------------- | ------------------------------------------------------------------- |
-| `--theme <name>`     | PDF look: `classic` (default) or `vectorheart`                            |
+| `--theme <name>`     | PDF look: `classic` (default), `vectorheart` or `gost`                    |
 | `--watermark <text>` | text in the middle of the footer; none by default                  |
 | `--css <file>`       | your own styles on top of the built-in ones ([src/style.css](src/style.css)) |
 | `--orientation <o>`  | `portrait` (default) or `landscape`                                 |

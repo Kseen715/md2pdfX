@@ -2,7 +2,7 @@
   "name": "md2pdfx",
   "displayName": "md2pdfX — Markdown to PDF",
   "description": "Export Markdown to PDF: GitHub, Obsidian, Mermaid diagrams, LaTeX formulas, page numbers",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "Kseen715",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -105,14 +105,17 @@
           "default": "classic",
           "enum": [
             "classic",
+            "gost",
             "vectorheart"
           ],
           "enumItemLabels": [
             "Classic",
+            "ГОСТ Р 7.0.97-2025",
             "Neo-Vectorheart"
           ],
           "markdownEnumDescriptions": [
             "%config.theme.classic%",
+            "%config.theme.gost%",
             "%config.theme.vectorheart%"
           ],
           "scope": "resource",

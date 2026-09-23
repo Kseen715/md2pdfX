@@ -13,6 +13,7 @@ import { collectFonts } from './fonts.js';
 const sources = {
   'style.css': () => fs.readFileSync(fileURLToPath(new URL('./style.css', import.meta.url)), 'utf8'),
   'theme-classic.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/classic.css', import.meta.url)), 'utf8'),
+  'theme-gost.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/gost.css', import.meta.url)), 'utf8'),
   'theme-vectorheart.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/vectorheart.css', import.meta.url)), 'utf8'),
   'mermaid.js': () => fs.readFileSync(resolve('mermaid/dist/mermaid.min.js'), 'utf8'),
   'katex.css': () => inlineFonts(resolve('katex/dist/katex.min.css')),
