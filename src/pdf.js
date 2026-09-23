@@ -138,9 +138,9 @@ export function launchBrowser({ executablePath, headless }) {
 
 // → { diagrams: число отрисованных диаграмм, errors: ошибки JS на странице }.
 // theme, orientation, align, sections — из CHOICES; watermark — текст по центру
-// колонтитула (пусто — нет).
+// колонтитула (пусто — нет). onStep(name) — начало этапа: 'render', 'print'.
 export async function printPdf(browser, {
-  html, title, output, extraCss = '', watermark = '',
+  html, title, output, extraCss = '', watermark = '', onStep = () => {},
   theme = DEFAULTS.theme, orientation = DEFAULTS.orientation, align = DEFAULTS.align,
   sections = DEFAULTS.sections,
 }) {
@@ -178,6 +178,7 @@ export async function printPdf(browser, {
             headers: { 'Access-Control-Allow-Origin': '*' } })
         : request.respond({ status: 404 });
     });
+    onStep('render');
     await tab.goto(pathToFileURL(file).href, { waitUntil: 'load' });
 
     const result = await tab.evaluate(() => window.__ready);
@@ -187,6 +188,7 @@ export async function printPdf(browser, {
       return document.querySelectorAll('.mermaid:has(svg)').length;  // разрезанная — одна
     });
 
+    onStep('print');
     await tab.pdf({
       // Размер листа — из @page: у диаграмм бывает свой, альбомный.
       path: output, preferCSSPageSize: true,

@@ -90,10 +90,17 @@ async function exportFiles(files, overrides) {
         // Chrome запускается на одну команду: держать его в фоне между
         // экспортами — лишняя память ради секунды на запуск.
         browser = await startBrowser(files[0], progress);
-        for (const file of files) {
-          progress.report({ message: path.basename(file.fsPath) });
+        for (const [i, file] of files.entries()) {
+          const name = path.basename(file.fsPath);
+          const count = files.length > 1 ? ` ${i + 1}/${files.length}` : '';
+          const step = s => {
+            const k = STEPS.indexOf(s);
+            progress.report({
+              message: `${bar(i * STEPS.length + k, files.length * STEPS.length)}${count} ${name}: ${s}`,
+            });
+          };
           try {
-            done.push(await exportFile(browser, file, overrides));
+            done.push(await exportFile(browser, file, overrides, step));
           } catch (e) {
             failed.push(file);
             log.appendLine(`${file.fsPath}: ${e.message}`);
@@ -121,6 +128,16 @@ async function exportFiles(files, overrides) {
   }
 }
 
+// Этапы экспорта одного файла: parse — здесь, остальные — из printPdf.
+const STEPS = ['parse', 'render', 'print'];
+
+// Window-прогресс в статус-баре — только спиннер и текст, настоящей полосы
+// там нет, поэтому рисуем её символами.
+function bar(done, total, width = 10) {
+  const filled = Math.round((done / total) * width);
+  return '▰'.repeat(filled) + '▱'.repeat(width - filled);
+}
+
 async function markdownFiles(uri) {
   if (uri.scheme !== 'file') return [];
   const stat = await vscode.workspace.fs.stat(uri);
@@ -144,7 +161,8 @@ async function startBrowser(file, progress) {
   return launchBrowser(options);
 }
 
-async function exportFile(browser, file, overrides) {
+async function exportFile(browser, file, overrides, step) {
+  step('parse');
   const config = settings(file);
   const option = name => overrides[name] ?? config.get(name);
   // Несохранённые правки тоже попадают в PDF.
@@ -164,7 +182,7 @@ async function exportFile(browser, file, overrides) {
     html, output, extraCss,
     theme: option('theme'), orientation: option('orientation'), align: option('align'),
     sections: option('sections'), watermark: option('watermark'),
-    title: title ?? path.basename(file.fsPath, '.md'),
+    title: title ?? path.basename(file.fsPath, '.md'), onStep: step,
   });
   log.appendLine(`${output}${diagrams ? ` (diagrams: ${diagrams})` : ''}`);
   if (errors.length) log.appendLine(`  page errors: ${errors.join('; ')}`);
