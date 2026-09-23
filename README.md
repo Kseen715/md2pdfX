@@ -19,7 +19,7 @@ Themes
 <table>
   <tr>
     <th><code>classic</code> (default)</th>
-    <th><code>vectorheart</code></th>
+    <th><code>vectorheart</code> (Neo/Vectorheart)</th>
     <th><code>gost</code> (ГОСТ Р 7.0.97-2025)</th>
   </tr>
   <tr>
