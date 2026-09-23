@@ -83,9 +83,10 @@ function landscape(box) {
 // Диаграмма ниже листа на высоту заголовков и вступления над ней (--intro,
 // см. style.css), иначе в высоту листа она выталкивает их на предыдущий,
 // а вступление рвётся пополам. Мерим в колонке листа: переносы строк
-// зависят от ширины.
+// зависят от ширины. Скрытый hr перед h2 не в счёт: у него нет положения, и
+// его верх — 0, начало документа.
 function reserve(box, sheet) {
-  const first = intro(box).at(-1);
+  const first = intro(box).filter(e => e.getClientRects().length).at(-1);
   if (!first) return;
   document.body.style.width = sheet.width + 'mm';
   const top = first.getBoundingClientRect().top - parseFloat(getComputedStyle(first).marginTop);
@@ -149,10 +150,14 @@ function split(box, room) {
   const s = across < MIN_SCALE ? across
     : Math.min(across, Math.ceil(height * MIN_SCALE / rows) * rows / height);
   const step = rows / s;
-  const blocks = obstacles(svg);
+  const { hard, short, groups } = obstacles(svg);
+  // Сперва — между группами, потом внутри группы, потом сквозь короткую
+  // линию; не нашлось и так — режем как есть.
+  const tries = [[...hard, ...short, ...groups], [...hard, ...short], hard];
   const parts = [];
   for (let top = 0; top < height;) {
-    const bottom = cut(blocks, top, Math.min(height, top + step), step);
+    const limit = Math.min(height, top + step);
+    const bottom = tries.reduce((found, blocks) => found ?? cut(blocks, top, limit, step), null) ?? limit;
     const part = svg.cloneNode(true);
     part.setAttribute('viewBox', `${x} ${y + top} ${width} ${bottom - top}`);
     part.setAttribute('width', width * s);
@@ -165,11 +170,17 @@ function split(box, room) {
 }
 
 // Вертикальные границы [верх, низ] в координатах диаграммы (от её верхнего
-// края), сквозь которые резать нельзя: узлы, подписи, концы линий с запасом
-// ARROW — наконечник и заметный отрезок линии к нему, — и короткие линии
-// целиком: петли и горизонтальные сообщения sequence. Резать можно только
-// по длинным линиям.
-const ARROW = 25, LOOP = 60;
+// края), сквозь которые резать нельзя, — по строгости:
+// - hard: узлы, подписи, концы линий с запасом ARROW — наконечник и заметный
+//   отрезок линии к нему; у группы (subgraph) — шапка с подписью от верхней
+//   рамки до первого узла внутри и низ от последнего узла до нижней рамки,
+//   иначе на листе остаётся пустая рамка или одна подпись; рамка — с запасом
+//   FRAME на наконечник стрелки, что в неё упирается;
+// - short: короткие линии целиком — петли, сообщения sequence, стрелки
+//   между соседними группами;
+// - groups: группы целиком.
+// Резать можно по длинным линиям.
+const ARROW = 25, LOOP = 60, FRAME = 12;
 
 function obstacles(svg) {
   const frame = svg.getBoundingClientRect();
@@ -179,27 +190,38 @@ function obstacles(svg) {
     const r = e.getBoundingClientRect();
     return [at(r.top), at(r.bottom)];
   };
-  const blocks = [...svg.querySelectorAll('.node, .actor, .note, .edgeLabel, text')].map(span);
+  const hard = [...svg.querySelectorAll('.node, .actor, .note, .edgeLabel, .cluster-label, text')].map(span);
+  const short = [], groups = [];
+  const nodes = [...svg.querySelectorAll('.node')].map(e => e.getBoundingClientRect());
+  for (const group of svg.querySelectorAll('.cluster')) {
+    const g = group.getBoundingClientRect();
+    groups.push(span(group));
+    const inside = nodes.filter(r => r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom);
+    if (!inside.length) hard.push(span(group));
+    else hard.push([at(g.top) - FRAME, at(Math.min(...inside.map(r => r.top)))],
+      [at(Math.max(...inside.map(r => r.bottom))), at(g.bottom) + FRAME]);
+  }
   for (const line of svg.querySelectorAll('path, line')) {
-    if (line.closest('marker, defs, .node')) continue;
+    if (line.closest('marker, defs, .node, .cluster')) continue;
     const [a, b] = span(line);
     if (b - a < LOOP) {
-      blocks.push([a - ARROW, b + ARROW]);
+      short.push([a - ARROW, b + ARROW]);
       continue;
     }
     const m = line.getScreenCTM(), length = line.getTotalLength();
     for (const p of [line.getPointAtLength(0), line.getPointAtLength(length)]) {
       const y = at(p.matrixTransform(m).y);
-      blocks.push([y - ARROW, y + ARROW]);
+      hard.push([y - ARROW, y + ARROW]);
     }
   }
-  return blocks.filter(([a, b]) => b > a);
+  const valid = list => list.filter(([a, b]) => b > a);
+  return { hard: valid(hard), short: valid(short), groups: valid(groups) };
 }
 
-// Граница куска: не ниже limit и по промежутку между узлами. Если такого
-// нет в нижней половине куска — режем как есть.
+// Граница куска: не ниже limit, по промежутку между препятствиями, в нижней
+// половине куска; нет такой — null.
 function cut(blocks, top, limit, step) {
   let at = limit;
   for (let hit; (hit = blocks.find(([a, b]) => a < at && at < b));) at = hit[0] - 1;
-  return at > top + step / 2 ? at : limit;
+  return at > top + step / 2 ? at : null;
 }

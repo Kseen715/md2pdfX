@@ -46,6 +46,15 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   return fence(tokens, idx, options, env, self);
 };
 
+// Длинные идентификаторы (CH_INSPLAN_PLANS_AUDITORS) переносятся после «_»:
+// иначе колонка таблицы не сжимается уже самого длинного из них, таблица
+// выходит за поле листа, и Chrome обрезает её правую рамку.
+const codeInline = md.renderer.rules.code_inline;
+md.renderer.rules.code_inline = (...args) => {
+  const html = codeInline(...args), open = html.indexOf('>') + 1;
+  return html.slice(0, open) + html.slice(open).replaceAll('_', '_<wbr>');
+};
+
 const image = md.renderer.rules.image;
 md.renderer.rules.image = (tokens, idx, options, env, self) => {
   const t = tokens[idx];
