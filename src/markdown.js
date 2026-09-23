@@ -38,6 +38,8 @@ const md = new MarkdownIt({
 md.core.ruler.push('heading_ids', headingIds);
 md.core.ruler.after('inline', 'task_lists', taskLists);
 md.core.ruler.after('inline', 'empty_paragraphs', emptyParagraphs);
+// После text_join: иначе «\eqref{…}» разбит на несколько текстовых токенов.
+md.core.ruler.push('equations', equations);
 
 // Диаграмма остаётся текстом в <pre class="mermaid">, mermaid.js заменит его на SVG.
 const fence = md.renderer.rules.fence;
@@ -46,8 +48,20 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   if (t.info.trim().split(/\s+/)[0] === 'mermaid') {
     return `<pre class="mermaid">${escapeHtml(t.content)}</pre>\n`;
   }
-  return fence(tokens, idx, options, env, self);
+  return withEqId(fence(tokens, idx, options, env, self), t, env);
 };
+
+// Блочная формула с \label получает id — на него ведут ссылки \eqref.
+for (const rule of ['math_block', 'math_inline_block', 'math_inline_bare_block']) {
+  const render = md.renderer.rules[rule];
+  md.renderer.rules[rule] = (tokens, idx, options, env, self) =>
+    withEqId(render(tokens, idx, options, env, self), tokens[idx], env);
+}
+
+function withEqId(html, token, env) {
+  const id = token.meta?.eqId;
+  return id ? html.replace(/^<(\w+)/, `<$1 id="${escapeHtml((env.idPrefix ?? '') + id)}"`) : html;
+}
 
 // Длинные идентификаторы (CH_INSPLAN_PLANS_AUDITORS) переносятся после «_»:
 // иначе колонка таблицы не сжимается уже самого длинного из них, таблица
@@ -154,6 +168,69 @@ function emptyParagraphs(state) {
       tokens.splice(i, 3);
     }
   }
+}
+
+// Нумерация формул, как в LaTeX: блочная формула с \label{ключ} получает
+// номер (1), (2), … — или свой, если в ней есть \tag{45}, — а \eqref{ключ}
+// в тексте или в $…$ становится ссылкой «(1)» на неё, \ref{ключ} — «1».
+// Формулы без \label не нумеруются. Нумерация своя у каждого документа
+// (в книге — у каждой главы); неизвестный ключ даёт «??».
+const LABEL = /\\label\{([^}]+)\}/;
+const TAG = /\\tag\*?\{([^}]+)\}/;
+const REF = /\\(eq)?ref\{([^}]+)\}/g;
+function equations(state) {
+  const labels = new Map();
+  let counter = 0;
+  const all = state.tokens.flatMap(t => [t, ...(t.children ?? [])]);
+  for (const t of all) {
+    const display = t.type === 'math_block' || t.type === 'math_inline_block'
+      || t.type === 'math_inline_bare_block' || (t.type === 'fence' && t.info.trim() === 'math');
+    const m = display && LABEL.exec(t.content);
+    if (!m) continue;
+    const tag = TAG.exec(t.content);
+    const number = tag ? tag[1] : String(++counter);
+    t.content = t.content.replace(LABEL, tag ? '' : `\\tag{${number}}`);
+    labels.set(m[1], number);
+    (t.meta ??= {}).eqId = 'eq-' + m[1];
+  }
+
+  for (const block of state.tokens) {
+    if (!block.children) continue;
+    block.children = block.children.flatMap(t => {
+      if (t.type === 'math_inline' && /^\s*\\(eq)?ref\{[^}]+\}\s*$/.test(t.content)) {
+        return refTokens(state, t.content.trim(), labels);
+      }
+      return t.type === 'text' && t.content.includes('ref{') ? refTokens(state, t.content, labels) : [t];
+    });
+  }
+}
+
+// Текст со ссылками \eqref/\ref → текстовые токены и ссылки.
+function refTokens(state, text, labels) {
+  const out = [];
+  const push = (type, tag, nesting, content) => {
+    const t = new state.Token(type, tag, nesting);
+    if (content !== undefined) t.content = content;
+    out.push(t);
+    return t;
+  };
+  let last = 0;
+  for (const m of text.matchAll(REF)) {
+    if (m.index > last) push('text', '', 0, text.slice(last, m.index));
+    const number = labels.get(m[2]);
+    const label = number === undefined ? '??' : number;
+    const shown = m[1] ? `(${label})` : label;
+    if (number === undefined) {
+      push('text', '', 0, shown);
+    } else {
+      push('link_open', 'a', 1).attrSet('href', '#eq-' + m[2]);
+      push('text', '', 0, shown);
+      push('link_close', 'a', -1);
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) push('text', '', 0, text.slice(last));
+  return out;
 }
 
 // - [ ] задача / - [x] сделано

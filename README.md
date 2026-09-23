@@ -38,7 +38,14 @@ What is supported
 | Obsidian | properties (frontmatter), `[[links]]`, `![[embeds]]` of notes, sections and images, callouts, `==highlights==`, `#tags`, `%%comments%%` | [obsidian.md](examples/obsidian.md)           |
 | Mermaid  | every mermaid 12 diagram type                                                                       | [mermaid.md](examples/mermaid.md)             |
 | LaTeX    | `$…$`, `$$…$$`, ` ```math ` blocks                                                                  | [math.md](examples/math.md)                   |
+| Numbered formulas | `\label{key}` numbers a formula (1), (2), … or `\tag{45}`; `\eqref{key}` links to it          | [equations.md](examples/equations.md)         |
+| Charts   | bar/line, sankey, quadrant, radar, treemap, timeline, journey, venn                                  | [charts.md](examples/charts.md)               |
+| Engineering | architecture, C4, block, packet, gitGraph, kanban, requirements, ishikawa                         | [engineering.md](examples/engineering.md)     |
+| Scripts  | 15 writing systems, right-to-left text, color emoji, Nerd Font icons in code                         | [languages.md](examples/languages.md)         |
+| Big diagrams | a diagram too big for the page moves to a landscape page or is cut between messages          | [big-diagrams.md](examples/big-diagrams.md)   |
+| Book     | linked notes exported as one PDF with chapters: `md2pdf Кругосветка.md --book`                       | [book/](examples/book/Кругосветка.md)          |
 | All together | a typical technical document                                                                    | [backend-guide.md](examples/backend-guide.md) |
+| Lecture notes | formulas, charts, callouts and footnotes in one article                                        | [science.md](examples/science.md)             |
 
 VS Code extension
 -----------------
