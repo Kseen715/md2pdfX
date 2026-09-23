@@ -33,7 +33,8 @@ function branches(colors) {
 // Тема: CSS поверх style.css, настройки mermaid, вид нижнего колонтитула и,
 // если нужно, свои поля листа. Колонтитул Chrome рисует отдельно от страницы,
 // стили ему только инлайном; number: false — без заголовка и номера страницы
-// (тема ставит номер сама, через @page в CSS).
+// (тема ставит номер сама, через @page в CSS); watermarkTop — водяной знак в
+// верхнем колонтитуле, а не в нижнем.
 export const THEMES = {
   classic: {
     label: 'Classic',
@@ -72,6 +73,7 @@ export const THEMES = {
       },
     },
     footer: { font: SANS, color: '#000', page: '', number: false },
+    watermarkTop: true,
   },
   vectorheart: {
     label: 'Neo-Vectorheart',
@@ -189,8 +191,8 @@ export async function printPdf(browser, {
       // Закладки PDF из h1–h6: оглавление в просмотрщике, переходы по разделам.
       outline: true, tagged: true,
       displayHeaderFooter: true,
-      headerTemplate: '<div></div>',
-      footerTemplate: footer(look.footer, margin, title, watermark),
+      headerTemplate: look.watermarkTop ? footer({ ...look.footer, number: false }, margin, title, watermark) : '<div></div>',
+      footerTemplate: footer(look.footer, margin, title, look.watermarkTop ? '' : watermark),
     });
     return { diagrams, errors };
   } finally {
@@ -216,7 +218,7 @@ async function serveFonts() {
   return server;
 }
 
-// Три колонки: заголовок слева, водяной знак ровно по центру, номер справа.
+// Колонтитул в три колонки: заголовок слева, водяной знак ровно по центру, номер справа.
 function footer({ font, color, page, number = true }, margin, title, watermark) {
   // Колонтитул — отдельный документ, встроенные шрифты ему недоступны: там
   // работают только системные, а список семейств — лишь с одинарными кавычками.

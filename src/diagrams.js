@@ -43,19 +43,23 @@ window.fitDiagrams = async (sources, sheets) => {
       drawn.push(sizes());
       if (drawn.at(-1).normal >= MIN_SCALE) break;
     }
-    const top = key => drawn.reduce((a, b) => b[key] > a[key] ? b : a);
+    const top = (key, list = drawn) => list.reduce((a, b) => b[key] > a[key] ? b : a);
     const best = top('normal'), roomy = drawn.find(d => d.wide >= MIN_SCALE);
+    // Для нарезки на книжных листах — варианты, что влезают в ширину колонки:
+    // самый компактный по высоте бывает самым широким, и из-за него длинная
+    // узкая диаграмма резалась на альбомные листы.
+    const narrow = drawn.filter(d => d.across >= MIN_SCALE);
     if (best.normal >= MIN_SCALE) {
       box.innerHTML = best.html;
     } else if (roomy) {
       box.innerHTML = roomy.html;
       landscape(box);
-    } else if (wide && best.across < MIN_SCALE) {
+    } else if (wide && !narrow.length) {
       box.innerHTML = top('wideAcross').html;
       landscape(box);
       split(box, wide);
     } else {
-      box.innerHTML = best.html;
+      box.innerHTML = (narrow.length ? top('normal', narrow) : best).html;
       split(box, normal);
     }
   }

@@ -53,8 +53,10 @@ pre code { background: none; padding: 0; font-size: 8.5pt; line-height: 1.35; }
 /* Лигатуры JetBrains Mono (!= → ≠) в документации путают: код печатается как написан. */
 code, kbd { font-variant-ligatures: none; }
 
+/* Chrome обрезает печать по правому краю колонки, а ширина колонки в px
+   дробная: правая рамка таблицы шириной ровно 100% уходила за край. */
 table {
-  border-collapse: collapse; width: 100%; margin: 0 0 4mm;
+  border-collapse: collapse; width: calc(100% - 1px); margin: 0 0 4mm;
   font-size: 9.5pt;
 }
 /* Длинная таблица рвётся по строкам, а не уезжает целиком на следующий лист;

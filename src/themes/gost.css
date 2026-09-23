@@ -4,17 +4,17 @@
    - шрифт № 12–14, в таблицах можно меньше; межстрочный интервал 1–1,5;
    - абзацный отступ 1,25 см, текст выровнен по ширине;
    - заголовки разделов — с абзацного отступа, полужирным;
-   - номера страниц — посередине верхнего поля, не ближе 10 мм к краю
-     листа, со второй страницы;
+   - номера страниц — со второй страницы, не ближе 10 мм к краю листа
+     (стандарт велит верхнее поле, но оно отдано водяному знаку — номер внизу);
    - документ чёрно-белый. */
 
 @page {
-  @top-center {
-    content: counter(page); vertical-align: top; padding-top: 10mm;
+  @bottom-center {
+    content: counter(page); vertical-align: bottom; padding-bottom: 10mm;
     font-family: var(--font-sans); font-size: 12pt; color: #000;
   }
 }
-@page :first { @top-center { content: none; } }
+@page :first { @bottom-center { content: none; } }
 
 /* line-height 1.4 у Noto Sans — это одинарный интервал: высота строки шрифта. */
 body { color: #000; font-size: 14pt; line-height: 1.4; }

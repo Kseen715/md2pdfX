@@ -8,7 +8,7 @@
   "config.theme.vectorheart": "Black and white with an acid-lime accent, 45° cuts, monospace headings.",
   "config.watermark": "Text in the middle of the page footer, e.g. `CONFIDENTIAL`. Empty: no watermark.",
   "config.theme.classic": "Blue headings, sans-serif text.",
-  "config.theme.gost": "Russian official documents per GOST R 7.0.97-2025: 30/10/20/20 mm margins, 14 pt, 1.25 cm indent, page number centered at the top from page 2, black and white.",
+  "config.theme.gost": "Russian official documents per GOST R 7.0.97-2025: 30/10/20/20 mm margins, 14 pt, 1.25 cm indent, page number centered at the bottom from page 2, watermark at the top, black and white.",
   "config.orientation": "Page orientation (A4).",
   "config.orientation.portrait": "Portrait",
   "config.orientation.landscape": "Landscape",
