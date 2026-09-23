@@ -27,7 +27,8 @@ export const MONO = `"JetBrainsMono Nerd Font", ${FALLBACK}, monospace`;
 //   shade      — средний тон заливки (завершённые задачи на Ганте);
 //   highlight  — выделение ==текста==, заметки на диаграммах;
 //   danger     — ошибки и критичное;
-//   series     — цвета рядов графиков и секторов pie, по порядку.
+//   series     — цвета рядов графиков, секторов pie, кругов venn и узлов
+//                sankey, по порядку; восемь, как рядов у venn.
 // diagramFont — шрифт диаграмм; mermaid — переопределения выведенных цветов;
 // c4 — заливки элементов C4: { person, system, external }, по умолчанию
 // accent, accentText и muted. Текст на светлой заливке diagrams.js делает
@@ -52,7 +53,7 @@ export const THEMES = {
       text: '#1a1a1a', paper: '#ffffff', accent: '#0b3c5d', accentText: '#14507a',
       muted: '#7a848d', line: '#ccd3da', surface: '#f7f8fa', shade: '#ccd3da',
       highlight: '#fff1a8', danger: '#b3261e',
-      series: ['#6b8fb3', '#1f2d3a', '#c0853a', '#9fb8cf'],
+      series: ['#6b8fb3', '#1f2d3a', '#c0853a', '#9fb8cf', '#5e8c6a', '#b35c5c', '#8a6fb0', '#c9a94a'],
     },
     diagramFont: SANS,
     footer: { font: SANS, page: '' },
@@ -64,7 +65,7 @@ export const THEMES = {
       text: '#000000', paper: '#ffffff', accent: '#000000', accentText: '#000000',
       muted: '#808080', line: '#000000', surface: '#f0f0f0', shade: '#808080',
       highlight: '#ffffff', danger: '#000000',
-      series: ['#808080', '#000000', '#d0d0d0', '#ffffff'],
+      series: ['#808080', '#000000', '#d0d0d0', '#ffffff', '#404040', '#a6a6a6', '#606060', '#e6e6e6'],
     },
     diagramFont: SANS,
     // Без теней и градиентов. Подписи стрелок на сером — на белом подпись
@@ -88,7 +89,7 @@ export const THEMES = {
       text: '#0a0a0a', paper: '#ffffff', accent: '#0a0a0a', accentText: '#5c7a00',
       muted: '#8a8a8a', line: '#0a0a0a', surface: '#f3f3f3', shade: '#d9d9d9',
       highlight: '#c6ff00', danger: '#c62828',
-      series: ['#5c7a00', '#0a0a0a', '#c6ff00', '#8a8a8a'],
+      series: ['#5c7a00', '#0a0a0a', '#c6ff00', '#8a8a8a', '#2f6fc0', '#d0661a', '#7b4fc4', '#138a8a'],
     },
     diagramFont: MONO,
     // Лайм и белый под чёрной рамкой: тёмные блоки съедают краску.
@@ -122,7 +123,7 @@ export const THEMES = {
       text: '#2e3440', paper: '#ffffff', accent: '#5e81ac', accentText: '#43648c',
       muted: '#4c566a', line: '#d8dee9', surface: '#eceff4', shade: '#d8dee9',
       highlight: '#ebcb8b', danger: '#bf616a',
-      series: ['#5e81ac', '#bf616a', '#a3be8c', '#d08770', '#b48ead', '#88c0d0'],
+      series: ['#5e81ac', '#bf616a', '#a3be8c', '#d08770', '#b48ead', '#88c0d0', '#ebcb8b', '#8fbcbb'],
     },
     diagramFont: SANS,
     c4: { person: '#5e81ac', system: '#88c0d0', external: '#e5e9f0' },
@@ -148,7 +149,7 @@ export const THEMES = {
       text: '#3c3836', paper: '#ffffff', accent: '#af3a03', accentText: '#076678',
       muted: '#7c6f64', line: '#d5c4a1', surface: '#fbf1c7', shade: '#d5c4a1',
       highlight: '#fabd2f', danger: '#9d0006',
-      series: ['#458588', '#d65d0e', '#98971a', '#b16286', '#689d6a', '#d79921'],
+      series: ['#458588', '#d65d0e', '#98971a', '#b16286', '#689d6a', '#d79921', '#cc241d', '#076678'],
     },
     diagramFont: MONO,
     c4: { person: '#d79921', system: '#458588', external: '#ebdbb2' },
@@ -167,6 +168,12 @@ export const THEMES = {
     footer: { font: MONO, page: 'background:#d65d0e;color:#fbf1c7;font-weight:bold;padding:0.5mm 2mm;' },
   },
 };
+
+// Цвета узлов sankey: ряды темы без цвета листа — узел цвета листа не виден.
+export function sankeyColors(theme) {
+  const { series, paper } = THEMES[theme].palette;
+  return series.filter(color => color !== paper);
+}
 
 // Палитра темы как CSS-переменные для :root.
 export function paletteCss(theme) {

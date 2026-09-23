@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer-core';
 import { loadAsset, loadFont } from './assets.js';
 import { FONT_ORIGIN } from './fonts.js';
 import { escapeHtml } from './obsidian.js';
-import { footerStyle, mermaidConfig, MONO, paletteCss, SANS, THEMES } from './themes/index.js';
+import { footerStyle, mermaidConfig, MONO, paletteCss, sankeyColors, SANS, THEMES } from './themes/index.js';
 
 export { THEMES };
 
@@ -161,15 +161,16 @@ ${diagrams ? `<script>${loadAsset('mermaid.js')}</script>
       // свои настройки шрифтов (по умолчанию Trebuchet), и без них рамки заметок
       // и участников считаются под другой шрифт и текст из них вылезает.
       const font = ${JSON.stringify(mermaid.themeVariables.fontFamily)};
+      const sources = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent);
       window.mermaid.initialize({
         ...${JSON.stringify(mermaid)},
         startOnLoad: false, fontFamily: font,
         flowchart: { useMaxWidth: true },
         sequence: { useMaxWidth: true, actorFontFamily: font, noteFontFamily: font, messageFontFamily: font },
+        sankey: { nodeColors: window.sankeyNodeColors(sources, ${JSON.stringify(sankeyColors(theme))}) },
       });
       // mermaid меряет подписи при отрисовке: шрифт для них должен быть уже
       // загружен, иначе подписи не влезут в рамки.
-      const sources = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent);
       await Promise.all(['400', '700'].map(w => document.fonts.load(w + ' 16px ' + font, sources.join(' '))));
       await window.mermaid.run();
       await window.fitDiagrams(sources, ${JSON.stringify(sheets)});

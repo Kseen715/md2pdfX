@@ -127,8 +127,8 @@ venn-beta
     set A["GitHub"]:20
     set B["Obsidian"]:20
     set C["LaTeX"]:20
-    union A,B:2.5
-    union B,C:2.5
-    union A,C:2.5
-    union A,B,C["md2pdfX"]:1.2
+    union A,B:5
+    union B,C:5
+    union A,C:5
+    union A,B,C["md2pdfX"]:3
 ```

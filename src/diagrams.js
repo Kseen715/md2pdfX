@@ -14,6 +14,11 @@ const MIN_SCALE = 0.6;
 const SQUEEZE = 0.85;
 const PX = 96 / 25.4;  // px в мм
 
+// Типы, которые mermaid рисует в холсте фиксированного размера с большими
+// пустыми полями: venn — в 800×450, как бы мало ни было кругов, C4 — с
+// запасом сверху. Холст обрезается по содержимому, и диаграмма крупнее.
+const PADDED = /^\s*(venn(-beta)?|C4(Context|Container|Component|Dynamic|Deployment))\b/;
+
 // Типы, у которых есть направление и раскладка на выбор.
 const LAYOUT = /^\s*(flowchart|graph|erDiagram|classDiagram|stateDiagram(-v2)?)\b/;
 
@@ -25,6 +30,17 @@ window.fitDiagrams = async (sources, sheets) => {
   c4Text();
   const room = sheet => sheet && { width: sheet.width * PX, height: (sheet.height - 2) * PX };
   const normal = room(sheets.normal), wide = room(sheets.wide);
+  for (const [i, box] of [...document.querySelectorAll('pre.mermaid')].entries()) {
+    if (!PADDED.test(sources[i])) continue;
+    trim(box);
+    // Размер текста зависит от масштаба, а масштаб — от холста, обрезанного
+    // уже по тексту: два прохода сходятся с точностью до долей пункта.
+    if (/^\s*venn/.test(sources[i]))
+      for (let pass = 0; pass < 2; pass++) {
+        vennText(box, normal);
+        trim(box);
+      }
+  }
   const boxes = [...document.querySelectorAll('pre.mermaid')];
   for (const [i, box] of boxes.entries()) {
     if (scale(box, normal) >= MIN_SCALE) continue;
@@ -128,6 +144,65 @@ function blocks() {
   return [...document.body.children].flatMap(e =>
     e.matches('.chapter') ? [...e.children] : e.matches('script') ? [] : [e]);
 }
+
+// Холст SVG — по содержимому, с полем в 8 единиц. getBBox всего SVG не
+// годится: пустые подписи (у venn — у каждого пересечения) стоят в (0, 0)
+// и растягивают рамку до угла холста. Поэтому — объединение рамок видимых
+// фигур и текстов, каждая в координатах SVG.
+function trim(box) {
+  const svg = box.querySelector('svg');
+  if (!svg) return;
+  // Координаты в процентах (заголовок venn — x="50%") считаются от холста:
+  // после обрезки они съехали бы. Переводим их в абсолютные по старому холсту.
+  const old = svg.viewBox.baseVal;
+  for (const e of svg.querySelectorAll('[x$="%"], [y$="%"]')) {
+    for (const [attr, start, size] of [['x', old.x, old.width], ['y', old.y, old.height]]) {
+      const v = e.getAttribute(attr);
+      if (v?.endsWith('%')) e.setAttribute(attr, start + parseFloat(v) / 100 * size);
+    }
+  }
+  const toSvg = svg.getScreenCTM().inverse();
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const e of svg.querySelectorAll('path, rect, circle, ellipse, line, polygon, polyline, text, image')) {
+    const b = e.getBBox();
+    if (!b.width || !b.height || e.closest('defs, marker')) continue;
+    const m = toSvg.multiply(e.getScreenCTM());
+    for (const [px, py] of [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]]) {
+      const p = new DOMPoint(px, py).matrixTransform(m);
+      x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y);
+    }
+  }
+  if (!(x1 > x0 && y1 > y0)) return;
+  svg.setAttribute('viewBox', `${x0 - 8} ${y0 - 8} ${x1 - x0 + 16} ${y1 - y0 + 16}`);
+  svg.style.maxWidth = '';
+}
+
+// Подписи venn mermaid задаёт в долях холста, и в обрезанном холсте на всю
+// ширину колонки они выходят крупнее заголовков и не влезают в круги. Здесь
+// они — в 1.2 раза крупнее текста документа на листе, название — в 1.5.
+function vennText(box, room) {
+  const svg = box.querySelector('svg');
+  const { width, height } = svg.viewBox.baseVal;
+  const scale = Math.min(room.width / width, room.height / height);
+  const text = parseFloat(getComputedStyle(document.body).fontSize) / scale;
+  for (const e of svg.querySelectorAll('text'))
+    e.style.setProperty('font-size', (e.matches('.venn-title') ? text * 1.5 : text * 1.2) + 'px', 'important');
+}
+
+// Цвета узлов sankey по имени: палитру mermaid задать не даёт, только цвет
+// каждого узла. Цвета темы идут по кругу в порядке появления узлов — один
+// узел одного цвета во всех диаграммах документа.
+window.sankeyNodeColors = (sources, colors) => {
+  const names = [];
+  for (const source of sources) {
+    if (!/^\s*sankey(-beta)?\s*$/m.test(source.split('\n').find(l => l.trim()) ?? '')) continue;
+    for (const line of source.split('\n').slice(1)) {
+      const cells = line.split(',').map(c => c.trim().replace(/^"(.*)"$/, '$1'));
+      if (cells.length === 3) names.push(cells[0], cells[1]);
+    }
+  }
+  return Object.fromEntries([...new Set(names)].map((name, i) => [name, colors[i % colors.length]]));
+};
 
 // Текст элементов C4 mermaid всегда красит белым, и на светлой заливке темы
 // (src/themes/index.js) его не видно: там он — цвета текста документа.
