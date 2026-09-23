@@ -227,7 +227,7 @@ function extractSection(src, heading, slugify) {
 // каталог с .obsidian, иначе каталог документа. Список файлов кэшируется на
 // один документ (env.vault): в долгоживущем процессе расширения он иначе
 // устаревал бы.
-function resolveFile(name, env) {
+export function resolveFile(name, env) {
   const baseDir = env.baseDir;
   const wanted = path.extname(name) ? name : name + '.md';
   const root = vaultRoot(baseDir);

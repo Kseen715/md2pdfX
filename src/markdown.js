@@ -9,7 +9,8 @@ import { full as emoji } from 'markdown-it-emoji';
 import katexPlugin from '@vscode/markdown-it-katex';
 import katex from 'katex';
 import hljs from 'highlight.js/lib/common';
-import obsidian, { chapterHref, escapeHtml, localUrl, splitFrontmatter } from './obsidian.js';
+import { pathToFileURL } from 'node:url';
+import obsidian, { chapterHref, escapeHtml, localUrl, resolveFile, splitFrontmatter } from './obsidian.js';
 
 // Якоря как на GitHub: иначе ссылки оглавления вида (#1-что-развёрнуто)
 // не совпадут с id заголовков.
@@ -65,22 +66,26 @@ md.renderer.rules.image = (tokens, idx, options, env, self) => {
 
 // В книге id заголовков и ссылки на них получают префикс главы: иначе
 // одинаковые заголовки разных файлов дадут одинаковые id. Ссылка на
-// локальный .md ([текст](файл.md#якорь)) ведёт на главу с этим файлом.
+// локальный .md ([текст](файл.md#якорь)) в книге ведёт на главу с этим
+// файлом, вне книги — на сам файл: страница печатается из временного
+// каталога, и относительная ссылка там никуда не ведёт. Путь ищется как в
+// Obsidian: от документа, от корня хранилища, затем по имени во всём
+// хранилище — Obsidian пишет только имя, если оно уникально.
 const linkOpen = md.renderer.rules.link_open
   ?? ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options));
 md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
   const t = tokens[idx];
   const href = t.attrGet('href') ?? '';
-  if (env.idPrefix && href.startsWith('#')) {
-    t.attrSet('href', '#' + env.idPrefix + href.slice(1));
-  } else if (env.chapters && href && !/^[a-z][a-z\d+.-]+:/i.test(href)) {
+  if (href.startsWith('#')) {
+    if (env.idPrefix) t.attrSet('href', '#' + env.idPrefix + href.slice(1));
+  } else if (href && !/^[a-z][a-z\d+.-]+:/i.test(href)) {
     const [target, anchor] = href.split('#', 2);
     let decoded = target;
     try { decoded = decodeURIComponent(target); } catch { /* оставить как есть */ }
-    const file = path.resolve(env.baseDir, decoded);
-    if (/\.md$/i.test(file) && fs.statSync(file, { throwIfNoEntry: false })?.isFile()) {
-      t.attrSet('href', chapterHref(env, file, anchor));
-    }
+    const file = resolveFile(decoded, env) ?? path.resolve(env.baseDir, decoded);
+    t.attrSet('href', env.chapters && /\.md$/i.test(file) && fs.existsSync(file)
+      ? chapterHref(env, file, anchor)
+      : pathToFileURL(file).href + (anchor === undefined ? '' : '#' + anchor));
   }
   return linkOpen(tokens, idx, options, env, self);
 };
