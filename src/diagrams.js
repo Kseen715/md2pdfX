@@ -344,8 +344,11 @@ function split(box, room) {
 // - short: короткие линии, без запаса — петли, сообщения sequence, стрелки
 //   между соседними группами;
 // - groups: группы целиком.
-// Резать можно по длинным линиям.
-const ARROW = 25, LOOP = 60, FRAME = 12, SHADOW = 6;
+// Резать можно по длинным линиям. Сообщение sequence — подпись вместе с его
+// линией и запасом MARK на кружок номера (autonumber) и наконечник: у
+// горизонтальной линии высоты нет, а кружок — маркер, в её рамку не входит,
+// и разрез проходил между подписью и стрелкой, прямо по кружку.
+const ARROW = 25, LOOP = 60, FRAME = 12, SHADOW = 6, MARK = 12;
 
 function obstacles(svg) {
   const frame = svg.getBoundingClientRect();
@@ -378,6 +381,13 @@ function obstacles(svg) {
       const y = at(p.matrixTransform(m).y);
       hard.push([y - ARROW, y + ARROW]);
     }
+  }
+  const labels = [...svg.querySelectorAll('.messageText')].map(span);
+  for (const line of svg.querySelectorAll('.messageLine0, .messageLine1')) {
+    const [a, b] = span(line);
+    const label = labels.filter(([, bottom]) => bottom <= a + 1 && a - bottom < LOOP)
+      .reduce((best, l) => !best || l[1] > best[1] ? l : best, null);
+    hard.push([(label?.[0] ?? a) - 1, b + MARK].map((v, i) => i ? v : Math.min(v, a - MARK)));
   }
   const valid = list => list.filter(([a, b]) => b > a);
   return { hard: valid(hard), short: valid(short), groups: valid(groups) };
