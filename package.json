@@ -146,17 +146,23 @@
           "enum": [
             "classic",
             "gost",
-            "vectorheart"
+            "vectorheart",
+            "nord",
+            "gruvbox"
           ],
           "enumItemLabels": [
             "Classic",
             "ГОСТ Р 7.0.97-2025",
-            "Neo-Vectorheart"
+            "Neo-Vectorheart",
+            "Nord Light",
+            "Gruvbox Light"
           ],
           "markdownEnumDescriptions": [
             "%config.theme.classic%",
             "%config.theme.gost%",
-            "%config.theme.vectorheart%"
+            "%config.theme.vectorheart%",
+            "%config.theme.nord%",
+            "%config.theme.gruvbox%"
           ],
           "scope": "resource",
           "markdownDescription": "%config.theme%"

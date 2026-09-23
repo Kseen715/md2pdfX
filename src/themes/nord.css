@@ -1,0 +1,94 @@
+/* Тема Nord Light: холодная светлая палитра Nord (https://www.nordtheme.com)
+   в скандинавском духе — много воздуха, карточки с мягкой тенью и
+   скруглениями, таблицы без вертикальных линий, подсветка кода в цветах Nord.
+   Палитра — в src/themes/index.js. */
+:root {
+  --heading-color: var(--text);
+  --subheading-color: var(--accent);
+  --h2-border: none;
+  --radius: 4px;
+  --pre-bg: var(--surface);
+  --pre-border: none;
+  --pre-border-left: none;
+  --cell-border: none;
+  --th-bg: #e5e9f0;
+  --th-color: var(--text);
+  --row-alt-bg: none;
+  --quote-bg: var(--surface);
+  --quote-border: 3px solid #81a1c1;
+  --kbd-border: 1px solid #d8dee9;
+  --check-border: 1.5px solid #81a1c1;
+  --wikilink-color: #b48ead;
+  --tag-color: #43648c;
+  --tag-bg: #e5e9f0;
+  --embed-border: 3px solid #88c0d0;
+  --frost: linear-gradient(90deg, #8fbcbb, #88c0d0, #81a1c1, #5e81ac);
+  /* Тень только снизу: по бокам Chrome обрезает печать по краю колонки. */
+  --card-shadow: 0 0.9mm 0.9mm -0.7mm rgb(46 52 64 / 22%);
+}
+
+/* Заголовок документа — тонкий, с полоской Frost; разделы — со
+   скруглённой меткой слева, как вкладки в редакторах на Nord. */
+h1 { font-weight: 600; letter-spacing: -0.015em; }
+h1::after {
+  content: ""; display: block; width: 18mm; height: 1.2mm; margin-top: 2.5mm;
+  border-radius: 1mm; background: var(--frost);
+}
+h2 { font-weight: 600; }
+h2::before {
+  content: ""; display: inline-block; width: 1.3mm; height: 0.95em; margin-right: 2.5mm;
+  vertical-align: -0.12em; border-radius: 1mm; background: linear-gradient(#88c0d0, #5e81ac);
+}
+h3 { font-weight: 600; }
+
+/* Разделитель — тающая полоса Frost. */
+hr { height: 0.5mm; border: none; background: linear-gradient(90deg, #ffffff, #88c0d0, #5e81ac, #88c0d0, #ffffff); }
+
+/* Карточки: код, цитаты, callout'ы — с мягкой тенью. */
+pre:not(.mermaid), blockquote, .callout { box-shadow: var(--card-shadow); border-radius: var(--radius); }
+pre:not(.mermaid) { position: relative; padding: 4mm; }
+/* Язык кода — плашкой в правом верхнем углу. */
+pre[data-lang]::before {
+  content: attr(data-lang); position: absolute; top: 0; right: 0;
+  padding: 0.4mm 2.2mm; border-bottom-left-radius: var(--radius);
+  font: 600 7pt var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase;
+  color: #eceff4; background: #81a1c1;
+}
+
+/* Таблица — карточка со скруглёнными углами и линиями только между строками. */
+table {
+  border-collapse: separate; border-spacing: 0; border-radius: var(--radius);
+  border: 1px solid #d8dee9; box-shadow: var(--card-shadow);
+}
+th { font-weight: 700; border-bottom: 2px solid #81a1c1; }
+td { border-bottom: 1px solid #e5e9f0; }
+tr:last-child td { border-bottom: none; }
+th:first-child { border-top-left-radius: var(--radius); }
+th:last-child { border-top-right-radius: var(--radius); }
+
+mark { border-radius: 2px; }
+code { color: #43648c; }
+pre code { color: var(--text); }
+li.task-list-item input { border-radius: 50%; }
+ul > li:not(.task-list-item)::marker { content: "• "; color: #88c0d0; }
+
+/* Подсветка кода — цвета Nord вместо github.css (затемнены для белого листа). */
+pre code.hljs { background: none; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #5e81ac; }
+.hljs-built_in, .hljs-type, .hljs-title.class_ { color: #4c8a9c; }
+.hljs-title, .hljs-title.function_, .hljs-section { color: #3f7f8f; }
+.hljs-string, .hljs-regexp, .hljs-addition { color: #6f8f57; }
+.hljs-number, .hljs-symbol { color: #9a6f94; }
+.hljs-attr, .hljs-attribute, .hljs-variable, .hljs-params { color: #43648c; }
+.hljs-comment, .hljs-quote { color: #7b88a1; font-style: italic; }
+.hljs-meta, .hljs-deletion { color: #bf616a; }
+
+/* Callout'ы — цвета Aurora и Frost вместо общих. */
+.callout { --c: #5e81ac; }
+.callout-teal { --c: #5e9ea0; }
+.callout-green { --c: #6f8f57; }
+.callout-yellow { --c: #b58a2e; }
+.callout-orange { --c: #c0714f; }
+.callout-red { --c: #bf616a; }
+.callout-purple { --c: #9a6f94; }
+.callout-gray { --c: #4c566a; }

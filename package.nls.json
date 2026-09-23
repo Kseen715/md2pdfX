@@ -6,6 +6,8 @@
   "config.outputDirectory": "Folder for PDF files. Empty: next to the Markdown file. Relative paths resolve from the workspace folder.",
   "config.theme": "PDF look.",
   "config.theme.vectorheart": "Black and white with an acid-lime accent, 45° cuts, monospace headings.",
+  "config.theme.nord": "Cool Nord Light palette: dark headings, frost-blue accents, soft rounded blocks.",
+  "config.theme.gruvbox": "Warm retro Gruvbox Light palette: cream blocks, monospace headings marked #, ##, ###, Gruvbox code colors.",
   "config.watermark": "Text in the middle of the page footer, e.g. `CONFIDENTIAL`. Empty: no watermark.",
   "config.theme.classic": "Blue headings, sans-serif text.",
   "config.theme.gost": "Russian official documents per GOST R 7.0.97-2025: 30/10/20/20 mm margins, 14 pt, 1.25 cm indent, page number centered at the bottom from page 2, watermark at the top, black and white.",

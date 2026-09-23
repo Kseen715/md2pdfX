@@ -1,0 +1,103 @@
+/* Тема Gruvbox Light: ретро-палитра Gruvbox (https://github.com/morhetz/gruvbox)
+   в духе терминала и vim — моноширинные заголовки с #, ##, ###, код в окне
+   терминала, ретро-полоса из трёх тёплых линий, маркеры-звёздочки, подсветка
+   кода в цветах Gruvbox. Палитра — в src/themes/index.js. */
+:root {
+  --heading-font: var(--font-mono);
+  --subheading-color: #79740e;
+  --h2-border: 2px dashed #bdae93;
+  --radius: 0;
+  --pre-bg: var(--surface);
+  --pre-border: 1.5px solid #504945;
+  --pre-border-left: 1.5px solid #504945;
+  --code-bg: #ebdbb2;
+  --cell-border: 1px solid #bdae93;
+  --th-bg: #504945;
+  --th-color: var(--surface);
+  --row-alt-bg: var(--surface);
+  --quote-bg: var(--surface);
+  --quote-border: 4px solid #d79921;
+  --kbd-border: 1px solid #a89984;
+  --rule: none;
+  --wikilink-color: #8f3f71;
+  --tag-color: var(--surface);
+  --tag-bg: #427b58;
+  --embed-border: 3px solid #b16286;
+  --check-border: 1.5px solid #504945;
+  --check-bg: #79740e;
+  /* Жёсткая тень окон: сдвиг вправо и вниз. Блоки с ней уже колонки на её
+     ширину — Chrome обрезает печать по правому краю колонки. */
+  --shadow-offset: 1.2mm;
+  --window-shadow: var(--shadow-offset) var(--shadow-offset) 0 #d5c4a1;
+}
+
+h1, h2 { color: #9d0006; }
+h1 { font-weight: 800; }
+h1::before { content: "# "; color: #d65d0e; }
+h1::after { content: ""; display: block; margin-top: 2.5mm; }
+h2::before { content: "## "; color: #d79921; }
+h3::before { content: "### "; color: #98971a; }
+h4::before, h5::before, h6::before { content: "#### "; color: #bdae93; }
+
+/* Ретро-полоса, как на технике 70-х: красная, оранжевая и жёлтая линии одна
+   под другой — под заголовком документа и вместо разделителя. Без градиента:
+   полосы с резкими переходами просмотрщики PDF рисуют кто во что горазд. */
+h1::after, hr, .footnotes-sep {
+  height: 0.5mm; padding: 0.3mm 0; box-sizing: content-box;
+  border-top: 0.5mm solid #cc241d; border-bottom: 0.5mm solid #d79921;
+  background: #d65d0e content-box;
+}
+
+/* Код — окно терминала: заголовок с тремя кнопками и языком. Рамка у
+   pre обычная, поэтому код рвётся между страницами, как и раньше. */
+pre:not(.mermaid), .callout { box-shadow: var(--window-shadow); margin-right: var(--shadow-offset); }
+pre:not(.mermaid) { padding: 0 3mm 3mm; }
+pre:not(.mermaid)::before {
+  content: attr(data-lang); display: block; margin: 0 -3mm 2.5mm;
+  padding: 0.8mm 3mm 0.8mm 14mm; min-height: 1.3em;
+  font: 700 7.5pt var(--font-mono); color: var(--surface); text-align: right;
+  background:
+    radial-gradient(circle at 4mm 50%, #cc241d 0.9mm, transparent 1mm),
+    radial-gradient(circle at 7mm 50%, #d79921 0.9mm, transparent 1mm),
+    radial-gradient(circle at 10mm 50%, #98971a 0.9mm, transparent 1mm),
+    #504945;
+}
+
+/* Маркеры списков — звёздочки, как в Markdown-исходнике. */
+ul > li:not(.task-list-item)::marker { content: "* "; color: #d65d0e; font-family: var(--font-mono); font-weight: 700; }
+ol > li::marker { color: #d65d0e; font-family: var(--font-mono); font-weight: 700; }
+
+/* Цитата — с «>» на полях, как в почте и Markdown. */
+blockquote { position: relative; padding-left: 7mm; }
+blockquote::before {
+  content: ">"; position: absolute; left: 2mm; top: 2.2mm;
+  font: 700 11pt var(--font-mono); color: #d79921;
+}
+
+table { box-shadow: var(--window-shadow); width: calc(100% - var(--shadow-offset) - 1px); }
+th { font-family: var(--font-mono); }
+code { color: #af3a03; }
+kbd { background: var(--surface); border-bottom-width: 3px; }
+.tag { font-family: var(--font-mono); }
+
+/* Подсветка кода — цвета Gruvbox вместо github.css. */
+pre code, pre code.hljs { background: none; color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in { color: #9d0006; }
+.hljs-string, .hljs-regexp, .hljs-addition { color: #79740e; }
+.hljs-number, .hljs-literal { color: #8f3f71; }
+.hljs-title, .hljs-title.function_, .hljs-section { color: #427b58; }
+.hljs-type, .hljs-title.class_, .hljs-params { color: #b57614; }
+.hljs-attr, .hljs-attribute, .hljs-variable { color: #076678; }
+.hljs-comment, .hljs-quote { color: #928374; font-style: italic; }
+.hljs-meta, .hljs-deletion { color: #af3a03; }
+
+/* Callout'ы — оттенки Gruvbox, с тенью, как у окон. */
+.callout { --c: #076678; }
+.callout-teal { --c: #427b58; }
+.callout-green { --c: #79740e; }
+.callout-yellow { --c: #b57614; }
+.callout-orange { --c: #af3a03; }
+.callout-red { --c: #9d0006; }
+.callout-purple { --c: #8f3f71; }
+.callout-gray { --c: #7c6f64; }
+.callout-title { font-family: var(--font-mono); }

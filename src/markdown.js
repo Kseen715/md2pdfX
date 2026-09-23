@@ -42,13 +42,16 @@ md.core.ruler.after('inline', 'empty_paragraphs', emptyParagraphs);
 md.core.ruler.push('equations', equations);
 
 // Диаграмма остаётся текстом в <pre class="mermaid">, mermaid.js заменит его на SVG.
+// У кода язык — в data-lang блока <pre>: темы подписывают им блок.
 const fence = md.renderer.rules.fence;
 md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   const t = tokens[idx];
-  if (t.info.trim().split(/\s+/)[0] === 'mermaid') {
+  const lang = t.info.trim().split(/\s+/)[0];
+  if (lang === 'mermaid') {
     return `<pre class="mermaid">${escapeHtml(t.content)}</pre>\n`;
   }
-  return withEqId(fence(tokens, idx, options, env, self), t, env);
+  const html = fence(tokens, idx, options, env, self);
+  return withEqId(lang ? html.replace(/^<pre/, `<pre data-lang="${escapeHtml(lang)}"`) : html, t, env);
 };
 
 // Блочная формула с \label получает id — на него ведут ссылки \eqref.

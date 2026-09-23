@@ -93,6 +93,7 @@ export const THEMES = {
       critBkgColor: '#ffd6d0',
       // Mindmap: без этого ветви выходят серыми оттенками белого, а подписи —
       // белыми (берутся из actorTextColor). Корень — git0 и gitBranchLabel0.
+      // Подпись последней ветви — ещё и цвет оси timeline.
       git0: '#0a0a0a', gitBranchLabel0: '#c6ff00',
       ...branches([
         ['#0a0a0a', '#c6ff00'], ['#c6ff00', '#0a0a0a'], ['#2f6fc0', '#ffffff'],
@@ -105,6 +106,57 @@ export const THEMES = {
       font: MONO, color: '#0a0a0a',
       page: 'background:#0a0a0a;color:#c6ff00;padding:0.5mm 2mm;',
     },
+  },
+  nord: {
+    label: 'Nord Light',
+    // https://www.nordtheme.com: Polar Night — текст, Snow Storm — подложки,
+    // Frost — акцент, Aurora — ряды графиков. nord10 как текст на белом
+    // бледноват, для ссылок — он же темнее.
+    palette: {
+      text: '#2e3440', paper: '#ffffff', accent: '#5e81ac', accentText: '#43648c',
+      muted: '#4c566a', line: '#d8dee9', surface: '#eceff4', shade: '#d8dee9',
+      highlight: '#ebcb8b', danger: '#bf616a',
+      series: ['#5e81ac', '#bf616a', '#a3be8c', '#d08770', '#b48ead', '#88c0d0'],
+    },
+    diagramFont: SANS,
+    mermaid: {
+      primaryColor: '#eceff4', primaryBorderColor: '#81a1c1', lineColor: '#4c566a',
+      // Ветви mindmap, разделы timeline, ряды radar, venn и treemap — Aurora и
+      // Frost. Подпись последней ветви — ещё и цвет оси timeline: она тёмная.
+      ...branches([
+        ['#5e81ac', '#ffffff'], ['#bf616a', '#ffffff'], ['#a3be8c', '#2e3440'],
+        ['#d08770', '#ffffff'], ['#b48ead', '#ffffff'], ['#88c0d0', '#2e3440'],
+        ['#ebcb8b', '#2e3440'], ['#8fbcbb', '#2e3440'], ['#81a1c1', '#ffffff'],
+        ['#4c566a', '#ffffff'], ['#5e81ac', '#ffffff'], ['#d8dee9', '#2e3440'],
+      ]),
+    },
+    footer: { font: SANS, page: 'background:#e5e9f0;color:#2e3440;border-radius:2mm;padding:0.5mm 2.5mm;' },
+  },
+  gruvbox: {
+    label: 'Gruvbox Light',
+    // https://github.com/morhetz/gruvbox, светлый вариант: кремовые подложки,
+    // тёмные оттенки цветов — для текста, яркие — для заливок. Лист белый:
+    // поля листа Chrome не закрашивает, и кремовый фон вышел бы рамкой.
+    palette: {
+      text: '#3c3836', paper: '#ffffff', accent: '#af3a03', accentText: '#076678',
+      muted: '#7c6f64', line: '#d5c4a1', surface: '#fbf1c7', shade: '#d5c4a1',
+      highlight: '#fabd2f', danger: '#9d0006',
+      series: ['#458588', '#d65d0e', '#98971a', '#b16286', '#689d6a', '#d79921'],
+    },
+    diagramFont: MONO,
+    mermaid: {
+      primaryColor: '#ebdbb2', primaryBorderColor: '#7c6f64', lineColor: '#504945',
+      // Ветви mindmap, разделы timeline, ряды radar, venn и treemap. Подпись
+      // последней ветви — ещё и цвет оси timeline: она тёмная.
+      ...branches([
+        ['#458588', '#fbf1c7'], ['#d65d0e', '#fbf1c7'], ['#98971a', '#fbf1c7'],
+        ['#b16286', '#fbf1c7'], ['#689d6a', '#fbf1c7'], ['#d79921', '#3c3836'],
+        ['#cc241d', '#fbf1c7'], ['#7c6f64', '#fbf1c7'], ['#076678', '#fbf1c7'],
+        ['#af3a03', '#fbf1c7'], ['#79740e', '#fbf1c7'], ['#ebdbb2', '#3c3836'],
+      ]),
+    },
+    // Номер страницы — как в строке состояния vim.
+    footer: { font: MONO, page: 'background:#d65d0e;color:#fbf1c7;font-weight:bold;padding:0.5mm 2mm;' },
   },
 };
 
@@ -129,7 +181,7 @@ export function mermaidConfig(theme) {
   return {
     theme: 'base',
     themeVariables: {
-      fontFamily: diagramFont,
+      fontFamily: diagramFont, titleColor: p.text,
       primaryColor: p.paper, primaryTextColor: p.text, primaryBorderColor: p.accent,
       secondaryColor: p.surface, tertiaryColor: p.surface, lineColor: p.text,
       edgeLabelBackground: p.surface, clusterBkg: p.surface, clusterBorder: p.line,
@@ -147,6 +199,8 @@ export function mermaidConfig(theme) {
       sectionBkgColor: p.surface, altSectionBkgColor: p.paper, sectionBkgColor2: p.surface,
       gridColor: p.muted, todayLineColor: p.accentText,
       xyChart: { plotColorPalette: p.series.join(', ') },
+      // Круги venn — иначе все оттенки primaryColor и не различаются.
+      ...Object.fromEntries(p.series.map((color, i) => ['venn' + (i + 1), color])),
       ...mermaid,
     },
   };

@@ -124,10 +124,11 @@ journey
 ```mermaid
 venn-beta
     title What md2pdfX can do
-    set A["GitHub"]
-    set B["Obsidian"]
-    set C["LaTeX"]
-    union A,B["tables, footnotes"]
-    union B,C["$…$ in notes"]
-    union A,B,C["md2pdfX"]
+    set A["GitHub"]:20
+    set B["Obsidian"]:20
+    set C["LaTeX"]:20
+    union A,B:2.5
+    union B,C:2.5
+    union A,C:2.5
+    union A,B,C["md2pdfX"]:1.2
 ```
