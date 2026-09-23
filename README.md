@@ -56,6 +56,12 @@ Command Palette, and Alt-click (Option-click on macOS) on the editor title
 button runs it. The answers apply to this export only and don't change the
 settings.
 
+**md2pdfX: Export as Book to PDF** builds one PDF from the file and every
+local `.md` it links to (`[[note]]`, `[[note#heading]]`, `[text](file.md#anchor)`),
+following links in those files too. Each file is a chapter starting on a new
+page; links between them become jumps inside the PDF. A file already in the
+book is not added again, so cyclic links just point to its chapter.
+
 Install: download the `.vsix` from
 [Releases](https://github.com/Kseen715/md2pdfX/releases), then in VS Code use
 Extensions › "…" › Install from VSIX… or run
@@ -112,6 +118,7 @@ Options:
 | `--orientation <o>`  | `portrait` (default) or `landscape`                                 |
 | `--align <a>`        | `justify` (default), `left`, `center` or `right`                    |
 | `--sections <s>`     | `page` (default): each `##` section on a new page; `flow`: continuous |
+| `--book`             | one PDF with every local `.md` linked from the file, each on a new page |
 | `--chrome <path>`    | which browser to use                                                |
 
 Single executable

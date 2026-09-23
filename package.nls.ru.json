@@ -12,6 +12,7 @@
   "config.orientation": "Ориентация листа (A4).",
   "config.orientation.portrait": "Книжная",
   "config.orientation.landscape": "Альбомная",
+  "command.exportBook": "Экспорт книги в PDF (со связанными файлами)",
   "command.exportWithOptions": "Экспорт в PDF с параметрами…",
   "config.align": "Выравнивание текста. Код и таблицы всегда по левому краю.",
   "config.align.justify": "По ширине",

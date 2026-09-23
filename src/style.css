@@ -17,6 +17,8 @@ h2 + p, h2 + ul, h2 + table { page-break-before: avoid; }
    документа (обычно это «Содержание» или введение). sections=flow — сплошняком. */
 h2 ~ h2 { page-break-before: always; }
 .sections-flow h2 { page-break-before: auto; }
+/* Книга: каждый файл — глава с новой страницы, при любом sections. */
+.chapter + .chapter { page-break-before: always; }
 h3 { font-size: 12pt; margin: 6mm 0 2mm; page-break-after: avoid; }
 /* Заголовок с первым абзацем не остаются одни внизу листа: держатся за
    следующим блоком, а тот из-за orphans приносит с собой не меньше 4 строк.

@@ -1,5 +1,6 @@
 // Печать HTML в PDF через headless Chrome: он же рисует диаграммы mermaid.
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -159,25 +160,17 @@ export async function printPdf(browser, {
       height: height - parseFloat(margin.top) - parseFloat(margin.bottom) };
   };
   const sheets = { normal: area(orientation), wide: orientation === 'portrait' ? area('landscape') : null };
+  const fonts = await serveFonts();
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'md2pdf-'));
   const file = path.join(dir, 'doc.html');
-  fs.writeFileSync(file, page(html, look, align, sections, sheets, extraCss));
+  const fontsCss = loadAsset('fonts.css').replaceAll(FONT_ORIGIN, `http://127.0.0.1:${fonts.address().port}/`);
+  fs.writeFileSync(file, page(html, look, align, sections, sheets, extraCss, fontsCss));
 
-  const tab = await browser.newPage();
+  let tab;
   try {
+    tab = await browser.newPage();
     const errors = [];
     tab.on('pageerror', e => errors.push(e.message));
-    // Шрифты отдаются из памяти (см. fonts.js). Страница открыта с file://,
-    // так что для неё это сторонний адрес — нужен заголовок CORS.
-    await tab.setRequestInterception(true);
-    tab.on('request', request => {
-      if (!request.url().startsWith(FONT_ORIGIN)) return request.continue();
-      const font = loadFont(request.url().slice(FONT_ORIGIN.length));
-      return font
-        ? request.respond({ status: 200, contentType: 'font/woff2', body: font,
-            headers: { 'Access-Control-Allow-Origin': '*' } })
-        : request.respond({ status: 404 });
-    });
     onStep('render');
     await tab.goto(pathToFileURL(file).href, { waitUntil: 'load' });
 
@@ -201,9 +194,26 @@ export async function printPdf(browser, {
     });
     return { diagrams, errors };
   } finally {
-    await tab.close();
+    await tab?.close();
+    fonts.closeAllConnections();
+    fonts.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// Шрифты (fonts.js) отдаёт локальный HTTP-сервер из памяти. Файлы по file://
+// Chrome прочесть может не суметь: snap-Chromium не видит скрытых каталогов
+// вроде ~/.vscode, а в исполняемом файле шрифты вообще не на диске. Перехват
+// запросов puppeteer справлялся, но его включение стоит ~2.5 с на запуск Chrome.
+async function serveFonts() {
+  const server = http.createServer((request, response) => {
+    const font = loadFont(request.url.slice(1));
+    // Страница открыта с file://, для неё сервер — сторонний адрес: нужен CORS.
+    response.writeHead(font ? 200 : 404, { 'Content-Type': 'font/woff2', 'Access-Control-Allow-Origin': '*' });
+    response.end(font ?? undefined);
+  });
+  await new Promise((resolve, reject) => server.once('error', reject).listen(0, '127.0.0.1', resolve));
+  return server;
 }
 
 // Три колонки: заголовок слева, водяной знак ровно по центру, номер справа.
@@ -219,10 +229,11 @@ function footer({ font, color, page, number = true }, margin, title, watermark) 
     </div>`;
 }
 
-function page(body, look, align, sections, sheets, extraCss) {
+function page(body, look, align, sections, sheets, extraCss, fontsCss) {
+  const diagrams = body.includes('<pre class="mermaid">');
   return `<!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
-<style>${loadAsset('fonts.css')}</style>
+<style>${fontsCss}</style>
 <style>:root { --font-sans: ${SANS}; --font-mono: ${MONO}; --text-align: ${align};
   --page-height: ${sheets.normal.height}mm; --wide-height: ${sheets.wide?.height}mm; }
 @page { size: A4 ${sheets.normal.orientation}; }
@@ -234,30 +245,32 @@ function page(body, look, align, sections, sheets, extraCss) {
 <style>${extraCss}</style>
 </head><body class="sections-${sections}">
 ${body}
-<script>${loadAsset('mermaid.js')}</script>
-<script>${loadAsset('diagrams.js')}</script>
+${diagrams ? `<script>${loadAsset('mermaid.js')}</script>
+<script>${loadAsset('diagrams.js')}</script>` : ''}
 <script>${loadAsset('tables.js')}</script>
 <script>
   // Свёрнутый <details> на бумаге не раскрыть — печатаем раскрытым.
   document.querySelectorAll('details').forEach(d => { d.open = true; });
-  // Шрифт темы — и для рисования, и для замеров: у диаграмм последовательностей
-  // свои настройки шрифтов (по умолчанию Trebuchet), и без них рамки заметок
-  // и участников считаются под другой шрифт и текст из них вылезает.
-  const font = ${JSON.stringify(look.mermaid.themeVariables.fontFamily)};
-  window.mermaid.initialize({
-    ...${JSON.stringify(look.mermaid)},
-    startOnLoad: false, fontFamily: font,
-    flowchart: { useMaxWidth: true },
-    sequence: { useMaxWidth: true, actorFontFamily: font, noteFontFamily: font, messageFontFamily: font },
-  });
   window.__ready = (async () => {
-    // mermaid меряет подписи при отрисовке: шрифт для них должен быть уже
-    // загружен, иначе подписи не влезут в рамки.
-    const sources = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent);
-    const text = sources.join(' ');
-    if (text) await Promise.all(['400', '700'].map(w => document.fonts.load(w + ' 16px ' + font, text)));
-    await window.mermaid.run();
-    await window.fitDiagrams(sources, ${JSON.stringify(sheets)});
+    // mermaid.js — 5 МБ и ~0.5 с на разбор: подключается, только если есть диаграммы.
+    if (window.mermaid) {
+      // Шрифт темы — и для рисования, и для замеров: у диаграмм последовательностей
+      // свои настройки шрифтов (по умолчанию Trebuchet), и без них рамки заметок
+      // и участников считаются под другой шрифт и текст из них вылезает.
+      const font = ${JSON.stringify(look.mermaid.themeVariables.fontFamily)};
+      window.mermaid.initialize({
+        ...${JSON.stringify(look.mermaid)},
+        startOnLoad: false, fontFamily: font,
+        flowchart: { useMaxWidth: true },
+        sequence: { useMaxWidth: true, actorFontFamily: font, noteFontFamily: font, messageFontFamily: font },
+      });
+      // mermaid меряет подписи при отрисовке: шрифт для них должен быть уже
+      // загружен, иначе подписи не влезут в рамки.
+      const sources = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent);
+      await Promise.all(['400', '700'].map(w => document.fonts.load(w + ' 16px ' + font, sources.join(' '))));
+      await window.mermaid.run();
+      await window.fitDiagrams(sources, ${JSON.stringify(sheets)});
+    }
     await document.fonts.ready;
     window.keepTables(${JSON.stringify(sheets.normal)});
     return true;

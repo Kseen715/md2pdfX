@@ -12,6 +12,7 @@
   "config.orientation": "Page orientation (A4).",
   "config.orientation.portrait": "Portrait",
   "config.orientation.landscape": "Landscape",
+  "command.exportBook": "Export as Book to PDF (with linked files)",
   "command.exportWithOptions": "Export to PDF with Options…",
   "config.align": "Text alignment. Code and tables stay left-aligned.",
   "config.align.justify": "Justify",

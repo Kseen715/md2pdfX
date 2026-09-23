@@ -23,6 +23,9 @@ const USAGE = `md2pdf ${pkg.version} — Markdown (GitHub, Obsidian, Mermaid, La
                      страницы или сплошным текстом
                      По умолчанию — первое значение в каждом списке.
       --watermark <текст>  надпись по центру нижнего колонтитула
+      --book     книга: к документу добавляются главами все локальные .md,
+                 на которые он ссылается ([[…]] или [текст](файл.md)), и так
+                 далее по цепочке; каждая глава — с новой страницы
       --css      дополнительные стили поверх встроенных
       --chrome   путь к Chrome/Chromium/Edge (по умолчанию ищется сам,
                  при необходимости скачивается в кэш puppeteer)
@@ -42,6 +45,7 @@ async function main() {
       align: { type: 'string', default: DEFAULTS.align },
       sections: { type: 'string', default: DEFAULTS.sections },
       watermark: { type: 'string', default: '' },
+      book: { type: 'boolean' },
       chrome: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
       version: { type: 'boolean', short: 'v' },
@@ -72,7 +76,7 @@ async function main() {
   try {
     for (const input of inputs) {
       try {
-        const { html, title } = renderMarkdown(fs.readFileSync(input, 'utf8'), input);
+        const { html, title } = renderMarkdown(fs.readFileSync(input, 'utf8'), input, { book: opts.book });
         const output = target(input);
         fs.mkdirSync(path.dirname(output), { recursive: true });
         const { diagrams, errors } = await printPdf(browser, {

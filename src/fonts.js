@@ -9,9 +9,10 @@
 //              googlefonts/noto-emoji). Вариант из @fontsource сделан на
 //              OpenType-SVG, а его Chrome не рисует.
 //
-// Страница ссылается на шрифты по адресам FONT_ORIGIN + имя файла, а pdf.js
-// отдаёт их из памяти: Chrome скачивает только подмножества, символы которых
-// есть в документе, и в PDF попадают только они.
+// В fonts.css шрифты записаны как FONT_ORIGIN + имя файла, pdf.js заменяет
+// FONT_ORIGIN на адрес своего локального сервера и отдаёт их из памяти:
+// Chrome скачивает только подмножества, символы которых есть в документе,
+// и в PDF попадают только они.
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';

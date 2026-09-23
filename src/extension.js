@@ -16,6 +16,10 @@ export function activate(context) {
   context.subscriptions.push(
     log,
     vscode.commands.registerCommand('md2pdfx.export', (uri, selected) => exportCommand(uri, selected)),
+    vscode.commands.registerCommand('md2pdfx.exportBook', async (uri, selected) => {
+      const files = await collectTargets(uri, selected);
+      if (files) await exportFiles(files, { book: true });
+    }),
     vscode.commands.registerCommand('md2pdfx.exportWithOptions', async (uri, selected) => {
       const files = await collectTargets(uri, selected);
       if (!files) return;
@@ -78,7 +82,8 @@ async function askOptions(file) {
   return { ...options, watermark };
 }
 
-// overrides — параметры поверх настроек (из askOptions).
+// overrides — параметры поверх настроек (из askOptions); book — собрать
+// книгу из файла и всех локальных .md по ссылкам из него.
 async function exportFiles(files, overrides) {
   const failed = [];
   const done = [];
@@ -168,7 +173,7 @@ async function exportFile(browser, file, overrides, step) {
   // Несохранённые правки тоже попадают в PDF.
   const open = vscode.workspace.textDocuments.find(d => d.uri.toString() === file.toString());
   const src = open ? open.getText() : fs.readFileSync(file.fsPath, 'utf8');
-  const { html, title } = renderMarkdown(src, file.fsPath);
+  const { html, title } = renderMarkdown(src, file.fsPath, { book: overrides.book });
 
   const outDir = config.get('outputDirectory');
   const name = path.basename(file.fsPath).replace(/\.md$/i, '') + '.pdf';

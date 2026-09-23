@@ -42,6 +42,16 @@ export function localUrl(src, baseDir) {
   return pathToFileURL(path.resolve(baseDir, decoded)).href;
 }
 
+// Книга: каждый файл, на который ссылаются, — одна глава, env.chapters
+// (путь → id главы) общий на всю книгу. Файл, уже включённый в книгу
+// (в том числе по циклической ссылке), второй раз не добавляется: ссылка
+// ведёт на его главу. anchor — id заголовка внутри главы.
+export function chapterHref(env, file, anchor) {
+  let id = env.chapters.get(file);
+  if (!id) env.chapters.set(file, id = 'f' + env.chapters.size);
+  return '#' + (anchor ? `${id}-${anchor}` : id);
+}
+
 export default function obsidian(md, { slugify }) {
   md.block.ruler.before('paragraph', 'obsidian_comment', commentBlock);
   md.inline.ruler.before('link', 'obsidian_comment', commentInline);
@@ -49,14 +59,18 @@ export default function obsidian(md, { slugify }) {
   md.inline.ruler.push('tag', tag);
   md.core.ruler.before('inline', 'callout', callouts);
 
-  md.renderer.rules.wikilink = (tokens, idx) => {
+  md.renderer.rules.wikilink = (tokens, idx, _options, env) => {
     const { file, heading, alias } = parseTarget(tokens[idx].content);
     const text = escapeHtml(alias || [file, heading].filter(Boolean).join(' › '));
-    // Ссылка на заголовок этого же документа работает и в PDF,
-    // на другие заметки — только подпись: вне хранилища им некуда вести.
-    return file
-      ? `<span class="wikilink">${text}</span>`
-      : `<a class="wikilink" href="#${slugify(heading)}">${text}</a>`;
+    const anchor = heading && slugify(heading);
+    // Ссылка на заголовок этого же документа работает и в PDF, на другие
+    // заметки — только в книге (глава), иначе остаётся подпись: вне
+    // хранилища им некуда вести.
+    if (!file) return `<a class="wikilink" href="#${env.idPrefix ?? ''}${anchor}">${text}</a>`;
+    const found = env.chapters && resolveFile(file, env);
+    return found?.endsWith('.md')
+      ? `<a class="wikilink" href="${chapterHref(env, found, anchor)}">${text}</a>`
+      : `<span class="wikilink">${text}</span>`;
   };
 
   md.renderer.rules.wiki_embed = (tokens, idx, _options, env) => {
@@ -90,6 +104,8 @@ export default function obsidian(md, { slugify }) {
       embedStack: [...env.embedStack, found],
       slugs: env.slugs,
       vault: env.vault,
+      chapters: env.chapters,
+      idPrefix: env.idPrefix,
     });
     return `<div class="embed">${inner}</div>`;
   };

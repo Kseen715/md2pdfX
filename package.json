@@ -2,7 +2,7 @@
   "name": "md2pdfx",
   "displayName": "md2pdfX — Markdown to PDF",
   "description": "Export Markdown to PDF: GitHub, Obsidian, Mermaid diagrams, LaTeX formulas, page numbers",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "publisher": "Kseen715",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -51,6 +51,12 @@
         "title": "%command.exportWithOptions%",
         "category": "md2pdfX",
         "icon": "$(file-pdf)"
+      },
+      {
+        "command": "md2pdfx.exportBook",
+        "title": "%command.exportBook%",
+        "category": "md2pdfX",
+        "icon": "$(book)"
       }
     ],
     "menus": {
@@ -61,6 +67,10 @@
         },
         {
           "command": "md2pdfx.exportWithOptions",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "md2pdfx.exportBook",
           "when": "editorLangId == markdown"
         }
       ],
@@ -82,6 +92,11 @@
           "command": "md2pdfx.exportWithOptions",
           "when": "resourceLangId == markdown",
           "group": "1_md2pdfx"
+        },
+        {
+          "command": "md2pdfx.exportBook",
+          "when": "resourceLangId == markdown",
+          "group": "1_md2pdfx"
         }
       ],
       "explorer/context": [
@@ -93,6 +108,11 @@
         {
           "command": "md2pdfx.exportWithOptions",
           "when": "resourceLangId == markdown || explorerResourceIsFolder",
+          "group": "1_md2pdfx"
+        },
+        {
+          "command": "md2pdfx.exportBook",
+          "when": "resourceLangId == markdown",
           "group": "1_md2pdfx"
         }
       ]
