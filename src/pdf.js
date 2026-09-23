@@ -22,6 +22,13 @@ const FALLBACK = [
 const SANS = `"Noto Sans Variable", ${FALLBACK}, sans-serif`;
 const MONO = `"JetBrainsMono Nerd Font", ${FALLBACK}, monospace`;
 
+// Цвета ветвей mindmap и разделов timeline: [фон, текст] → cScaleN и
+// cScaleLabelN.
+function branches(colors) {
+  return Object.fromEntries(colors.flatMap(([bg, text], i) =>
+    [['cScale' + i, bg], ['cScaleLabel' + i, text]]));
+}
+
 // Тема: CSS поверх style.css, настройки mermaid, вид нижнего колонтитула и,
 // если нужно, свои поля листа. Колонтитул Chrome рисует отдельно от страницы,
 // стили ему только инлайном; number: false — без заголовка и номера страницы
@@ -87,6 +94,15 @@ export const THEMES = {
         critBkgColor: '#ffd6d0', critBorderColor: '#c62828',
         sectionBkgColor: '#f3f3f3', altSectionBkgColor: '#ffffff', sectionBkgColor2: '#f3f3f3',
         gridColor: '#8a8a8a', todayLineColor: '#5c7a00',
+        // Mindmap: без этого ветви выходят серыми оттенками белого, а подписи —
+        // белыми (берутся из actorTextColor). Корень — git0 и gitBranchLabel0.
+        git0: '#0a0a0a', gitBranchLabel0: '#c6ff00',
+        ...branches([
+          ['#0a0a0a', '#c6ff00'], ['#c6ff00', '#0a0a0a'], ['#2f6fc0', '#ffffff'],
+          ['#d0661a', '#ffffff'], ['#7b4fc4', '#ffffff'], ['#138a8a', '#ffffff'],
+          ['#c62828', '#ffffff'], ['#b7860b', '#0a0a0a'], ['#2e8540', '#ffffff'],
+          ['#6b7680', '#ffffff'], ['#5c7a00', '#ffffff'], ['#0a0a0a', '#c6ff00'],
+        ]),
       },
     },
     footer: {

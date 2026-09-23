@@ -60,6 +60,9 @@ table {
 tr { page-break-inside: avoid; }
 th, td { padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; }
 th { font-weight: 600; }
+/* Шапка таблицы в темах тёмная: светлый фон кода из темы с её светлым
+   текстом сливался. Полупрозрачный — подходит к любому фону шапки. */
+th code { background: rgb(255 255 255 / 18%); color: inherit; }
 
 blockquote { margin: 0 0 4mm; padding: 2.5mm 4mm; page-break-inside: avoid; }
 blockquote p:last-child { margin-bottom: 0; }
