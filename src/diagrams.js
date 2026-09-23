@@ -151,13 +151,15 @@ function split(box, room) {
     : Math.min(across, Math.ceil(height * MIN_SCALE / rows) * rows / height);
   const step = rows / s;
   const { hard, short, groups } = obstacles(svg);
-  // Сперва — между группами, потом внутри группы, потом сквозь короткую
-  // линию; не нашлось и так — режем как есть.
-  const tries = [[...hard, ...short, ...groups], [...hard, ...short], hard];
+  // Сперва — между группами, потом внутри группы, потом по середине короткой
+  // линии; не нашлось и так — режем как есть.
+  const lines = short.map(([a, b]) => [a - ARROW, b + ARROW]);
+  const tries = [[...hard, ...lines, ...groups], [...hard, ...lines]];
   const parts = [];
   for (let top = 0; top < height;) {
     const limit = Math.min(height, top + step);
-    const bottom = tries.reduce((found, blocks) => found ?? cut(blocks, top, limit, step), null) ?? limit;
+    const bottom = tries.reduce((found, blocks) => found ?? cut(blocks, top, limit, step), null)
+      ?? above(cut(hard, top, limit, step), hard, short, top + step / 2) ?? limit;
     const part = svg.cloneNode(true);
     part.setAttribute('viewBox', `${x} ${y + top} ${width} ${bottom - top}`);
     part.setAttribute('width', width * s);
@@ -174,13 +176,14 @@ function split(box, room) {
 // - hard: узлы, подписи, концы линий с запасом ARROW — наконечник и заметный
 //   отрезок линии к нему; у группы (subgraph) — шапка с подписью от верхней
 //   рамки до первого узла внутри и низ от последнего узла до нижней рамки,
-//   иначе на листе остаётся пустая рамка или одна подпись; рамка — с запасом
-//   FRAME на наконечник стрелки, что в неё упирается;
-// - short: короткие линии целиком — петли, сообщения sequence, стрелки
+//   иначе на листе остаётся пустая рамка или одна подпись; верхняя рамка — с
+//   запасом FRAME на наконечник стрелки, что в неё упирается, нижняя — только
+//   на линию и тень (SHADOW), чтобы под ней на листе осталось начало стрелки;
+// - short: короткие линии, без запаса — петли, сообщения sequence, стрелки
 //   между соседними группами;
 // - groups: группы целиком.
 // Резать можно по длинным линиям.
-const ARROW = 25, LOOP = 60, FRAME = 12;
+const ARROW = 25, LOOP = 60, FRAME = 12, SHADOW = 6;
 
 function obstacles(svg) {
   const frame = svg.getBoundingClientRect();
@@ -199,13 +202,13 @@ function obstacles(svg) {
     const inside = nodes.filter(r => r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom);
     if (!inside.length) hard.push(span(group));
     else hard.push([at(g.top) - FRAME, at(Math.min(...inside.map(r => r.top)))],
-      [at(Math.max(...inside.map(r => r.bottom))), at(g.bottom) + FRAME]);
+      [at(Math.max(...inside.map(r => r.bottom))), at(g.bottom) + SHADOW]);
   }
   for (const line of svg.querySelectorAll('path, line')) {
     if (line.closest('marker, defs, .node, .cluster')) continue;
     const [a, b] = span(line);
     if (b - a < LOOP) {
-      short.push([a - ARROW, b + ARROW]);
+      short.push([a, b]);
       continue;
     }
     const m = line.getScreenCTM(), length = line.getTotalLength();
@@ -224,4 +227,15 @@ function cut(blocks, top, limit, step) {
   let at = limit;
   for (let hit; (hit = blocks.find(([a, b]) => a < at && at < b));) at = hit[0] - 1;
   return at > top + step / 2 ? at : null;
+}
+
+// Разрез at, пришедшийся на короткую линию или её наконечник (он за концом
+// линии, FRAME), — поднять к её середине: начало линии остаётся на этом
+// листе, видно, откуда она выходит, а конец с наконечником — на следующем.
+// Но не выше ближайшего препятствия над ним и не выше половины куска (half).
+function above(at, hard, short, half) {
+  const line = at && short.find(([a, b]) => a < at && at < b + FRAME);
+  if (!line) return at;
+  const floor = Math.max(half, ...hard.map(([, b]) => b).filter(b => b <= at));
+  return Math.max(Math.min(at, (line[0] + line[1]) / 2), floor);
 }
