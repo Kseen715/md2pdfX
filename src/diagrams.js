@@ -1,10 +1,12 @@
 // Диаграммы под лист. Выполняется в печатаемой странице после mermaid.run().
 // Масштаб — во сколько раз CSS сжимает диаграмму, чтобы она влезла в ширину
 // колонки и в высоту листа (max-height из style.css). Мельче MIN_SCALE текст
-// не прочитать. Тогда, по порядку, пока не влезет: та же диаграмма на
-// альбомном листе — это ближе к задуманному, чем поворот; перерисованная — с
-// другим направлением, раскладкой dagre, обоими сразу, перенесённая змейкой
-// в обоих направлениях — на книжном, потом на альбомном. Не помогло —
+// не прочитать. Тогда она перерисовывается — с другим направлением,
+// раскладкой dagre, обоими сразу, перенесённая змейкой в обоих направлениях —
+// и берётся, по порядку: вариант на книжном листе, если он не мельче той же
+// диаграммы на альбомном (альбомный лист — всегда отдельный, и под
+// небольшой схемой он почти пустой); та же диаграмма на альбомном листе;
+// вариант на альбомном. Не помогло —
 // режется на куски по листу, только поперёк: кусок всегда во всю ширину
 // диаграммы, пусть и мельче MIN_SCALE.
 const MIN_SCALE = 0.6;
@@ -44,10 +46,6 @@ window.fitDiagrams = async (sources, sheets) => {
   const boxes = [...document.querySelectorAll('pre.mermaid')];
   for (const [i, box] of boxes.entries()) {
     if (scale(box, normal) >= MIN_SCALE) continue;
-    if (wide && scale(box, wide) >= MIN_SCALE) {
-      landscape(box);
-      continue;
-    }
     // Замеры каждого варианта: html, масштаб на книжном и альбомном листах и
     // только по ширине их колонок — для нарезки.
     const sizes = () => ({ html: box.innerHTML,
@@ -58,6 +56,8 @@ window.fitDiagrams = async (sources, sheets) => {
     const variants = turned
       ? [[turned], [dagre(sources[i])], [dagre(turned)], [sources[i], wrap], [turned, wrap]] : [];
     const drawn = [sizes()];
+    // Книжный вариант должен быть не мельче исходной на альбомном.
+    const enough = Math.max(MIN_SCALE, drawn[0].wide);
     for (const [k, [source, elk]] of variants.entries()) {
       window.md2pdfElk = elk;
       try {
@@ -68,7 +68,7 @@ window.fitDiagrams = async (sources, sheets) => {
         delete window.md2pdfElk;
       }
       drawn.push(sizes());
-      if (drawn.at(-1).normal >= MIN_SCALE) break;
+      if (drawn.at(-1).normal >= enough) break;
     }
     const top = (key, list = drawn) => list.reduce((a, b) => b[key] > a[key] ? b : a);
     const best = top('normal'), roomy = drawn.find(d => d.wide >= MIN_SCALE);
@@ -76,7 +76,12 @@ window.fitDiagrams = async (sources, sheets) => {
     // самый компактный по высоте бывает самым широким, и из-за него длинная
     // узкая диаграмма резалась на альбомные листы.
     const narrow = drawn.filter(d => d.across >= MIN_SCALE);
-    if (best.normal >= MIN_SCALE) {
+    if (best.normal >= enough) {
+      box.innerHTML = best.html;
+    } else if (drawn[0].wide >= MIN_SCALE) {
+      box.innerHTML = drawn[0].html;
+      landscape(box);
+    } else if (best.normal >= MIN_SCALE) {
       box.innerHTML = best.html;
     } else if (roomy) {
       box.innerHTML = roomy.html;
