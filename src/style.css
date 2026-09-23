@@ -1,17 +1,66 @@
-/* База для всех тем: страница, отступы, разрывы, раскладка элементов.
-   Цвета и шрифты заголовков — в src/themes/. --font-sans и --font-mono —
-   встроенные шрифты, их задаёт pdf.js. */
-/* Размер, ориентацию и поля листа задаёт pdf.js. */
+/* База для всех тем: страница, отступы, разрывы, раскладка и оформление
+   элементов. Размер, ориентацию и поля листа задаёт pdf.js, он же — шрифты
+   --font-sans и --font-mono и палитру темы (src/themes/index.js): --text,
+   --paper, --accent, --accent-text, --muted, --line, --surface, --shade,
+   --highlight, --danger.
+
+   Ниже — переменные элементов, выведенные из палитры. Тема переопределяет их
+   в своём :root (src/themes/<тема>.css) и дописывает то, что ими не описать. */
+:root {
+  --heading-font: var(--font-sans);
+  --heading-color: var(--accent);
+  --subheading-color: var(--accent-text);
+  --h2-border: 2px solid var(--accent);
+  --link-color: var(--accent-text);
+  --link-decoration: none;
+  --marker-color: var(--accent-text);
+  --rule: 1px solid var(--line);
+  --radius: 2px;
+
+  --code-bg: var(--surface);
+  --pre-bg: var(--surface);
+  --pre-border: 1px solid var(--line);
+  --pre-border-left: 3px solid var(--accent);
+
+  --cell-border: 1px solid var(--line);
+  --th-bg: var(--accent);
+  --th-color: var(--paper);
+  --row-alt-bg: var(--surface);
+
+  --quote-bg: var(--surface);
+  --quote-border: 4px solid var(--line);
+  --mark-bg: var(--highlight);
+  --kbd-border: 1px solid var(--line);
+  --del-color: var(--muted);
+  --footnote-color: color-mix(in srgb, var(--text) 80%, var(--paper));
+
+  /* Флажок задачи: рамка, заливка отмеченного и галочка. */
+  --check-border: 1.5px solid var(--accent);
+  --check-bg: var(--accent);
+  --check-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.2 7.4 8 2.8' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E");
+
+  /* Obsidian */
+  --wikilink-color: var(--link-color);
+  --tag-color: var(--accent-text);
+  --tag-bg: var(--surface);
+  --embed-border: 3px solid var(--line);
+}
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans); color: var(--text); background: var(--paper);
   font-size: 10.5pt; line-height: 1.5; margin: 0;
   text-align: var(--text-align);
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 
+h1, h2, h3, h4, h5, h6 { font-family: var(--heading-font); }
+h1, h2 { color: var(--heading-color); }
+h3, h4, h5, h6 { color: var(--subheading-color); }
 h1 { font-size: 20pt; margin: 0 0 4mm; }
-h2 { font-size: 15pt; margin: 0 0 4mm; padding-bottom: 2mm; page-break-after: avoid; }
+h2 {
+  font-size: 15pt; margin: 0 0 4mm; padding-bottom: 2mm; page-break-after: avoid;
+  border-bottom: var(--h2-border);
+}
 h2 + p, h2 + ul, h2 + table { page-break-before: avoid; }
 /* Каждый раздел с новой страницы, кроме первого: он остаётся под заголовком
    документа (обычно это «Содержание» или введение). sections=flow — сплошняком. */
@@ -30,21 +79,28 @@ h4, h5, h6 { font-size: 10.5pt; margin: 4mm 0 1.5mm; page-break-after: avoid; }
 
 p, ul, ol { margin: 0 0 3mm; }
 li { margin-bottom: 1mm; }
+ul > li::marker { color: var(--marker-color); }
+a { color: var(--link-color); text-decoration: var(--link-decoration); }
 /* Внизу листа — не меньше 4 строк абзаца; список не рвётся после первого пункта. */
 p, li { orphans: 4; }
 li:first-child { page-break-after: avoid; }
 /* Линии вокруг заголовков разделов лишние: раздел и так начинается с новой
    страницы, а у h2 есть своя черта. */
-hr { border: none; margin: 4mm 0; }
+hr { border: none; border-top: var(--rule); margin: 4mm 0; }
 hr:has(+ h2), h2 + hr { display: none; }
 /* Картинки неразрывны: выше ~60% листа — и перед ними почти
    всегда остаётся пустое место. 150mm — с запасом и для альбомного листа. */
 img { max-width: 100%; max-height: 150mm; }
 p:empty { display: none; }
 
-code { font-family: var(--font-mono); font-size: 9pt; padding: 0.4mm 1.2mm; }
+code {
+  font-family: var(--font-mono); font-size: 9pt; padding: 0.4mm 1.2mm;
+  background: var(--code-bg); border-radius: var(--radius);
+}
 pre {
   text-align: left; padding: 3mm; margin: 0 0 4mm;
+  background: var(--pre-bg); border: var(--pre-border); border-left: var(--pre-border-left);
+  border-radius: calc(var(--radius) * 1.5);
   white-space: pre-wrap; word-wrap: break-word;
   /* Длинный код рвётся; внизу листа остаётся не меньше 4 строк, вверху следующего — 3. */
   orphans: 4; widows: 3;
@@ -64,13 +120,17 @@ table {
 tr { page-break-inside: avoid; }
 /* Не меньше 4 строк текста таблицы на листе — src/tables.js. */
 :is(h2, h3, h4, h5, h6) + table { page-break-before: avoid; }
-th, td { padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; }
-th { font-weight: 600; }
+th, td { padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; border: var(--cell-border); }
+th { font-weight: 600; background: var(--th-bg); color: var(--th-color); }
+tr:nth-child(even) td { background: var(--row-alt-bg); }
 /* Шапка таблицы в темах тёмная: светлый фон кода из темы с её светлым
    текстом сливался. Полупрозрачный — подходит к любому фону шапки. */
 th code { background: rgb(255 255 255 / 18%); color: inherit; }
 
-blockquote { margin: 0 0 4mm; padding: 2.5mm 4mm; page-break-inside: avoid; }
+blockquote {
+  margin: 0 0 4mm; padding: 2.5mm 4mm; page-break-inside: avoid;
+  background: var(--quote-bg); border-left: var(--quote-border);
+}
 blockquote p:last-child { margin-bottom: 0; }
 
 pre.mermaid, div.mermaid {
@@ -99,7 +159,7 @@ pre.mermaid-split svg { page-break-inside: avoid; }
 /* --- Формулы KaTeX --- */
 .katex { font-size: 1.1em; }
 .katex-block { text-align: center; margin: 0 0 4mm; overflow-x: auto; page-break-inside: avoid; }
-.katex-error { color: #b3261e; }
+.katex-error { color: var(--danger); }
 
 /* --- GitHub: задачи, сноски, прочее --- */
 li.task-list-item { list-style: none; }
@@ -107,27 +167,38 @@ ul > li:not(.task-list-item)::marker { content: "– "; }
 /* Флажок задачи рисует тема: у системного (disabled) серый вид. */
 li.task-list-item input {
   appearance: none; width: 3.2mm; height: 3.2mm; margin: 0 1.5mm 0 -5mm;
-  vertical-align: -0.5mm; background: #fff center / 80% no-repeat;
+  vertical-align: -0.5mm; background: var(--paper) center / 80% no-repeat;
+  border: var(--check-border); border-radius: var(--radius);
 }
-.footnotes { font-size: 9pt; color: #444; }
-.footnotes-sep { display: block; margin: 6mm 0 2mm; width: 40%; }
-mark { padding: 0 0.5mm; }
-kbd { font-family: var(--font-mono); font-size: 8.5pt; padding: 0 1.2mm; }
+li.task-list-item input:checked { background-color: var(--check-bg); background-image: var(--check-image); }
+.footnotes { font-size: 9pt; color: var(--footnote-color); }
+.footnote-ref a, .footnote-backref { color: var(--link-color); }
+.footnotes-sep { display: block; margin: 6mm 0 2mm; width: 40%; border: none; border-top: var(--rule); }
+mark { padding: 0 0.5mm; background: var(--mark-bg); }
+del { color: var(--del-color); }
+kbd {
+  font-family: var(--font-mono); font-size: 8.5pt; padding: 0 1.2mm;
+  border: var(--kbd-border); border-bottom-width: 2px; border-radius: calc(var(--radius) * 1.5);
+}
 details { margin: 0 0 4mm; }
 summary { font-weight: 600; margin-bottom: 2mm; }
 
 /* --- Obsidian --- */
-.wikilink.missing { color: #b3261e; text-decoration: underline dotted; }
-.tag { display: inline-block; font-size: 8.5pt; padding: 0 2mm; }
-.embed { padding: 0 0 0 4mm; margin: 0 0 4mm; }
+.wikilink { color: var(--wikilink-color); }
+.wikilink.missing { color: var(--danger); text-decoration: underline dotted; }
+.tag {
+  display: inline-block; font-size: 8.5pt; padding: 0 2mm;
+  color: var(--tag-color); background: var(--tag-bg); border-radius: 8pt;
+}
+.embed { padding: 0 0 0 4mm; margin: 0 0 4mm; border-left: var(--embed-border); }
 .embed h2 { page-break-before: auto; }
 
 /* Callout'ы Obsidian и алерты GitHub: > [!note]. Цвет — по типу, в любой теме. */
 .callout {
   --c: #2f6fc0;
   margin: 0 0 4mm; padding: 2.5mm 4mm; border-left: 4px solid var(--c);
-  background: color-mix(in srgb, var(--c) 8%, white);
-  page-break-inside: avoid;
+  background: color-mix(in srgb, var(--c) 8%, var(--paper));
+  border-radius: var(--radius); page-break-inside: avoid;
 }
 .callout-title { font-weight: 600; color: var(--c); margin-bottom: 1.5mm; }
 .callout > :last-child { margin-bottom: 0; }

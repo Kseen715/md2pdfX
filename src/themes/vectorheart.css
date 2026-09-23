@@ -1,14 +1,27 @@
 /* Тема Neo-Vectorheart: чёрно-белая основа, кислотный акцент, срезы под 45°,
-   моноширинные заголовки. Ложится поверх style.css.
-
-   Лайм #c6ff00 на белом не читается, поэтому он только заливка под чёрным
-   текстом; для текста — тёмная версия #5c7a00. */
+   моноширинные заголовки. Палитра — в src/themes/index.js: --accent —
+   чернила, --highlight — лайм (только заливка под чёрным текстом),
+   --accent-text — лайм, читаемый как текст. */
 :root {
-  --ink: #0a0a0a;
-  --acid: #c6ff00;
-  --acid-text: #5c7a00;
-  --paper-2: #f3f3f3;
-  --mono: var(--font-mono);
+  --heading-font: var(--font-mono);
+  --subheading-color: var(--text);
+  --h2-border: 3px solid var(--accent);
+  --link-color: var(--text);
+  --link-decoration: underline var(--accent-text) 1.5px;
+  --rule: 2px dashed var(--line);
+  --radius: 0;
+  --pre-border: 2px solid var(--line);
+  --pre-border-left: 6px solid var(--line);
+  --cell-border: 1.5px solid var(--line);
+  --th-color: var(--highlight);
+  --kbd-border: 1.5px solid var(--line);
+  --del-color: #777;
+  --check-bg: var(--highlight);
+  --check-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.8 5.2 4.2 7.6 8.4 2.6' fill='none' stroke='%230a0a0a' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");
+  --wikilink-color: var(--text);
+  --tag-color: var(--highlight);
+  --tag-bg: var(--accent);
+  --embed-border: 3px dashed var(--line);
   --cut: polygon(0 0, calc(100% - 3mm) 0, 100% 3mm, 100% 100%, 3mm 100%, 0 calc(100% - 3mm));
 }
 
@@ -21,7 +34,7 @@
 pre:not(.mermaid), blockquote, .callout {
   --cut-tr: 3mm; --cut-bl: 3mm;
   --bt: 1.5px; --br: 1.5px; --bb: 1.5px; --bl: 5px;
-  --frame: var(--ink);
+  --frame: var(--accent);
   position: relative; border: none; border-radius: 0; background: var(--frame);
   padding-left: calc(4mm + var(--bl));
   clip-path: polygon(0 0, calc(100% - var(--cut-tr)) 0, 100% var(--cut-tr), 100% 100%,
@@ -39,24 +52,22 @@ pre:not(.mermaid)::before, blockquote::before, .callout::before {
     var(--in-bl) 100%, 0 calc(100% - var(--in-bl)));
 }
 
-body { color: var(--ink); }
-
-h1, h2, h3, h4, h5, h6 { font-family: var(--mono); color: var(--ink); letter-spacing: -0.02em; }
+h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
 
 h1 {
   font-size: 22pt; font-weight: 800; text-transform: uppercase;
-  background: var(--ink); color: #fff; padding: 4mm 6mm 4mm 5mm; margin: 0 0 2mm;
+  background: var(--accent); color: var(--paper); padding: 4mm 6mm 4mm 5mm; margin: 0 0 2mm;
   clip-path: var(--cut);
 }
 /* Полоса под заголовком документа */
 h1::after {
   content: ""; display: block; height: 1.6mm; width: 40%; margin-top: 3mm;
-  background: var(--acid);
+  background: var(--highlight);
 }
 
 h2 {
   font-size: 14pt; font-weight: 800; text-transform: uppercase;
-  border-bottom: 3px solid var(--ink); padding: 0 0 1.5mm 0;
+  padding: 0 0 1.5mm 0;
 }
 /* Маркер раздела: лаймовый квадрат со срезанным углом. Рисуется SVG, чтобы
    обводка шла и по срезу. */
@@ -67,59 +78,38 @@ h2::before {
 }
 
 h3 { font-size: 11.5pt; font-weight: 700; }
-h3::before { content: "// "; color: var(--acid-text); }
+h3::before { content: "// "; color: var(--accent-text); }
 h4, h5, h6 { font-weight: 700; }
-h4::before, h5::before, h6::before { content: "› "; color: var(--acid-text); }
+h4::before, h5::before, h6::before { content: "› "; color: var(--accent-text); }
 
-a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--acid-text);
-    text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+a { text-underline-offset: 2px; }
 
-hr { border-top: 2px dashed var(--ink); }
-
-code { font-family: var(--mono); background: var(--paper-2); border-radius: 0; }
 /* Код рвётся между страницами, а clip-path режет каждый кусок заново — срез
    и верхняя черта появились бы и на продолжении. Поэтому здесь рамка обычная
    (на разрыве Chrome её не рисует), а срез — скос угла самой рамкой. */
 pre:not(.mermaid) {
-  background: var(--paper-2); border: 2px solid var(--ink); border-left-width: 6px;
+  background: var(--pre-bg); border: var(--pre-border); border-left: var(--pre-border-left);
   border-top-right-radius: 4mm; corner-shape: bevel;
   padding-left: 4mm; clip-path: none;
 }
 pre:not(.mermaid)::before { content: none; }
-pre code { font-family: var(--mono); }
 
-th, td { border: 1.5px solid var(--ink); }
-th {
-  background: var(--ink); color: var(--acid); font-family: var(--mono);
-  text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.04em;
-}
-tr:nth-child(even) td { background: var(--paper-2); }
+th { font-family: var(--font-mono); text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.04em; }
 
-blockquote { --fill: color-mix(in srgb, var(--acid) 14%, white); }
+blockquote { --fill: color-mix(in srgb, var(--highlight) 14%, var(--paper)); }
 
-mark { background: var(--acid); }
-kbd { font-family: var(--mono); border: 1.5px solid var(--ink); border-bottom-width: 3px; border-radius: 0; }
-del { color: #777; }
-summary { font-family: var(--mono); text-transform: uppercase; }
+kbd { border-bottom-width: 3px; }
+summary { font-family: var(--font-mono); text-transform: uppercase; }
 
-.footnotes-sep { border: none; border-top: 2px solid var(--ink); }
-.footnote-ref a, .footnote-backref { color: var(--acid-text); }
+.footnotes-sep { border-top: 2px solid var(--line); }
+.footnote-ref a, .footnote-backref { color: var(--accent-text); }
 
-ul > li::marker { color: var(--acid-text); font-weight: 700; }
-li.task-list-item input { border: 1.5px solid var(--ink); border-radius: 0; }
-li.task-list-item input:checked {
-  background-color: var(--acid);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.8 5.2 4.2 7.6 8.4 2.6' fill='none' stroke='%230a0a0a' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");
-}
+ul > li::marker { font-weight: 700; }
 
 /* Obsidian */
-.wikilink { color: var(--ink); border-bottom: 2px solid var(--acid); }
-.tag {
-  font-family: var(--mono); color: var(--acid); background: var(--ink); border-radius: 0;
-  clip-path: polygon(1.5mm 0, 100% 0, 100% 100%, 0 100%, 0 1.5mm);
-}
-.embed { border-left: 3px dashed var(--ink); }
+.wikilink { border-bottom: 2px solid var(--highlight); }
+.tag { font-family: var(--font-mono); clip-path: polygon(1.5mm 0, 100% 0, 100% 100%, 0 100%, 0 1.5mm); }
 
 /* Callout'ы: рамка цвета типа, форма — со срезом */
-.callout { --frame: var(--c); --fill: color-mix(in srgb, var(--c) 9%, white); }
-.callout-title { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.03em; }
+.callout { --frame: var(--c); --fill: color-mix(in srgb, var(--c) 9%, var(--paper)); }
+.callout-title { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.03em; }

@@ -9,12 +9,12 @@ import sea from 'node:sea';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { collectFonts } from './fonts.js';
+import { THEMES } from './themes/index.js';
 
 const sources = {
   'style.css': () => fs.readFileSync(fileURLToPath(new URL('./style.css', import.meta.url)), 'utf8'),
-  'theme-classic.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/classic.css', import.meta.url)), 'utf8'),
-  'theme-gost.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/gost.css', import.meta.url)), 'utf8'),
-  'theme-vectorheart.css': () => fs.readFileSync(fileURLToPath(new URL('./themes/vectorheart.css', import.meta.url)), 'utf8'),
+  ...Object.fromEntries(Object.keys(THEMES).map(name => [`theme-${name}.css`,
+    () => fs.readFileSync(fileURLToPath(new URL(`./themes/${name}.css`, import.meta.url)), 'utf8')])),
   'diagrams.js': () => fs.readFileSync(fileURLToPath(new URL('./diagrams.js', import.meta.url)), 'utf8'),
   'tables.js': () => fs.readFileSync(fileURLToPath(new URL('./tables.js', import.meta.url)), 'utf8'),
   'mermaid.js': () => elkOptions(fs.readFileSync(resolve('mermaid/dist/mermaid.min.js'), 'utf8')),

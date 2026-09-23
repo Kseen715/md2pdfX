@@ -2,7 +2,7 @@
   "name": "md2pdfx",
   "displayName": "md2pdfX — Markdown to PDF",
   "description": "Export Markdown to PDF: GitHub, Obsidian, Mermaid diagrams, LaTeX formulas, page numbers",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "publisher": "Kseen715",
   "license": "MIT",
   "icon": "images/icon.png",
