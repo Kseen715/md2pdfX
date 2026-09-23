@@ -14,28 +14,28 @@ Chrome draws the mermaid.js diagrams and prints the PDF. No external tools
 Themes
 ------
 
-<!-- Ширина задана явно: столбцы таблицы Markdown GitHub подгоняет под
-     длину заголовков, и картинки выходили разного размера. -->
+<!-- Ширина столбцов задана явно: иначе GitHub подгоняет их под длину
+     заголовков, и картинка в столбце с длинным заголовком выходит крупнее. -->
 <table>
   <tr>
-    <th><code>classic</code> (default)</th>
-    <th><code>vectorheart</code> (Neo/Vectorheart)</th>
-    <th><code>gost</code> (ГОСТ Р 7.0.97-2025)</th>
+    <th width="33%"><code>classic</code> (default)</th>
+    <th width="33%"><code>vectorheart</code> (Neo/Vectorheart)</th>
+    <th width="33%"><code>gost</code> (ГОСТ Р 7.0.97-2025)</th>
   </tr>
   <tr>
-    <td><img src="docs/previews/classic.png" alt="classic theme" width="290"></td>
-    <td><img src="docs/previews/vectorheart.png" alt="vectorheart theme" width="290"></td>
-    <td><img src="docs/previews/gost.png" alt="gost theme" width="290"></td>
+    <td width="33%"><img src="docs/previews/classic.png" alt="classic theme" width="290"></td>
+    <td width="33%"><img src="docs/previews/vectorheart.png" alt="vectorheart theme" width="290"></td>
+    <td width="33%"><img src="docs/previews/gost.png" alt="gost theme" width="290"></td>
   </tr>
   <tr>
-    <th><code>nord</code> (Nord Light)</th>
-    <th><code>gruvbox</code> (Gruvbox Light)</th>
-    <th></th>
+    <th width="33%"><code>nord</code> (Nord Light)</th>
+    <th width="33%"><code>gruvbox</code> (Gruvbox Light)</th>
+    <th width="33%"></th>
   </tr>
   <tr>
-    <td><img src="docs/previews/nord.png" alt="nord theme" width="290"></td>
-    <td><img src="docs/previews/gruvbox.png" alt="gruvbox theme" width="290"></td>
-    <td></td>
+    <td width="33%"><img src="docs/previews/nord.png" alt="nord theme" width="290"></td>
+    <td width="33%"><img src="docs/previews/gruvbox.png" alt="gruvbox theme" width="290"></td>
+    <td width="33%"></td>
   </tr>
 </table>
 
