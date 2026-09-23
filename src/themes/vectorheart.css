@@ -30,7 +30,7 @@
    так рамка той же толщины идёт и по диагонали.
    --cut-tr / --cut-bl — срез правого верхнего и левого нижнего углов,
    --bt --br --bb --bl — толщина рамки по сторонам. */
-pre:not(.mermaid), blockquote, .callout {
+pre:not(.mermaid), blockquote, .callout, h1 {
   --cut-tr: 3mm; --cut-bl: 3mm;
   --bt: 1.5px; --br: 1.5px; --bb: 1.5px; --bl: 5px;
   --frame: var(--accent);
@@ -39,7 +39,7 @@ pre:not(.mermaid), blockquote, .callout {
   clip-path: polygon(0 0, calc(100% - var(--cut-tr)) 0, 100% var(--cut-tr), 100% 100%,
     var(--cut-bl) 100%, 0 calc(100% - var(--cut-bl)));
 }
-pre:not(.mermaid)::before, blockquote::before, .callout::before {
+pre:not(.mermaid)::before, blockquote::before, .callout::before, h1::before {
   /* Срез заливки: диагональ рамки отстоит от внешней на полусумму
      толщин соседних сторон. */
   --in-tr: max(0px, calc(var(--cut-tr) - var(--bt) - var(--br) + (var(--bt) + var(--br)) * 0.7071));
@@ -53,14 +53,13 @@ pre:not(.mermaid)::before, blockquote::before, .callout::before {
 
 h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
 
-/* Заголовок документа — полая рамка со срезанными углами, толстой левой
-   гранью, как у callout'ов, а чёрная плашка — только под строками текста:
-   сплошной чёрный блок на полстраницы съедал картридж. */
+/* Заголовок документа — полая рамка со срезанными углами и толстой левой
+   гранью, как у callout'ов (рамка — общая, выше), а чёрная плашка — только
+   под строками текста: сплошной чёрный блок на полстраницы съедал картридж. */
 h1 {
+  --fill: var(--paper);
   font-size: 22pt; font-weight: 800; text-transform: uppercase; line-height: 1.5; text-align: left;
-  border: 1.5px solid var(--accent); border-left-width: 5px;
-  border-top-right-radius: 3mm; border-bottom-left-radius: 3mm; corner-shape: bevel;
-  padding: 3mm 5mm 3.5mm; margin: 0 0 2mm;
+  padding: 3mm 5mm 3.5mm calc(5mm + var(--bl)); margin: 0 0 2mm;
 }
 h1 .heading-text {
   background: var(--accent); color: var(--paper); padding: 0.3mm 2mm;
