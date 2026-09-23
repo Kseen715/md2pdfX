@@ -191,6 +191,8 @@ export async function printPdf(browser, {
       // Размер листа — из @page: у диаграмм бывает свой, альбомный.
       path: output, preferCSSPageSize: true,
       printBackground: true, margin,
+      // Закладки PDF из h1–h6: оглавление в просмотрщике, переходы по разделам.
+      outline: true, tagged: true,
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
       footerTemplate: footer(look.footer, margin, title, watermark),
