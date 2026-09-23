@@ -39,7 +39,14 @@ export const THEMES = {
   classic: {
     label: 'Classic',
     css: 'theme-classic.css',
-    mermaid: { theme: 'neutral', themeVariables: { fontFamily: SANS } },
+    mermaid: {
+      theme: 'neutral',
+      themeVariables: {
+        fontFamily: SANS,
+        // У neutral столбцы xychart почти белые.
+        xyChart: { plotColorPalette: '#6b8fb3, #1f2d3a, #c0853a' },
+      },
+    },
     footer: { font: SANS, color: '#7a848d', page: '' },
   },
   gost: {
@@ -70,6 +77,8 @@ export const THEMES = {
         critBkgColor: '#000000', critBorderColor: '#000000',
         sectionBkgColor: '#f0f0f0', altSectionBkgColor: '#ffffff', sectionBkgColor2: '#f0f0f0',
         gridColor: '#808080', todayLineColor: '#000000',
+        // xychart красит столбцы и линии от primaryColor — белым по белому.
+        xyChart: { plotColorPalette: '#808080, #000000, #d0d0d0' },
       },
     },
     footer: { font: SANS, color: '#000', page: '', number: false },
@@ -97,6 +106,8 @@ export const THEMES = {
         critBkgColor: '#ffd6d0', critBorderColor: '#c62828',
         sectionBkgColor: '#f3f3f3', altSectionBkgColor: '#ffffff', sectionBkgColor2: '#f3f3f3',
         gridColor: '#8a8a8a', todayLineColor: '#5c7a00',
+        // xychart красит столбцы и линии от primaryColor — белым по серому.
+        xyChart: { plotColorPalette: '#5c7a00, #0a0a0a, #2f6fc0, #d0661a' },
         // Mindmap: без этого ветви выходят серыми оттенками белого, а подписи —
         // белыми (берутся из actorTextColor). Корень — git0 и gitBranchLabel0.
         git0: '#0a0a0a', gitBranchLabel0: '#c6ff00',
