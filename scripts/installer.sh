@@ -31,21 +31,30 @@ mkdir -p "$dest" "$bin" "$apps"
 skip=$(awk '/^__PAYLOAD__$/ { print NR + 1; exit }' "$0")
 tail -n +"$skip" "$0" | tar -xz --strip-components=1 -C "$dest"
 
-# Песочнице Chromium без пространств имён пользователя (Ubuntu 24.04+) нужен
-# setuid-помощник, а он работает, только если принадлежит root.
+# Песочнице Chromium нужны пространства имён пользователя, а где их не дают
+# (Ubuntu 24.04+: AppArmor пускает только программы со своим профилем) —
+# setuid-помощник, и тот работает, только если принадлежит root. Без root
+# остаётся запуск без песочницы.
+flags=
 if [ "$(id -u)" = 0 ]; then
   chown root:root "$dest/chrome-sandbox"
   chmod 4755 "$dest/chrome-sandbox"
+elif ! "$dest/md2pdf" --version >/dev/null 2>&1; then
+  flags=--no-sandbox
+  sed -i "s/--ozone-platform=headless/& $flags/" "$dest/md2pdf"
+  echo "This system allows the Chromium sandbox only to root-owned helpers:" >&2
+  echo "md2pdfX will run without it. Install with sudo to keep the sandbox." >&2
 fi
 
-ln -sf "$dest/md2pdfX" "$bin/md2pdfX"
+printf '#!/bin/sh\nexec "%s/md2pdfX" %s"$@"\n' "$dest" "${flags:+$flags }" > "$bin/md2pdfX"
+chmod +x "$bin/md2pdfX"
 ln -sf "$dest/md2pdf" "$bin/md2pdf"
 cat > "$apps/md2pdfX.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=md2pdfX
 Comment=Markdown to PDF
-Exec="$dest/md2pdfX"
+Exec="$dest/md2pdfX"${flags:+ $flags}
 Icon=$dest/md2pdfX.png
 Terminal=false
 Categories=Office;Utility;

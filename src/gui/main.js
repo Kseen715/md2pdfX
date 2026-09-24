@@ -21,9 +21,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 // Как у CLI: без сглаживания по сетке шрифты в PDF ровнее.
 app.commandLine.appendSwitch('font-render-hinting', 'none');
 
-// Аргументы после приложения (в разработке — после main.js); переключатель
-// платформы — для Chromium, не для команды.
-const args = process.argv.slice(process.defaultApp ? 2 : 1).filter(a => !a.startsWith('--ozone-platform'));
+// Аргументы после приложения (в разработке — после main.js); переключатели
+// платформы и песочницы (их ставит установщик) — для Chromium, не для команды.
+const args = process.argv.slice(process.defaultApp ? 2 : 1).filter(a => !/^--(ozone-platform|no-sandbox)\b/.test(a));
 const headless = app.commandLine.getSwitchValue('ozone-platform') === 'headless';
 
 let win;

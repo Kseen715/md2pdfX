@@ -181,7 +181,9 @@ and arm64, are on
   `~/.local/share/md2pdfX` with `md2pdfX` and `md2pdf` in `~/.local/bin`;
   run it with `sudo` to install into `/opt/md2pdfX` and `/usr/local/bin` for
   everyone. It adds a menu entry. To remove it, run `uninstall.sh` in the
-  install folder.
+  install folder. On systems that restrict user namespaces (Ubuntu 24.04+),
+  Chromium's sandbox works only from a `sudo` install. A per-user install
+  there runs with `--no-sandbox`, and the installer says so.
 - Windows: `md2pdfX-<version>-windows-<arch>-setup.exe` installs for the
   current user without admin rights, adds a Start menu entry, and adds the app
   folder to the user `PATH`. Uninstall from Settings → Apps.
