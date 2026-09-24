@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:">
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self'; img-src 'self' data:">
 <title>md2pdfX</title>
 <link rel="stylesheet" href="app.css">
 <script type="module" src="app.js"></script>
@@ -37,13 +38,20 @@
     <div class="themes" id="theme"></div>
 
     <h2>Layout</h2>
-    <div class="field"><label>Orientation</label><div class="seg" id="orientation"></div></div>
-    <div class="field"><label>Alignment</label><div class="seg" id="align"></div></div>
-    <div class="field"><label>Sections</label><div class="seg" id="sections"></div></div>
+    <div class="field">
+      <label>Orientation</label><div class="seg" id="orientation"></div>
+    </div>
+    <div class="field">
+      <label>Alignment</label><div class="seg" id="align"></div>
+    </div>
+    <div class="field">
+      <label>Sections</label><div class="seg" id="sections"></div>
+    </div>
 
     <h2>Extras</h2>
     <div class="field"><label for="watermark">Watermark</label>
-      <input id="watermark" type="text" placeholder="Text in the footer centre"></div>
+      <input id="watermark" type="text"
+        placeholder="Text in the footer centre"></div>
     <label class="toggle"><input type="checkbox" id="book"><span></span>
       Book — append linked .md files as chapters</label>
 

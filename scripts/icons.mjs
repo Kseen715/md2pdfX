@@ -1,4 +1,5 @@
-// Значки Windows из SVG: images/icon.svg → icon.ico, uninstall.svg → uninstall.ico.
+// Значки Windows из SVG: images/icon.svg → icon.ico,
+// uninstall.svg → uninstall.ico.
 // Рисует сам Electron, отдельная графическая библиотека не нужна:
 //   npm run icons
 // ICO из PNG-кадров 16…256 (такие Windows читает начиная с Vista).
@@ -13,26 +14,35 @@ const SIZES = [16, 24, 32, 48, 64, 128, 256];
 app.disableHardwareAcceleration();
 // Не top-level await: пока он ждёт, Electron не доходит до ready.
 app.whenReady().then(async () => {
-  const win = new BrowserWindow({ show: false, webPreferences: { offscreen: true } });
+  const win = new BrowserWindow({
+    show: false, webPreferences: { offscreen: true },
+  });
   await win.loadURL('data:text/html,');
+
   for (const name of ['icon', 'uninstall']) {
     const svg = fs.readFileSync(path.join(images, `${name}.svg`), 'base64');
-    const pngs = await win.webContents.executeJavaScript(`(async () => {
-      const img = new Image();
-      img.src = 'data:image/svg+xml;base64,${svg}';
-      await img.decode();
-      return ${JSON.stringify(SIZES)}.map(size => {
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = size;
-        canvas.getContext('2d').drawImage(img, 0, 0, size, size);
-        return canvas.toDataURL('image/png').split(',')[1];
-      });
-    })()`);
-    fs.writeFileSync(path.join(images, `${name}.ico`), ico(pngs.map(b => Buffer.from(b, 'base64'))));
+    const pngs = await rasterize(win, svg);
+    fs.writeFileSync(path.join(images, `${name}.ico`), ico(pngs));
     console.log(`images/${name}.ico`);
   }
   app.exit(0);
 });
+
+// → PNG каждого размера из SIZES.
+async function rasterize(win, svg) {
+  const pngs = await win.webContents.executeJavaScript(`(async () => {
+    const img = new Image();
+    img.src = 'data:image/svg+xml;base64,${svg}';
+    await img.decode();
+    return ${JSON.stringify(SIZES)}.map(size => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      canvas.getContext('2d').drawImage(img, 0, 0, size, size);
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+  })()`);
+  return pngs.map(png => Buffer.from(png, 'base64'));
+}
 
 function ico(pngs) {
   const head = Buffer.alloc(6 + 16 * pngs.length);

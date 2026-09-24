@@ -35,20 +35,28 @@
 }
 @page :first { @bottom-center { content: none; } }
 
-/* line-height 1.4 у Noto Sans — это одинарный интервал: высота строки шрифта. */
+/* line-height 1.4 у Noto Sans — это одинарный интервал: высота строки
+   шрифта. */
 body { font-size: 14pt; line-height: 1.4; }
 
 p { text-indent: 1.25cm; margin: 0; }
-td p, th p, blockquote p, .callout p, .footnotes p, .katex-block p, .mermaid p { text-indent: 0; }
+td p, th p, blockquote p, .callout p, .footnotes p, .katex-block p, .mermaid p {
+  text-indent: 0;
+}
 ul, ol { margin: 0; padding-left: 0; }
-/* Элемент списка — как абзац: тире с абзацного отступа, перенос — к левому полю. */
+/* Элемент списка — как абзац: тире с абзацного отступа, перенос — к левому
+   полю. */
 li { margin: 0; list-style-position: inside; text-indent: 1.25cm; }
 li > p + p { text-indent: 0; }
 li ul, li ol { margin-left: 1.25cm; }
 /* Отступ между блоками — одна пустая строка, как в документе на бланке.
    Списки — часть текста: идут без пустых строк, как абзацы. */
-pre, table, blockquote, .callout, .katex-block, .mermaid, img, details, .embed { margin-bottom: 1.4em; }
-p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) { margin-bottom: 0; }
+pre, table, blockquote, .callout, .katex-block, .mermaid, img, details, .embed {
+  margin-bottom: 1.4em;
+}
+p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) {
+  margin-bottom: 0;
+}
 
 /* Заголовок к тексту — по центру; разделы и подразделы — с абзацного отступа.
    Размер как у текста, выделение — полужирным. */
@@ -63,15 +71,20 @@ mark { font-weight: 700; }
 code, kbd { font-size: 12pt; color: var(--text); }
 pre { padding: 2mm 3mm; }
 pre code { font-size: 11pt; }
-/* У github.css есть составные селекторы (.hljs-title.function_) — перебиваем все. */
-pre [class*="hljs-"] { color: var(--text) !important; font-style: normal !important; }
+/* У github.css есть составные селекторы (.hljs-title.function_) —
+   перебиваем все. */
+pre [class*="hljs-"] {
+  color: var(--text) !important; font-style: normal !important;
+}
 
 table { font-size: 12pt; line-height: 1.2; }
 th, td { padding: 1mm 2mm; }
 th { font-weight: 700; text-align: center; vertical-align: middle; }
 
 blockquote { padding: 0 0 0 5mm; }
-.callout { --c: var(--text); border-left: 1px solid var(--line); background: none; }
+.callout {
+  --c: var(--text); border-left: 1px solid var(--line); background: none;
+}
 
 li.task-list-item input { margin-left: 0; }
 

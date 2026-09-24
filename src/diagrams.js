@@ -6,9 +6,8 @@
 // и берётся, по порядку: вариант на книжном листе, если он не мельче той же
 // диаграммы на альбомном (альбомный лист — всегда отдельный, и под
 // небольшой схемой он почти пустой); та же диаграмма на альбомном листе;
-// вариант на альбомном. Не помогло —
-// режется на куски по листу, только поперёк: кусок всегда во всю ширину
-// диаграммы, пусть и мельче MIN_SCALE.
+// вариант на альбомном. Не помогло — режется на куски по листу, только
+// поперёк: кусок всегда во всю ширину диаграммы, пусть и мельче MIN_SCALE.
 const MIN_SCALE = 0.6;
 // Диаграмма, которой чуть-чуть не хватает места до конца листа, может
 // ужаться до SQUEEZE своего размера и остаться на нём — иначе она уходит на
@@ -20,88 +19,147 @@ const PX = 96 / 25.4;  // px в мм
 // пустыми полями: venn — в 800×450, как бы мало ни было кругов, C4 — с
 // запасом сверху, у timeline ось тянется далеко за последний раздел. Холст
 // обрезается по содержимому, и диаграмма крупнее.
-const PADDED = /^\s*(venn(-beta)?|timeline|C4(Context|Container|Component|Dynamic|Deployment))\b/;
+const C4_DIAGRAMS = 'C4(Context|Container|Component|Dynamic|Deployment)';
+const PADDED =
+  new RegExp(String.raw`^\s*(venn(-beta)?|timeline|${C4_DIAGRAMS})\b`);
 
 // Типы, у которых есть направление и раскладка на выбор.
-const LAYOUT = /^\s*(flowchart|graph|erDiagram|classDiagram|stateDiagram(-v2)?)\b/;
+const LAYOUT =
+  /^\s*(flowchart|graph|erDiagram|classDiagram|stateDiagram(-v2)?)\b/;
+
+const SHAPES =
+  'path, rect, circle, ellipse, line, polygon, polyline, text, image';
+
+// Нарезка на листы (split, obstacles). RESERVE — px, остальное — в единицах
+// диаграммы.
+const RESERVE = 30 * PX;
+const ARROW = 25, LOOP = 60, FRAME = 12, SHADOW = 6, MARK = 12;
 
 // sources — исходный текст каждой pre.mermaid: mermaid.run() его уже заменил.
 // sheets — рабочая область листа в мм: normal — документа, wide — альбомного
 // (null, если документ и так альбомный). Мерить колонку по самой странице
 // нельзя: до печати её ширина — ширина окна, а не листа.
 window.fitDiagrams = async (sources, sheets) => {
-  c4Text();
-  const room = sheet => sheet && { width: sheet.width * PX, height: (sheet.height - 2) * PX };
-  const normal = room(sheets.normal), wide = room(sheets.wide);
-  for (const [i, box] of [...document.querySelectorAll('pre.mermaid')].entries()) {
-    if (!PADDED.test(sources[i])) continue;
-    if (/^\s*timeline/.test(sources[i])) axis(box);
-    trim(box);
-    // Размер текста зависит от масштаба, а масштаб — от холста, обрезанного
-    // уже по тексту: два прохода сходятся с точностью до долей пункта.
-    if (/^\s*venn/.test(sources[i]))
-      for (let pass = 0; pass < 2; pass++) {
-        vennText(box, normal);
-        trim(box);
-      }
-  }
+  const rooms = { normal: area(sheets.normal), wide: area(sheets.wide) };
   const boxes = [...document.querySelectorAll('pre.mermaid')];
+
+  c4Text();
   for (const [i, box] of boxes.entries()) {
-    if (scale(box, normal) >= MIN_SCALE) continue;
-    // Замеры каждого варианта: html, масштаб на книжном и альбомном листах и
-    // только по ширине их колонок — для нарезки.
-    const sizes = () => ({ html: box.innerHTML,
-      normal: scale(box, normal), wide: wide ? scale(box, wide) : 0,
-      across: fit(box, normal), wideAcross: wide ? fit(box, wide) : 0 });
-    const turned = LAYOUT.test(sources[i]) && turn(sources[i]);
-    const wrap = wrapping(normal);
-    const variants = turned
-      ? [[turned], [dagre(sources[i])], [dagre(turned)], [sources[i], wrap], [turned, wrap]] : [];
-    const drawn = [sizes()];
-    // Книжный вариант должен быть не мельче исходной на альбомном.
-    const enough = Math.max(MIN_SCALE, drawn[0].wide);
-    for (const [k, [source, elk]] of variants.entries()) {
-      window.md2pdfElk = elk;
-      try {
-        box.innerHTML = (await window.mermaid.render(`md2pdf-${i}-${k}`, source)).svg;
-      } catch {
-        continue;
-      } finally {
-        delete window.md2pdfElk;
-      }
-      drawn.push(sizes());
-      if (drawn.at(-1).normal >= enough) break;
-    }
-    const top = (key, list = drawn) => list.reduce((a, b) => b[key] > a[key] ? b : a);
-    const best = top('normal'), roomy = drawn.find(d => d.wide >= MIN_SCALE);
-    // Для нарезки на книжных листах — варианты, что влезают в ширину колонки:
-    // самый компактный по высоте бывает самым широким, и из-за него длинная
-    // узкая диаграмма резалась на альбомные листы.
-    const narrow = drawn.filter(d => d.across >= MIN_SCALE);
-    if (best.normal >= enough) {
-      box.innerHTML = best.html;
-    } else if (drawn[0].wide >= MIN_SCALE) {
-      box.innerHTML = drawn[0].html;
-      landscape(box);
-    } else if (best.normal >= MIN_SCALE) {
-      box.innerHTML = best.html;
-    } else if (roomy) {
-      box.innerHTML = roomy.html;
-      landscape(box);
-    } else if (wide && !narrow.length) {
-      box.innerHTML = top('wideAcross').html;
-      landscape(box);
-      split(box, wide);
-    } else {
-      box.innerHTML = (narrow.length ? top('normal', narrow) : best).html;
-      split(box, normal);
-    }
+    if (PADDED.test(sources[i])) unpad(box, sources[i], rooms.normal);
   }
-  for (const box of boxes)
-    if (!box.classList.contains('mermaid-split'))
-      reserve(box, box.classList.contains('mermaid-wide') ? sheets.wide : sheets.normal);
+
+  for (const [i, box] of boxes.entries()) {
+    if (scale(box, rooms.normal) >= MIN_SCALE) continue;
+    place(box, await redraw(box, i, sources[i], rooms), rooms);
+  }
+
+  for (const box of boxes) {
+    if (box.classList.contains('mermaid-split')) continue;
+    const wide = box.classList.contains('mermaid-wide');
+    reserve(box, wide ? sheets.wide : sheets.normal);
+  }
   squeeze(sheets.normal);
 };
+
+function area(sheet) {
+  return sheet && { width: sheet.width * PX, height: (sheet.height - 2) * PX };
+}
+
+function unpad(box, source, room) {
+  if (/^\s*timeline/.test(source)) axis(box);
+  trim(box);
+  if (!/^\s*venn/.test(source)) return;
+
+  // Размер текста зависит от масштаба, а масштаб — от холста, обрезанного
+  // уже по тексту: два прохода сходятся с точностью до долей пункта.
+  for (let pass = 0; pass < 2; pass++) {
+    vennText(box, room);
+    trim(box);
+  }
+}
+
+// Варианты рисуются по очереди, пока книжный не выйдет достаточно крупным.
+// → замеры исходной диаграммы и всех нарисованных вариантов.
+async function redraw(box, i, source, rooms) {
+  const drawn = [sizes(box, rooms)];
+  for (const [k, [code, elk]] of variants(source, rooms.normal).entries()) {
+    const svg = await draw(`md2pdf-${i}-${k}`, code, elk);
+    if (svg === null) continue;
+
+    box.innerHTML = svg;
+    drawn.push(sizes(box, rooms));
+    if (drawn.at(-1).normal >= enough(drawn)) break;
+  }
+  return drawn;
+}
+
+// [исходник, параметры ELK] в порядке из шапки файла.
+function variants(source, room) {
+  if (!LAYOUT.test(source)) return [];
+  const turned = turn(source);
+  const wrap = wrapping(room);
+  return [
+    [turned], [dagre(source)], [dagre(turned)], [source, wrap], [turned, wrap],
+  ];
+}
+
+// Параметры ELK assets.js берёт из window.md2pdfElk. → SVG или null, если
+// mermaid не справился.
+async function draw(id, source, elk) {
+  window.md2pdfElk = elk;
+  try {
+    return (await window.mermaid.render(id, source)).svg;
+  } catch {
+    return null;
+  } finally {
+    delete window.md2pdfElk;
+  }
+}
+
+// html, масштаб на книжном и альбомном листах и только по ширине их
+// колонок — для нарезки.
+function sizes(box, { normal, wide }) {
+  return {
+    html: box.innerHTML,
+    normal: scale(box, normal), wide: wide ? scale(box, wide) : 0,
+    across: fit(box, normal), wideAcross: wide ? fit(box, wide) : 0,
+  };
+}
+
+// Книжный вариант должен быть не мельче исходной диаграммы на альбомном.
+function enough(drawn) {
+  return Math.max(MIN_SCALE, drawn[0].wide);
+}
+
+function place(box, drawn, { normal, wide }) {
+  const top = (key, list = drawn) =>
+    list.reduce((a, b) => b[key] > a[key] ? b : a);
+  const best = top('normal');
+  const roomy = drawn.find(d => d.wide >= MIN_SCALE);
+  // Для нарезки на книжных листах — варианты, что влезают в ширину колонки:
+  // самый компактный по высоте бывает самым широким, и из-за него длинная
+  // узкая диаграмма резалась на альбомные листы.
+  const narrow = drawn.filter(d => d.across >= MIN_SCALE);
+
+  if (best.normal >= enough(drawn)) {
+    box.innerHTML = best.html;
+  } else if (drawn[0].wide >= MIN_SCALE) {
+    box.innerHTML = drawn[0].html;
+    landscape(box);
+  } else if (best.normal >= MIN_SCALE) {
+    box.innerHTML = best.html;
+  } else if (roomy) {
+    box.innerHTML = roomy.html;
+    landscape(box);
+  } else if (wide && !narrow.length) {
+    box.innerHTML = top('wideAcross').html;
+    landscape(box);
+    split(box, wide);
+  } else {
+    box.innerHTML = (narrow.length ? top('normal', narrow) : best).html;
+    split(box, normal);
+  }
+}
 
 // Раскладка по листам прикидкой: листов до печати нет, поэтому идём по
 // блокам документа в колонке листа и считаем, где кончается лист. Разрывы —
@@ -113,6 +171,7 @@ function squeeze(sheet) {
   document.body.style.width = sheet.width + 'mm';
   const height = sheet.height * PX;
   let pageTop = null;
+
   for (const e of blocks()) {
     if (!e.getClientRects().length) continue;
     const style = getComputedStyle(e);
@@ -120,11 +179,15 @@ function squeeze(sheet) {
     const top = rect.top - parseFloat(style.marginTop);
     const wide = e.classList.contains('mermaid-wide');
     // Альбомный лист — свой, со своей раскладкой: следующий блок — с нового.
-    if (wide || pageTop === null || style.breakBefore === 'page') pageTop = wide ? null : top;
+    if (wide || pageTop === null || style.breakBefore === 'page') {
+      pageTop = wide ? null : top;
+    }
     if (wide) continue;
+
     const overflow = rect.bottom - (pageTop + height);
     if (overflow > 0) {
-      if (e.matches('pre.mermaid:not(.mermaid-split)') && shrink(e, overflow)) continue;
+      const whole = e.matches('pre.mermaid:not(.mermaid-split)');
+      if (whole && shrink(e, overflow)) continue;
       const kept = style.breakInside === 'avoid' || e.matches('pre.mermaid');
       // Неразрывный уходит на новый лист вместе с заголовками и вступлением.
       const start = (intro(e).at(-1) ?? e).getBoundingClientRect().top;
@@ -133,10 +196,12 @@ function squeeze(sheet) {
     }
     if (style.breakAfter === 'page') pageTop = null;
   }
+
   document.body.style.width = '';
 }
 
-// Уменьшить диаграмму на overflow px (и 2 мм запаса), если выйдет не мельче SQUEEZE.
+// Уменьшить диаграмму на overflow px (и 2 мм запаса), если выйдет не мельче
+// SQUEEZE.
 function shrink(box, overflow) {
   const svg = box.querySelector('svg');
   const now = svg.getBoundingClientRect().height;
@@ -159,7 +224,7 @@ function axis(box) {
     .find(l => l.getAttribute('y1') === l.getAttribute('y2'));
   if (!line) return;
   // Правый край разделов — в координатах самой линии: они в группах со сдвигом.
-  const { x1: right } = bounds(svg, svg.querySelectorAll('rect, text'), line);
+  const { x1: right } = bounds(svg.querySelectorAll('rect, text'), line);
   if (right > +line.getAttribute('x1')) line.setAttribute('x2', right + 40);
 }
 
@@ -170,35 +235,45 @@ function axis(box) {
 function trim(box) {
   const svg = box.querySelector('svg');
   if (!svg) return;
+
   // Координаты в процентах (заголовок venn — x="50%") считаются от холста:
   // после обрезки они съехали бы. Переводим их в абсолютные по старому холсту.
   const old = svg.viewBox.baseVal;
+  const axes = [['x', old.x, old.width], ['y', old.y, old.height]];
   for (const e of svg.querySelectorAll('[x$="%"], [y$="%"]')) {
-    for (const [attr, start, size] of [['x', old.x, old.width], ['y', old.y, old.height]]) {
+    for (const [attr, start, size] of axes) {
       const v = e.getAttribute(attr);
-      if (v?.endsWith('%')) e.setAttribute(attr, start + parseFloat(v) / 100 * size);
+      if (v?.endsWith('%')) {
+        e.setAttribute(attr, start + parseFloat(v) / 100 * size);
+      }
     }
   }
-  const { x0, y0, x1, y1 } = bounds(svg,
-    svg.querySelectorAll('path, rect, circle, ellipse, line, polygon, polyline, text, image'), svg);
+
+  const { x0, y0, x1, y1 } = bounds(svg.querySelectorAll(SHAPES), svg);
   if (!(x1 > x0 && y1 > y0)) return;
-  svg.setAttribute('viewBox', `${x0 - 8} ${y0 - 8} ${x1 - x0 + 16} ${y1 - y0 + 16}`);
+  svg.setAttribute('viewBox',
+    `${x0 - 8} ${y0 - 8} ${x1 - x0 + 16} ${y1 - y0 + 16}`);
   svg.style.maxWidth = '';
 }
 
 // Общая рамка видимых элементов в координатах элемента space (самого SVG
 // или элемента внутри него). Пустые (без ширины и высоты) и служебные — из
 // defs и маркеров — не в счёт; у горизонтальной линии высоты нет, но она видна.
-function bounds(svg, elements, space) {
-  const to = (space === svg ? svg.getScreenCTM() : space.getScreenCTM()).inverse();
+function bounds(elements, space) {
+  const to = space.getScreenCTM().inverse();
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const e of elements) {
     const b = e.getBBox();
     if ((!b.width && !b.height) || e.closest('defs, marker')) continue;
     const m = to.multiply(e.getScreenCTM());
-    for (const [px, py] of [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]]) {
-      const p = new DOMPoint(px, py).matrixTransform(m);
-      x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y);
+    for (const x of [b.x, b.x + b.width]) {
+      for (const y of [b.y, b.y + b.height]) {
+        const p = new DOMPoint(x, y).matrixTransform(m);
+        x0 = Math.min(x0, p.x);
+        y0 = Math.min(y0, p.y);
+        x1 = Math.max(x1, p.x);
+        y1 = Math.max(y1, p.y);
+      }
     }
   }
   return { x0, y0, x1, y1 };
@@ -212,8 +287,10 @@ function vennText(box, room) {
   const { width, height } = svg.viewBox.baseVal;
   const scale = Math.min(room.width / width, room.height / height);
   const text = parseFloat(getComputedStyle(document.body).fontSize) / scale;
-  for (const e of svg.querySelectorAll('text'))
-    e.style.setProperty('font-size', (e.matches('.venn-title') ? text * 1.5 : text * 1.2) + 'px', 'important');
+  for (const e of svg.querySelectorAll('text')) {
+    const size = text * (e.matches('.venn-title') ? 1.5 : 1.2);
+    e.style.setProperty('font-size', size + 'px', 'important');
+  }
 }
 
 // Цвета узлов sankey по имени: палитру mermaid задать не даёт, только цвет
@@ -222,13 +299,18 @@ function vennText(box, room) {
 window.sankeyNodeColors = (sources, colors) => {
   const names = [];
   for (const source of sources) {
-    if (!/^\s*sankey(-beta)?\s*$/m.test(source.split('\n').find(l => l.trim()) ?? '')) continue;
+    const head = source.split('\n').find(l => l.trim()) ?? '';
+    if (!/^\s*sankey(-beta)?\s*$/m.test(head)) continue;
     for (const line of source.split('\n').slice(1)) {
-      const cells = line.split(',').map(c => c.trim().replace(/^"(.*)"$/, '$1'));
+      const cells = line.split(',')
+        .map(c => c.trim().replace(/^"(.*)"$/, '$1'));
       if (cells.length === 3) names.push(cells[0], cells[1]);
     }
   }
-  return Object.fromEntries([...new Set(names)].map((name, i) => [name, colors[i % colors.length]]));
+
+  const colored = [...new Set(names)]
+    .map((name, i) => [name, colors[i % colors.length]]);
+  return Object.fromEntries(colored);
 };
 
 // Текст элементов C4 mermaid всегда красит белым, и на светлой заливке темы
@@ -236,12 +318,15 @@ window.sankeyNodeColors = (sources, colors) => {
 function c4Text() {
   const dark = getComputedStyle(document.body).color;
   for (const shape of document.querySelectorAll('pre.mermaid .c4-shape')) {
-    const fill = [...shape.querySelectorAll('.label-container, .label-container > *')]
-      .find(e => e.style.fill)?.style.fill;
+    const parts = shape.querySelectorAll(
+      '.label-container, .label-container > *');
+    const fill = [...parts].find(e => e.style.fill)?.style.fill;
     const [r, g, b] = (fill?.match(/\d+(\.\d+)?/g) ?? []).map(Number);
     if (r === undefined || 0.2126 * r + 0.7152 * g + 0.0722 * b < 150) continue;
-    for (const e of shape.querySelectorAll('.label, .label text'))
-      e.style.setProperty(e.tagName === 'text' ? 'fill' : 'color', dark, 'important');
+    for (const e of shape.querySelectorAll('.label, .label text')) {
+      const property = e.tagName === 'text' ? 'fill' : 'color';
+      e.style.setProperty(property, dark, 'important');
+    }
   }
 }
 
@@ -250,8 +335,14 @@ function c4Text() {
 function intro(box) {
   const list = [];
   let e = box.previousElementSibling;
-  if (e?.tagName === 'P') e = (list.push(e), e.previousElementSibling);
-  while (e && /^(H[1-6]|HR)$/.test(e.tagName)) e = (list.push(e), e.previousElementSibling);
+  if (e?.tagName === 'P') {
+    list.push(e);
+    e = e.previousElementSibling;
+  }
+  while (e && /^(H[1-6]|HR)$/.test(e.tagName)) {
+    list.push(e);
+    e = e.previousElementSibling;
+  }
   return list;
 }
 
@@ -269,9 +360,12 @@ function landscape(box) {
 function reserve(box, sheet) {
   const first = intro(box).filter(e => e.getClientRects().length).at(-1);
   if (!first) return;
+
   document.body.style.width = sheet.width + 'mm';
-  const top = first.getBoundingClientRect().top - parseFloat(getComputedStyle(first).marginTop);
-  box.style.setProperty('--intro', box.getBoundingClientRect().top - top + 'px');
+  const top = first.getBoundingClientRect().top
+    - parseFloat(getComputedStyle(first).marginTop);
+  const height = box.getBoundingClientRect().top - top;
+  box.style.setProperty('--intro', height + 'px');
   document.body.style.width = '';
 }
 
@@ -287,7 +381,10 @@ function dagre(source) {
 // проводит все линии между ними. Пропорции — как у листа. На раскладку
 // dagre не действуют.
 function wrapping(room) {
-  return { 'elk.layered.wrapping.strategy': 'MULTI_EDGE', 'elk.aspectRatio': String(room.width / room.height) };
+  return {
+    'elk.layered.wrapping.strategy': 'MULTI_EDGE',
+    'elk.aspectRatio': String(room.width / room.height),
+  };
 }
 
 function measure(box) {
@@ -315,9 +412,11 @@ function turn(source) {
   const other = dir => /LR|RL/.test(dir ?? 'TB') ? 'TB' : 'LR';
   const flow = /^(\s*(?:flowchart|graph))(?:\s+(TB|TD|BT|LR|RL))?/;
   if (flow.test(lines[head])) {
-    lines[head] = lines[head].replace(flow, (_, kind, dir) => `${kind} ${other(dir)}`);
+    lines[head] = lines[head]
+      .replace(flow, (_, kind, dir) => `${kind} ${other(dir)}`);
     return lines.join('\n');
   }
+
   // ponytail: первая строка direction считается общей для диаграммы; если
   // она внутри вложенного состояния, повернётся только оно.
   const dir = lines.findIndex(l => /^\s*direction\s+(TB|BT|LR|RL)\s*$/.test(l));
@@ -330,8 +429,6 @@ function turn(source) {
 // во всю ширину диаграммы. Масштаб — самый крупный при том же числе листов,
 // но не шире колонки. Кусок ниже листа на RESERVE: первый делит лист с
 // заголовком и вступлением над диаграммой.
-const RESERVE = 30 * PX;
-
 function split(box, room) {
   const { svg, x, y, width, height } = measure(box);
   const rows = room.height - RESERVE;
@@ -339,16 +436,20 @@ function split(box, room) {
   const s = across < MIN_SCALE ? across
     : Math.min(across, Math.ceil(height * MIN_SCALE / rows) * rows / height);
   const step = rows / s;
+
   const { hard, short, groups } = obstacles(svg);
   // Сперва — между группами, потом внутри группы, потом по середине короткой
   // линии; не нашлось и так — режем как есть.
   const lines = short.map(([a, b]) => [a - ARROW, b + ARROW]);
   const tries = [[...hard, ...lines, ...groups], [...hard, ...lines]];
+
   const parts = [];
   for (let top = 0; top < height;) {
     const limit = Math.min(height, top + step);
-    const bottom = tries.reduce((found, blocks) => found ?? cut(blocks, top, limit, step), null)
-      ?? above(cut(hard, top, limit, step), hard, short, top + step / 2) ?? limit;
+    const bottom = tries.reduce(
+      (found, list) => found ?? cut(list, top, limit, step), null)
+      ?? above(cut(hard, top, limit, step), hard, short, top + step / 2)
+      ?? limit;
     const part = svg.cloneNode(true);
     part.setAttribute('viewBox', `${x} ${y + top} ${width} ${bottom - top}`);
     part.setAttribute('width', width * s);
@@ -356,6 +457,7 @@ function split(box, room) {
     parts.push(part);
     top = bottom;
   }
+
   box.replaceChildren(...parts);
   box.classList.add('mermaid-split');
 }
@@ -368,15 +470,13 @@ function split(box, room) {
 //   иначе на листе остаётся пустая рамка или одна подпись; верхняя рамка — с
 //   запасом FRAME на наконечник стрелки, что в неё упирается, нижняя — только
 //   на линию и тень (SHADOW), чтобы под ней на листе осталось начало стрелки;
-// - short: короткие линии, без запаса — петли, сообщения sequence, стрелки
-//   между соседними группами;
+// - short: короткие (короче LOOP) линии, без запаса — петли, сообщения
+//   sequence, стрелки между соседними группами;
 // - groups: группы целиком.
 // Резать можно по длинным линиям. Сообщение sequence — подпись вместе с его
 // линией и запасом MARK на кружок номера (autonumber) и наконечник: у
 // горизонтальной линии высоты нет, а кружок — маркер, в её рамку не входит,
 // и разрез проходил между подписью и стрелкой, прямо по кружку.
-const ARROW = 25, LOOP = 60, FRAME = 12, SHADOW = 6, MARK = 12;
-
 function obstacles(svg) {
   const frame = svg.getBoundingClientRect();
   const unit = svg.viewBox.baseVal.height / frame.height;
@@ -385,17 +485,40 @@ function obstacles(svg) {
     const r = e.getBoundingClientRect();
     return [at(r.top), at(r.bottom)];
   };
-  const hard = [...svg.querySelectorAll('.node, .actor, .note, .edgeLabel, .cluster-label, text')].map(span);
-  const short = [], groups = [];
-  const nodes = [...svg.querySelectorAll('.node')].map(e => e.getBoundingClientRect());
-  for (const group of svg.querySelectorAll('.cluster')) {
+
+  const solid = svg.querySelectorAll(
+    '.node, .actor, .note, .edgeLabel, .cluster-label, text');
+  const clusters = [...svg.querySelectorAll('.cluster')];
+  const { ends, short } = lineBlocks(svg, at, span);
+  const hard = [
+    ...[...solid].map(span),
+    ...groupBlocks(svg, clusters, at, span),
+    ...ends,
+    ...messageBlocks(svg, span),
+  ];
+
+  const valid = list => list.filter(([a, b]) => b > a);
+  const groups = clusters.map(span);
+  return { hard: valid(hard), short: valid(short), groups: valid(groups) };
+}
+
+function groupBlocks(svg, clusters, at, span) {
+  const nodes = [...svg.querySelectorAll('.node')]
+    .map(e => e.getBoundingClientRect());
+  return clusters.flatMap(group => {
     const g = group.getBoundingClientRect();
-    groups.push(span(group));
-    const inside = nodes.filter(r => r.left >= g.left && r.right <= g.right && r.top >= g.top && r.bottom <= g.bottom);
-    if (!inside.length) hard.push(span(group));
-    else hard.push([at(g.top) - FRAME, at(Math.min(...inside.map(r => r.top)))],
-      [at(Math.max(...inside.map(r => r.bottom))), at(g.bottom) + SHADOW]);
-  }
+    const inside = nodes.filter(r => r.left >= g.left && r.right <= g.right
+      && r.top >= g.top && r.bottom <= g.bottom);
+    if (!inside.length) return [span(group)];
+    return [
+      [at(g.top) - FRAME, at(Math.min(...inside.map(r => r.top)))],
+      [at(Math.max(...inside.map(r => r.bottom))), at(g.bottom) + SHADOW],
+    ];
+  });
+}
+
+function lineBlocks(svg, at, span) {
+  const ends = [], short = [];
   for (const line of svg.querySelectorAll('path, line')) {
     if (line.closest('marker, defs, .node, .cluster')) continue;
     const [a, b] = span(line);
@@ -403,28 +526,36 @@ function obstacles(svg) {
       short.push([a, b]);
       continue;
     }
-    const m = line.getScreenCTM(), length = line.getTotalLength();
+
+    const m = line.getScreenCTM();
+    const length = line.getTotalLength();
     for (const p of [line.getPointAtLength(0), line.getPointAtLength(length)]) {
       const y = at(p.matrixTransform(m).y);
-      hard.push([y - ARROW, y + ARROW]);
+      ends.push([y - ARROW, y + ARROW]);
     }
   }
+  return { ends, short };
+}
+
+function messageBlocks(svg, span) {
   const labels = [...svg.querySelectorAll('.messageText')].map(span);
-  for (const line of svg.querySelectorAll('.messageLine0, .messageLine1')) {
+  const lines = svg.querySelectorAll('.messageLine0, .messageLine1');
+  return [...lines].map(line => {
     const [a, b] = span(line);
-    const label = labels.filter(([, bottom]) => bottom <= a + 1 && a - bottom < LOOP)
+    const label = labels
+      .filter(([, bottom]) => bottom <= a + 1 && a - bottom < LOOP)
       .reduce((best, l) => !best || l[1] > best[1] ? l : best, null);
-    hard.push([(label?.[0] ?? a) - 1, b + MARK].map((v, i) => i ? v : Math.min(v, a - MARK)));
-  }
-  const valid = list => list.filter(([a, b]) => b > a);
-  return { hard: valid(hard), short: valid(short), groups: valid(groups) };
+    return [Math.min((label?.[0] ?? a) - 1, a - MARK), b + MARK];
+  });
 }
 
 // Граница куска: не ниже limit, по промежутку между препятствиями, в нижней
 // половине куска; нет такой — null.
 function cut(blocks, top, limit, step) {
   let at = limit;
-  for (let hit; (hit = blocks.find(([a, b]) => a < at && at < b));) at = hit[0] - 1;
+  for (let hit; (hit = blocks.find(([a, b]) => a < at && at < b));) {
+    at = hit[0] - 1;
+  }
   return at > top + step / 2 ? at : null;
 }
 

@@ -1,7 +1,8 @@
-/* Тема Gruvbox Light: ретро-палитра Gruvbox (https://github.com/morhetz/gruvbox)
-   в духе терминала и vim — моноширинные заголовки с #, ##, ###, код в окне
-   терминала, ретро-полоса из трёх тёплых линий, маркеры-звёздочки, подсветка
-   кода в цветах Gruvbox. Палитра — в src/themes/index.js. */
+/* Тема Gruvbox Light: ретро-палитра Gruvbox
+   (https://github.com/morhetz/gruvbox) в духе терминала и vim —
+   моноширинные заголовки с #, ##, ###, код в окне терминала, ретро-полоса
+   из трёх тёплых линий, маркеры-звёздочки, подсветка кода в цветах
+   Gruvbox. Палитра — в src/themes/index.js. */
 :root {
   --heading-font: var(--font-mono);
   --subheading-color: #79740e;
@@ -50,7 +51,9 @@ h1::after, hr, .footnotes-sep {
 
 /* Код — окно терминала: заголовок с тремя кнопками и языком. Рамка у
    pre обычная, поэтому код рвётся между страницами, как и раньше. */
-pre:not(.mermaid), .callout { box-shadow: var(--window-shadow); margin-right: var(--shadow-offset); }
+pre:not(.mermaid), .callout {
+  box-shadow: var(--window-shadow); margin-right: var(--shadow-offset);
+}
 pre:not(.mermaid) { padding: 0 3mm 3mm; }
 pre:not(.mermaid)::before {
   content: attr(data-lang); display: block; margin: 0 -3mm 2.5mm;
@@ -61,8 +64,13 @@ pre:not(.mermaid)::before {
 }
 
 /* Маркеры списков — звёздочки, как в Markdown-исходнике. */
-ul > li:not(.task-list-item)::marker { content: "* "; color: #d65d0e; font-family: var(--font-mono); font-weight: 700; }
-ol > li::marker { color: #d65d0e; font-family: var(--font-mono); font-weight: 700; }
+ul > li:not(.task-list-item)::marker {
+  content: "* "; color: #d65d0e; font-family: var(--font-mono);
+  font-weight: 700;
+}
+ol > li::marker {
+  color: #d65d0e; font-family: var(--font-mono); font-weight: 700;
+}
 
 /* Цитата — с «>» на полях, как в почте и Markdown. */
 blockquote { position: relative; padding-left: 7mm; }
@@ -71,7 +79,10 @@ blockquote::before {
   font: 700 11pt var(--font-mono); color: #d79921;
 }
 
-table { box-shadow: var(--window-shadow); width: calc(100% - var(--shadow-offset) - 1px); }
+table {
+  box-shadow: var(--window-shadow);
+  width: calc(100% - var(--shadow-offset) - 1px);
+}
 th { font-family: var(--font-mono); }
 code { color: #af3a03; }
 kbd { background: var(--surface); border-bottom-width: 3px; }

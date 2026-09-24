@@ -2,7 +2,8 @@
 # Установщик md2pdfX @VERSION@ для Linux @ARCH@: этот сценарий, за ним tar.gz
 # с приложением (собирает scripts/build.js installer).
 #
-#   sh md2pdfX-linux-@ARCH@.run          — себе: ~/.local/share/md2pdfX, ~/.local/bin
+#   sh md2pdfX-linux-@ARCH@.run          — себе: ~/.local/share/md2pdfX,
+#                                          ~/.local/bin
 #   sudo sh md2pdfX-linux-@ARCH@.run     — всем: /opt/md2pdfX, /usr/local/bin
 #
 # Удаление — uninstall.sh в каталоге установки.
@@ -49,7 +50,8 @@ fi
 # Прежние версии ставили сюда ссылку на само приложение: запись через неё
 # затёрла бы только что распакованный md2pdfX.
 rm -f "$bin/md2pdfX"
-printf '#!/bin/sh\nexec "%s/md2pdfX" %s"$@"\n' "$dest" "${flags:+$flags }" > "$bin/md2pdfX"
+printf '#!/bin/sh\nexec "%s/md2pdfX" %s"$@"\n' "$dest" "${flags:+$flags }" \
+  > "$bin/md2pdfX"
 chmod +x "$bin/md2pdfX"
 ln -sf "$dest/md2pdf" "$bin/md2pdf"
 cat > "$apps/md2pdfX.desktop" <<EOF

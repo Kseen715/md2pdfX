@@ -5,25 +5,47 @@ const api = window.md2pdf;
 
 const LABELS = {
   orientation: { portrait: 'Portrait', landscape: 'Landscape' },
-  align: { justify: 'Justify', left: 'Left', center: 'Center', right: 'Right' },
+  align: {
+    justify: 'Justify', left: 'Left', center: 'Center', right: 'Right',
+  },
   sections: { page: 'New page', flow: 'Continuous' },
 };
-const STATUS = { queued: 'Queued', parse: 'Parsing', render: 'Rendering', print: 'Printing', done: 'Done', error: 'Failed' };
+const STATUS = {
+  queued: 'Queued', parse: 'Parsing', render: 'Rendering',
+  print: 'Printing', done: 'Done', error: 'Failed',
+};
+// Прочие статусы — этапы экспорта.
+const STATUS_CLASS = { done: 'done', error: 'error', queued: '' };
 
 const { version, choices, defaults, themes } = await api.setup();
-$('version').textContent = `v${version}`;
 
-// Параметры запоминаются между запусками; хранилище может быть недоступно.
-const saved = (() => { try { return JSON.parse(localStorage.getItem('options')) ?? {}; } catch { return {}; } })();
-const options = { ...defaults, watermark: '', book: false, outDir: '', ...saved };
+const options = {
+  ...defaults, watermark: '', book: false, outDir: '', ...loadOptions(),
+};
 for (const name of Object.keys(choices)) {
   if (!choices[name].includes(options[name])) options[name] = defaults[name];
 }
-const save = () => { try { localStorage.setItem('options', JSON.stringify(options)); } catch {} };
 
 // path → { status, output?, error?, warning? }
 const queue = new Map();
 let busy = false;
+
+$('version').textContent = `v${version}`;
+
+// Параметры запоминаются между запусками; хранилище может быть недоступно.
+function loadOptions() {
+  try {
+    return JSON.parse(localStorage.getItem('options')) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function save() {
+  try {
+    localStorage.setItem('options', JSON.stringify(options));
+  } catch {}
+}
 
 // Параметры
 function pressable(container, name, items) {
@@ -35,8 +57,10 @@ function pressable(container, name, items) {
     b.onclick = () => { options[name] = value; save(); sync(); };
     return b;
   });
+  const sync = () => buttons.forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.value === options[name]));
+
   container.replaceChildren(...buttons);
-  const sync = () => buttons.forEach(b => b.setAttribute('aria-pressed', b.dataset.value === options[name]));
   sync();
 }
 
@@ -51,17 +75,20 @@ function el(tag, className, text) {
   return e;
 }
 
-pressable($('theme'), 'theme', choices.theme.map(key => {
+function themeButton(key) {
   const { label, palette: p } = themes[key];
+  const swatches = [p.accent, p.accentText, ...p.series.slice(0, 4)];
   const sheet = el('div', 'sheet');
   sheet.style.background = p.paper;
-  sheet.append(...[p.accent, p.accentText, ...p.series.slice(0, 4)].map(color => {
+  sheet.append(...swatches.map(color => {
     const s = el('span');
     s.style.background = color;
     return s;
   }));
   return [key, [sheet, el('span', 'label', label)], 'theme'];
-}));
+}
+
+pressable($('theme'), 'theme', choices.theme.map(themeButton));
 for (const name of ['orientation', 'align', 'sections']) {
   pressable($(name), name, choices[name].map(v => [v, [LABELS[name][v]]]));
 }
@@ -72,7 +99,8 @@ $('book').checked = options.book;
 $('book').onchange = e => { options.book = e.target.checked; save(); };
 
 function showOutDir() {
-  $('out-dir').textContent = options.outDir ? ltr(options.outDir) : 'Next to each source file';
+  $('out-dir').textContent =
+    options.outDir ? ltr(options.outDir) : 'Next to each source file';
   $('out-dir').title = options.outDir;
   $('reset-out').hidden = !options.outDir;
 }
@@ -96,8 +124,13 @@ $('add-folder').onclick = async () => add(await api.pick('folder'));
 $('clear').onclick = () => { queue.clear(); render(); };
 
 const drop = $('drop');
-drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragging'); });
-drop.addEventListener('dragleave', e => { if (!drop.contains(e.relatedTarget)) drop.classList.remove('dragging'); });
+drop.addEventListener('dragover', e => {
+  e.preventDefault();
+  drop.classList.add('dragging');
+});
+drop.addEventListener('dragleave', e => {
+  if (!drop.contains(e.relatedTarget)) drop.classList.remove('dragging');
+});
 drop.addEventListener('drop', e => {
   e.preventDefault();
   drop.classList.remove('dragging');
@@ -109,44 +142,59 @@ document.addEventListener('drop', e => e.preventDefault());
 
 function render() {
   $('empty').hidden = queue.size > 0;
-  $('files').replaceChildren(...[...queue].map(([file, item]) => {
-    const li = el('li', 'file');
-    const info = el('div');
-    const parts = file.split(/[\\/]/);
-    info.append(el('div', 'name', parts.pop()), el('div', 'dir', parts.join('/')));
-    info.lastChild.title = file;
-    if (item.error) info.append(el('div', 'detail', item.error));
-    else if (item.warning) info.append(el('div', 'detail warn', `Page errors: ${item.warning}`));
+  $('files').replaceChildren(
+    ...[...queue].map(([file, item]) => fileRow(file, item)));
 
-    const side = el('div', 'links');
-    if (item.output) {
-      const open = el('button', '', 'Open');
-      open.onclick = () => api.open(item.output);
-      const reveal = el('button', '', 'Show');
-      reveal.onclick = () => api.reveal(item.output);
-      side.append(open, reveal);
-    }
-    const status = el('span', 'status ' + ({ done: 'done', error: 'error', queued: '' }[item.status] ?? 'busy'), STATUS[item.status]);
-    const remove = el('button', 'icon-btn', '×');
-    remove.title = 'Remove';
-    remove.setAttribute('aria-label', 'Remove');
-    remove.disabled = busy;
-    remove.onclick = () => { queue.delete(file); render(); };
-    const right = el('div', 'links');
-    right.append(status, remove);
-    li.append(info, side, right);
-    return li;
-  }));
-
-  const count = s => [...queue.values()].filter(i => i.status === s).length;
-  const done = count('done');
-  const failed = count('error');
-  $('summary').textContent = !queue.size ? 'No files'
-    : busy ? `Exporting ${done + failed + 1} of ${queue.size}…`
-    : `${queue.size} file${queue.size > 1 ? 's' : ''}` + (done ? ` · ${done} done` : '') + (failed ? ` · ${failed} failed` : '');
+  $('summary').textContent = summary();
   $('export').disabled = busy || !queue.size;
   $('clear').disabled = busy || !queue.size;
   for (const id of ['add-files', 'add-folder']) $(id).disabled = busy;
+}
+
+function fileRow(file, item) {
+  const info = el('div');
+  const parts = file.split(/[\\/]/);
+  const name = parts.pop();
+  info.append(el('div', 'name', name), el('div', 'dir', parts.join('/')));
+  info.lastChild.title = file;
+  if (item.error) info.append(el('div', 'detail', item.error));
+  else if (item.warning) {
+    info.append(el('div', 'detail warn', `Page errors: ${item.warning}`));
+  }
+
+  const side = el('div', 'links');
+  if (item.output) {
+    const open = el('button', '', 'Open');
+    open.onclick = () => api.open(item.output);
+    const reveal = el('button', '', 'Show');
+    reveal.onclick = () => api.reveal(item.output);
+    side.append(open, reveal);
+  }
+
+  const status = el('span',
+    'status ' + (STATUS_CLASS[item.status] ?? 'busy'), STATUS[item.status]);
+  const remove = el('button', 'icon-btn', '×');
+  remove.title = 'Remove';
+  remove.setAttribute('aria-label', 'Remove');
+  remove.disabled = busy;
+  remove.onclick = () => { queue.delete(file); render(); };
+  const right = el('div', 'links');
+  right.append(status, remove);
+
+  const li = el('li', 'file');
+  li.append(info, side, right);
+  return li;
+}
+
+function summary() {
+  const count = s => [...queue.values()].filter(i => i.status === s).length;
+  const done = count('done');
+  const failed = count('error');
+  if (!queue.size) return 'No files';
+  if (busy) return `Exporting ${done + failed + 1} of ${queue.size}…`;
+  return `${queue.size} file${queue.size > 1 ? 's' : ''}`
+    + (done ? ` · ${done} done` : '')
+    + (failed ? ` · ${failed} failed` : '');
 }
 
 api.onProgress(({ file, step, ...extra }) => {
@@ -156,8 +204,12 @@ api.onProgress(({ file, step, ...extra }) => {
 
 $('export').onclick = async () => {
   busy = true;
-  for (const item of queue.values()) Object.assign(item, { status: 'queued', output: '', error: '', warning: '' });
+  for (const item of queue.values()) {
+    Object.assign(item,
+      { status: 'queued', output: '', error: '', warning: '' });
+  }
   render();
+
   try {
     const { outDir, ...rest } = options;
     await api.exportFiles({ files: [...queue.keys()], options: rest, outDir });

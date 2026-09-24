@@ -10,21 +10,25 @@ window.keepTables = sheet => {
   for (const table of document.querySelectorAll('table')) {
     const rows = [...table.querySelectorAll(':scope > tbody > tr')];
     const lines = rows.map(count);
-    let sum = 0;
-    for (const [i, row] of rows.entries())
-      if ((sum += lines[i]) < LINES) row.style.breakAfter = 'avoid';
-    sum = 0;
-    for (let i = rows.length - 1; i >= 0; i--)
-      if ((sum += lines[i]) < LINES) rows[i].style.breakBefore = 'avoid';
+    keepTogether(rows, lines, 'breakAfter');
+    keepTogether(rows.toReversed(), lines.toReversed(), 'breakBefore');
   }
   document.body.style.width = '';
 };
+
+// Нет разрыва у крайних строк, пока в них не наберётся LINES строк текста.
+function keepTogether(rows, lines, side) {
+  let sum = 0;
+  for (const [i, row] of rows.entries()) {
+    if ((sum += lines[i]) < LINES) row.style[side] = 'avoid';
+  }
+}
 
 // Строк текста в строке таблицы — по самой высокой ячейке.
 function count(row) {
   return Math.max(1, ...[...row.cells].map(cell => {
     const s = getComputedStyle(cell);
-    const text = cell.clientHeight - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom);
-    return Math.round(text / parseFloat(s.lineHeight));
+    const padding = parseFloat(s.paddingTop) + parseFloat(s.paddingBottom);
+    return Math.round((cell.clientHeight - padding) / parseFloat(s.lineHeight));
   }));
 }

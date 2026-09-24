@@ -4,10 +4,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import pkg from '../package.json' with { type: 'json' };
-import { expandInput, renderMarkdown } from './markdown.js';
-import { CHOICES, checkChoice, DEFAULTS, printPdf } from './pdf.js';
+import { convert, pdfName } from './convert.js';
+import { expandInput } from './markdown.js';
+import { CHOICES, checkChoice, DEFAULTS } from './pdf.js';
 
-const USAGE = `md2pdf ${pkg.version} — Markdown (GitHub, Obsidian, Mermaid, LaTeX) → PDF
+const TITLE = 'Markdown (GitHub, Obsidian, Mermaid, LaTeX) → PDF';
+
+const USAGE = `md2pdf ${pkg.version} — ${TITLE}
 
 Использование:
   md2pdf <файл.md | каталог>... [-o <файл.pdf | каталог>] [--css <файл.css>]
@@ -33,6 +36,20 @@ const USAGE = `md2pdf ${pkg.version} — Markdown (GitHub, Obsidian, Mermaid, La
 
 Каталог на входе — все .md в нём (без подкаталогов).`;
 
+const OPTIONS = {
+  output: { type: 'string', short: 'o' },
+  css: { type: 'string' },
+  theme: { type: 'string', default: DEFAULTS.theme },
+  orientation: { type: 'string', default: DEFAULTS.orientation },
+  align: { type: 'string', default: DEFAULTS.align },
+  sections: { type: 'string', default: DEFAULTS.sections },
+  watermark: { type: 'string', default: '' },
+  book: { type: 'boolean' },
+  chrome: { type: 'string' },
+  help: { type: 'boolean', short: 'h' },
+  version: { type: 'boolean', short: 'v' },
+};
+
 // launch(opts) → браузер с API puppeteer; opts — разобранные параметры.
 // Итог — в process.exitCode.
 export function run(args, launch) {
@@ -43,23 +60,8 @@ export function run(args, launch) {
 }
 
 async function main(args, launch) {
-  const { values: opts, positionals } = parseArgs({
-    args,
-    allowPositionals: true,
-    options: {
-      output: { type: 'string', short: 'o' },
-      css: { type: 'string' },
-      theme: { type: 'string', default: DEFAULTS.theme },
-      orientation: { type: 'string', default: DEFAULTS.orientation },
-      align: { type: 'string', default: DEFAULTS.align },
-      sections: { type: 'string', default: DEFAULTS.sections },
-      watermark: { type: 'string', default: '' },
-      book: { type: 'boolean' },
-      chrome: { type: 'string' },
-      help: { type: 'boolean', short: 'h' },
-      version: { type: 'boolean', short: 'v' },
-    },
-  });
+  const { values: opts, positionals } =
+    parseArgs({ args, options: OPTIONS, allowPositionals: true });
   if (opts.version) return console.log(pkg.version);
   if (opts.help || !positionals.length) {
     console.log(USAGE);
@@ -69,14 +71,11 @@ async function main(args, launch) {
 
   const inputs = positionals.flatMap(expandInput);
   if (!inputs.length) throw new Error('Нет файлов .md для сборки');
-  const outDir = opts.output && (inputs.length > 1 || /[\\/]$/.test(opts.output)
-    || fs.statSync(opts.output, { throwIfNoEntry: false })?.isDirectory());
-  const target = input => {
-    const pdf = path.basename(input).replace(/\.md$/i, '') + '.pdf';
-    if (!opts.output) return path.join(path.dirname(input), pdf);
-    return outDir ? path.join(opts.output, pdf) : opts.output;
-  };
+  const target = outputPaths(opts.output, inputs);
+  const { theme, orientation, align, sections, watermark, book } = opts;
   const extraCss = opts.css ? fs.readFileSync(opts.css, 'utf8') : '';
+  const settings =
+    { theme, orientation, align, sections, watermark, book, extraCss };
   // Ошибки в параметрах — до запуска Chrome.
   for (const name of Object.keys(CHOICES)) checkChoice(name, opts[name]);
 
@@ -84,24 +83,39 @@ async function main(args, launch) {
   let failed = 0;
   try {
     for (const input of inputs) {
-      try {
-        const { html, title } = renderMarkdown(fs.readFileSync(input, 'utf8'), input, { book: opts.book });
-        const output = target(input);
-        fs.mkdirSync(path.dirname(output), { recursive: true });
-        const { diagrams, errors } = await printPdf(browser, {
-          html, output, extraCss, theme: opts.theme, watermark: opts.watermark,
-          orientation: opts.orientation, align: opts.align, sections: opts.sections,
-          title: title ?? path.basename(input, '.md'),
-        });
-        console.log(`${output}${diagrams ? `: диаграмм отрисовано ${diagrams}` : ''}`);
-        if (errors.length) console.warn('  ошибки страницы:', errors.join('; '));
-      } catch (e) {
-        failed++;
-        console.error(`${input}: ${e.message}`);
-      }
+      const output = target(input);
+      if (!await convertOne(browser, input, output, settings)) failed++;
     }
   } finally {
     await browser.close();
   }
   process.exitCode = failed ? 1 : 0;
+}
+
+// output — файл PDF или каталог: каталог, если входов несколько, на конце
+// «/» или такой каталог уже есть. Не задан — PDF рядом с исходником.
+function outputPaths(output, inputs) {
+  const toDir = output && (inputs.length > 1 || /[\\/]$/.test(output)
+    || fs.statSync(output, { throwIfNoEntry: false })?.isDirectory());
+
+  return input => {
+    if (!output) return path.join(path.dirname(input), pdfName(input));
+    return toDir ? path.join(output, pdfName(input)) : output;
+  };
+}
+
+// → удалось ли. Ошибка в одном файле не останавливает остальные.
+async function convertOne(browser, input, output, settings) {
+  try {
+    const src = fs.readFileSync(input, 'utf8');
+    const { diagrams, errors } =
+      await convert(browser, { ...settings, src, input, output });
+    console.log(
+      diagrams ? `${output}: диаграмм отрисовано ${diagrams}` : output);
+    if (errors.length) console.warn('  ошибки страницы:', errors.join('; '));
+    return true;
+  } catch (e) {
+    console.error(`${input}: ${e.message}`);
+    return false;
+  }
 }

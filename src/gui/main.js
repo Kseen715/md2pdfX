@@ -12,25 +12,31 @@ import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import pkg from '../../package.json' with { type: 'json' };
 import { run } from '../command.js';
-import { expandInput, renderMarkdown } from '../markdown.js';
-import { CHOICES, DEFAULTS, printPdf, THEMES } from '../pdf.js';
+import { convert, pdfName } from '../convert.js';
+import { expandInput } from '../markdown.js';
+import { CHOICES, DEFAULTS, THEMES } from '../pdf.js';
 import { electronBrowser } from './print.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-// Как у CLI: без сглаживания по сетке шрифты в PDF ровнее.
-app.commandLine.appendSwitch('font-render-hinting', 'none');
+// Переключатели платформы и песочницы (их ставит установщик) — для
+// Chromium, не для команды.
+const CHROMIUM_SWITCH = /^--(ozone-platform|no-sandbox)\b/;
 
-// Аргументы после приложения (в разработке — после main.js); переключатели
-// платформы и песочницы (их ставит установщик) — для Chromium, не для команды.
-const args = process.argv.slice(process.defaultApp ? 2 : 1).filter(a => !/^--(ozone-platform|no-sandbox)\b/.test(a));
-const headless = app.commandLine.getSwitchValue('ozone-platform') === 'headless';
+// Аргументы после приложения (в разработке — после main.js).
+const args = process.argv.slice(process.defaultApp ? 2 : 1)
+  .filter(a => !CHROMIUM_SWITCH.test(a));
+const platform = app.commandLine.getSwitchValue('ozone-platform');
 
 let win;
 
-if (args.length || headless) {
+// Как у CLI: без сглаживания по сетке шрифты в PDF ровнее.
+app.commandLine.appendSwitch('font-render-hinting', 'none');
+
+if (args.length || platform === 'headless') {
   app.dock?.hide();
-  // Окну вне экрана GPU не нужен, а без дисплея его запуск сыплет ошибками EGL.
+  // Окну вне экрана GPU не нужен, а без дисплея его запуск сыплет ошибками
+  // EGL.
   app.disableHardwareAcceleration();
   app.whenReady()
     .then(() => run(args, electronBrowser))
@@ -42,9 +48,9 @@ if (args.length || headless) {
 function openWindow() {
   // Electron (41–44) под GNOME на Wayland падает (SIGSEGV) на первом же окне.
   // Платформу Chromium выбирает до запуска скрипта (сам Electron подставляет
-  // --ozone-platform=wayland), поэтому appendSwitch не поможет: перезапускаемся
-  // под X11 через XWayland.
-  if (process.platform === 'linux' && app.commandLine.getSwitchValue('ozone-platform') === 'wayland') {
+  // --ozone-platform=wayland), поэтому appendSwitch не поможет:
+  // перезапускаемся под X11 через XWayland.
+  if (process.platform === 'linux' && platform === 'wayland') {
     app.relaunch({ args: [...process.argv.slice(1), '--ozone-platform=x11'] });
     app.exit(0);
     return;
@@ -67,41 +73,48 @@ function openWindow() {
 
 ipcMain.handle('setup', () => ({
   version: pkg.version, choices: CHOICES, defaults: DEFAULTS,
-  themes: Object.fromEntries(Object.entries(THEMES).map(([k, t]) => [k, { label: t.label, palette: t.palette }])),
+  themes: Object.fromEntries(Object.entries(THEMES).map(([name, theme]) =>
+    [name, { label: theme.label, palette: theme.palette }])),
 }));
 
 ipcMain.handle('pick', async (_, kind) => {
   const { filePaths } = await dialog.showOpenDialog(win, kind === 'files'
-    ? { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Markdown', extensions: ['md'] }] }
+    ? {
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Markdown', extensions: ['md'] }],
+    }
     : { properties: ['openDirectory', 'createDirectory'] });
   return filePaths;
 });
 
 // Пути из диалога или перетаскивания → файлы .md; чего нет — пропускаем.
 ipcMain.handle('expand', (_, paths) => paths.flatMap(p => {
-  try { return expandInput(p); } catch { return []; }
+  try {
+    return expandInput(p);
+  } catch {
+    return [];
+  }
 }));
 
 ipcMain.handle('reveal', (_, file) => shell.showItemInFolder(file));
 ipcMain.handle('open', (_, file) => shell.openPath(file));
 
-// Файлы печатаются по очереди; ход — событиями 'progress' { file, step, output?, error? },
+// Файлы печатаются по очереди; ход — событиями
+// 'progress' { file, step, output?, error? },
 // step: parse | render | print | done | error.
 ipcMain.handle('export', async ({ sender }, { files, options, outDir }) => {
-  const report = (file, step, extra) => sender.send('progress', { file, step, ...extra });
+  const report = (file, step, extra) =>
+    sender.send('progress', { file, step, ...extra });
+  const { theme, orientation, align, sections, watermark, book } = options;
+
   const browser = electronBrowser();
   for (const file of files) {
     try {
-      report(file, 'parse');
-      const { html, title } = renderMarkdown(fs.readFileSync(file, 'utf8'), file, { book: options.book });
-      const pdf = path.basename(file).replace(/\.md$/i, '') + '.pdf';
-      const output = path.join(outDir || path.dirname(file), pdf);
-      fs.mkdirSync(path.dirname(output), { recursive: true });
-      const { errors } = await printPdf(browser, {
-        html, output,
-        theme: options.theme, orientation: options.orientation, align: options.align,
-        sections: options.sections, watermark: options.watermark,
-        title: title ?? path.basename(file, '.md'), onStep: step => report(file, step),
+      const output = path.join(outDir || path.dirname(file), pdfName(file));
+      const { errors } = await convert(browser, {
+        src: fs.readFileSync(file, 'utf8'), input: file, output,
+        theme, orientation, align, sections, watermark, book,
+        onStep: step => report(file, step),
       });
       report(file, 'done', { output, warning: errors.join('; ') });
     } catch (e) {

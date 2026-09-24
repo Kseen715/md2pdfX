@@ -36,23 +36,32 @@ h1::after {
 }
 h2 { font-weight: 600; }
 h2::before {
-  content: ""; display: inline-block; width: 1.3mm; height: 0.95em; margin-right: 2.5mm;
-  vertical-align: -0.12em; border-radius: 1mm; background: linear-gradient(#88c0d0, #5e81ac);
+  content: ""; display: inline-block; width: 1.3mm; height: 0.95em;
+  margin-right: 2.5mm;
+  vertical-align: -0.12em; border-radius: 1mm;
+  background: linear-gradient(#88c0d0, #5e81ac);
 }
 h3 { font-weight: 600; }
 
 /* Разделитель — тающая полоса Frost. */
-hr { height: 0.5mm; border: none; background: linear-gradient(90deg, #ffffff, #88c0d0, #5e81ac, #88c0d0, #ffffff); }
+hr {
+  height: 0.5mm; border: none;
+  background:
+    linear-gradient(90deg, #ffffff, #88c0d0, #5e81ac, #88c0d0, #ffffff);
+}
 
 /* Карточки: код, цитаты, callout'ы — с мягкой тенью. */
-pre:not(.mermaid), blockquote, .callout { box-shadow: var(--card-shadow); border-radius: var(--radius); }
+pre:not(.mermaid), blockquote, .callout {
+  box-shadow: var(--card-shadow); border-radius: var(--radius);
+}
 pre:not(.mermaid) { position: relative; padding: 4mm; }
 /* Язык кода — плашкой в правом верхнем углу. */
 pre[data-lang] { padding-top: 6.5mm; }
 pre[data-lang]::before {
   content: attr(data-lang); position: absolute; top: 0; right: 0;
   padding: 0.4mm 2.2mm; border-bottom-left-radius: var(--radius);
-  font: 600 7pt var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase;
+  font: 600 7pt var(--font-sans); letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #eceff4; background: #81a1c1;
 }
 
@@ -73,7 +82,8 @@ pre code { color: var(--text); }
 li.task-list-item input { border-radius: 50%; }
 ul > li:not(.task-list-item)::marker { content: "• "; color: #88c0d0; }
 
-/* Подсветка кода — цвета Nord вместо github.css (затемнены для белого листа). */
+/* Подсветка кода — цвета Nord вместо github.css (затемнены для белого
+   листа). */
 pre code.hljs { background: none; }
 .hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #5e81ac; }
 .hljs-built_in, .hljs-type, .hljs-title.class_ { color: #4c8a9c; }

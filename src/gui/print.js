@@ -13,7 +13,10 @@ export function electronBrowser() {
       // Скрытое окно по умолчанию притормаживает таймеры и кадры, а mermaid
       // рисует по ним. Окно вне экрана не нужен дисплей: обычное, даже
       // скрытое, без него (--ozone-platform=headless) роняет Electron.
-      win ??= new BrowserWindow({ show: false, webPreferences: { backgroundThrottling: false, offscreen: true } });
+      win ??= new BrowserWindow({
+        show: false,
+        webPreferences: { backgroundThrottling: false, offscreen: true },
+      });
       return page(win);
     },
     async close() {
@@ -31,7 +34,9 @@ function page(win) {
     on(event, handler) {
       if (event !== 'pageerror') return;
       const listener = ({ level, message }) => {
-        if (level === 'error' && message.startsWith('Uncaught')) handler(new Error(message));
+        if (level === 'error' && message.startsWith('Uncaught')) {
+          handler(new Error(message));
+        }
       };
       contents.on('console-message', listener);
       listeners.push(listener);
@@ -39,16 +44,19 @@ function page(win) {
     goto: url => win.loadURL(url),
     evaluate: fn => contents.executeJavaScript(`(${fn})()`, true),
     async pdf({ path, margin, outline, tagged, ...options }) {
-      const inches = mm => parseFloat(mm) / 25.4;
+      const margins = Object.fromEntries(Object.entries(margin)
+        .map(([side, mm]) => [side, parseFloat(mm) / 25.4]));
       const data = await contents.printToPDF({
         ...options,
-        margins: Object.fromEntries(Object.entries(margin).map(([k, v]) => [k, inches(v)])),
+        margins,
         generateDocumentOutline: outline, generateTaggedPDF: tagged,
       });
       fs.writeFileSync(path, data);
     },
     async close() {
-      for (const listener of listeners) contents.off('console-message', listener);
+      for (const listener of listeners) {
+        contents.off('console-message', listener);
+      }
     },
   };
 }

@@ -58,12 +58,14 @@ h1, h2 { color: var(--heading-color); }
 h3, h4, h5, h6 { color: var(--subheading-color); }
 h1 { font-size: 20pt; margin: 0 0 4mm; }
 h2 {
-  font-size: 15pt; margin: 0 0 4mm; padding-bottom: 2mm; page-break-after: avoid;
+  font-size: 15pt; margin: 0 0 4mm; padding-bottom: 2mm;
+  page-break-after: avoid;
   border-bottom: var(--h2-border);
 }
 h2 + p, h2 + ul, h2 + table { page-break-before: avoid; }
 /* Каждый раздел с новой страницы, кроме первого: он остаётся под заголовком
-   документа (обычно это «Содержание» или введение). sections=flow — сплошняком. */
+   документа (обычно это «Содержание» или введение). sections=flow —
+   сплошняком. */
 h2 ~ h2 { page-break-before: always; }
 .sections-flow h2 { page-break-before: auto; }
 /* Книга: каждый файл — глава с новой страницы, при любом sections. */
@@ -73,15 +75,19 @@ h3 { font-size: 12pt; margin: 6mm 0 2mm; page-break-after: avoid; }
    следующим блоком, а тот из-за orphans приносит с собой не меньше 4 строк.
    Между h2 и абзацем бывает скрытый hr. */
 :is(h2, h3, h4, h5, h6) + p, h2 + hr + p { page-break-after: avoid; }
-/* Вступление («…:») не отрывается от списка, кода, таблицы или диаграммы под ним. */
-p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) { page-break-after: avoid; }
+/* Вступление («…:») не отрывается от списка, кода, таблицы или диаграммы
+   под ним. */
+p:has(+ :is(ul, ol, pre, table, blockquote, .callout, .katex-block, .mermaid)) {
+  page-break-after: avoid;
+}
 h4, h5, h6 { font-size: 10.5pt; margin: 4mm 0 1.5mm; page-break-after: avoid; }
 
 p, ul, ol { margin: 0 0 3mm; }
 li { margin-bottom: 1mm; }
 ul > li::marker { color: var(--marker-color); }
 a { color: var(--link-color); text-decoration: var(--link-decoration); }
-/* Внизу листа — не меньше 4 строк абзаца; список не рвётся после первого пункта. */
+/* Внизу листа — не меньше 4 строк абзаца; список не рвётся после первого
+   пункта. */
 p, li { orphans: 4; }
 li:first-child { page-break-after: avoid; }
 /* Линии вокруг заголовков разделов лишние: раздел и так начинается с новой
@@ -101,14 +107,17 @@ code {
    колонку частично уходила за её дробный край и терялась. */
 pre {
   text-align: left; padding: 3mm; margin: 0 1px 4mm 0;
-  background: var(--pre-bg); border: var(--pre-border); border-left: var(--pre-border-left);
+  background: var(--pre-bg); border: var(--pre-border);
+  border-left: var(--pre-border-left);
   border-radius: calc(var(--radius) * 1.5);
   white-space: pre-wrap; word-wrap: break-word;
-  /* Длинный код рвётся; внизу листа остаётся не меньше 4 строк, вверху следующего — 3. */
+  /* Длинный код рвётся; внизу листа остаётся не меньше 4 строк, вверху
+     следующего — 3. */
   orphans: 4; widows: 3;
 }
 pre code { background: none; padding: 0; font-size: 8.5pt; line-height: 1.35; }
-/* Лигатуры JetBrains Mono (!= → ≠) в документации путают: код печатается как написан. */
+/* Лигатуры JetBrains Mono (!= → ≠) в документации путают: код печатается
+   как написан. */
 code, kbd { font-variant-ligatures: none; }
 
 /* Chrome обрезает печать по правому краю колонки, а ширина колонки в px
@@ -122,7 +131,10 @@ table {
 tr { page-break-inside: avoid; }
 /* Не меньше 4 строк текста таблицы на листе — src/tables.js. */
 :is(h2, h3, h4, h5, h6) + table { page-break-before: avoid; }
-th, td { padding: 1.8mm 2.5mm; text-align: left; vertical-align: top; border: var(--cell-border); }
+th, td {
+  padding: 1.8mm 2.5mm; text-align: left; vertical-align: top;
+  border: var(--cell-border);
+}
 th { font-weight: 600; background: var(--th-bg); color: var(--th-color); }
 tr:nth-child(even) td { background: var(--row-alt-bg); }
 /* Шапка таблицы в темах тёмная: светлый фон кода из темы с её светлым
@@ -146,12 +158,15 @@ pre.mermaid, div.mermaid {
    вылезает за него и за ней остаётся пустой лист. */
 pre.mermaid svg, div.mermaid svg {
   display: block; margin: 0 auto;
-  max-width: 100%; max-height: calc(var(--page-height) - 2mm - var(--intro, 0px)); height: auto;
+  max-width: 100%;
+  max-height: calc(var(--page-height) - 2mm - var(--intro, 0px)); height: auto;
 }
 /* Широкая — на своём альбомном листе (@page wide задаёт pdf.js), с
    заголовком и вступлением над ней. */
 .mermaid-wide { page: wide; }
-pre.mermaid-wide svg { max-height: calc(var(--wide-height) - 2mm - var(--intro, 0px)); }
+pre.mermaid-wide svg {
+  max-height: calc(var(--wide-height) - 2mm - var(--intro, 0px));
+}
 pre.mermaid-split { page-break-inside: auto; }
 pre.mermaid-split svg { page-break-inside: avoid; }
 /* Подсказки mermaid на бумаге не нужны, а пустой div в конце body после
@@ -160,7 +175,10 @@ pre.mermaid-split svg { page-break-inside: avoid; }
 
 /* --- Формулы KaTeX --- */
 .katex { font-size: 1.1em; }
-.katex-block { text-align: center; margin: 0 0 4mm; overflow-x: auto; page-break-inside: avoid; }
+.katex-block {
+  text-align: center; margin: 0 0 4mm; overflow-x: auto;
+  page-break-inside: avoid;
+}
 .katex-error { color: var(--danger); }
 
 /* --- GitHub: задачи, сноски, прочее --- */
@@ -172,15 +190,21 @@ li.task-list-item input {
   vertical-align: -0.5mm; background: var(--paper) center / 80% no-repeat;
   border: var(--check-border); border-radius: var(--radius);
 }
-li.task-list-item input:checked { background-color: var(--check-bg); background-image: var(--check-image); }
+li.task-list-item input:checked {
+  background-color: var(--check-bg); background-image: var(--check-image);
+}
 .footnotes { font-size: 9pt; color: var(--footnote-color); }
 .footnote-ref a, .footnote-backref { color: var(--link-color); }
-.footnotes-sep { display: block; margin: 6mm 0 2mm; width: 40%; border: none; border-top: var(--rule); }
+.footnotes-sep {
+  display: block; margin: 6mm 0 2mm; width: 40%; border: none;
+  border-top: var(--rule);
+}
 mark { padding: 0 0.5mm; background: var(--mark-bg); }
 del { color: var(--del-color); }
 kbd {
   font-family: var(--font-mono); font-size: 8.5pt; padding: 0 1.2mm;
-  border: var(--kbd-border); border-bottom-width: 2px; border-radius: calc(var(--radius) * 1.5);
+  border: var(--kbd-border); border-bottom-width: 2px;
+  border-radius: calc(var(--radius) * 1.5);
 }
 details { margin: 0 0 4mm; }
 summary { font-weight: 600; margin-bottom: 2mm; }
@@ -192,10 +216,13 @@ summary { font-weight: 600; margin-bottom: 2mm; }
   display: inline-block; font-size: 8.5pt; padding: 0 2mm;
   color: var(--tag-color); background: var(--tag-bg); border-radius: 8pt;
 }
-.embed { padding: 0 0 0 4mm; margin: 0 0 4mm; border-left: var(--embed-border); }
+.embed {
+  padding: 0 0 0 4mm; margin: 0 0 4mm; border-left: var(--embed-border);
+}
 .embed h2 { page-break-before: auto; }
 
-/* Callout'ы Obsidian и алерты GitHub: > [!note]. Цвет — по типу, в любой теме. */
+/* Callout'ы Obsidian и алерты GitHub: > [!note]. Цвет — по типу, в любой
+   теме. */
 .callout {
   --c: #2f6fc0;
   margin: 0 0 4mm; padding: 2.5mm 4mm; border-left: 4px solid var(--c);

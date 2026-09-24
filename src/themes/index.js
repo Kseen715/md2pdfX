@@ -7,13 +7,21 @@
 // Встроенные шрифты (src/fonts.js). Noto Sans для других письменностей и
 // CJK подхватывают символы, которых нет в основном шрифте; эмодзи — последними.
 const FALLBACK = [
-  'Noto Sans Arabic Variable', 'Noto Sans Hebrew Variable', 'Noto Sans Devanagari Variable',
-  'Noto Sans Bengali Variable', 'Noto Sans Tamil Variable', 'Noto Sans Thai Variable',
-  'Noto Sans Georgian Variable', 'Noto Sans Armenian Variable', 'Noto Sans Ethiopic Variable',
+  'Noto Sans Arabic Variable', 'Noto Sans Hebrew Variable',
+  'Noto Sans Devanagari Variable', 'Noto Sans Bengali Variable',
+  'Noto Sans Tamil Variable', 'Noto Sans Thai Variable',
+  'Noto Sans Georgian Variable', 'Noto Sans Armenian Variable',
+  'Noto Sans Ethiopic Variable',
   'Noto Sans SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Color Emoji',
 ].map(f => `"${f}"`).join(', ');
 export const SANS = `"Noto Sans Variable", ${FALLBACK}, sans-serif`;
 export const MONO = `"JetBrainsMono Nerd Font", ${FALLBACK}, monospace`;
+
+const C4_TYPES = [
+  'person', 'system', 'system_db', 'system_queue',
+  'container', 'container_db', 'container_queue',
+  'component', 'component_db', 'component_queue',
+];
 
 // Палитра — CSS-переменные --text, --paper, --accent, --accent-text, --muted,
 // --line, --surface, --shade, --highlight, --danger (camelCase → kebab-case):
@@ -50,10 +58,15 @@ export const THEMES = {
   classic: {
     label: 'Classic',
     palette: {
-      text: '#1a1a1a', paper: '#ffffff', accent: '#0b3c5d', accentText: '#14507a',
-      muted: '#7a848d', line: '#ccd3da', surface: '#f7f8fa', shade: '#ccd3da',
+      text: '#1a1a1a', paper: '#ffffff',
+      accent: '#0b3c5d', accentText: '#14507a',
+      muted: '#7a848d', line: '#ccd3da',
+      surface: '#f7f8fa', shade: '#ccd3da',
       highlight: '#fff1a8', danger: '#b3261e',
-      series: ['#6b8fb3', '#1f2d3a', '#c0853a', '#9fb8cf', '#5e8c6a', '#b35c5c', '#8a6fb0', '#c9a94a'],
+      series: [
+        '#6b8fb3', '#1f2d3a', '#c0853a', '#9fb8cf', '#5e8c6a', '#b35c5c',
+        '#8a6fb0', '#c9a94a',
+      ],
     },
     diagramFont: SANS,
     footer: { font: SANS, page: '' },
@@ -62,10 +75,15 @@ export const THEMES = {
     label: 'ГОСТ Р 7.0.97-2025',
     // Чёрно-белая, как и сам документ.
     palette: {
-      text: '#000000', paper: '#ffffff', accent: '#000000', accentText: '#000000',
-      muted: '#808080', line: '#000000', surface: '#f0f0f0', shade: '#808080',
+      text: '#000000', paper: '#ffffff',
+      accent: '#000000', accentText: '#000000',
+      muted: '#808080', line: '#000000',
+      surface: '#f0f0f0', shade: '#808080',
       highlight: '#ffffff', danger: '#000000',
-      series: ['#808080', '#000000', '#d0d0d0', '#ffffff', '#404040', '#a6a6a6', '#606060', '#e6e6e6'],
+      series: [
+        '#808080', '#000000', '#d0d0d0', '#ffffff', '#404040', '#a6a6a6',
+        '#606060', '#e6e6e6',
+      ],
     },
     diagramFont: SANS,
     // Без теней и градиентов. Подписи стрелок на сером — на белом подпись
@@ -86,10 +104,15 @@ export const THEMES = {
     // Лайм #c6ff00 на белом не читается, поэтому он только заливка под
     // чёрным текстом; для текста — тёмная версия #5c7a00.
     palette: {
-      text: '#0a0a0a', paper: '#ffffff', accent: '#0a0a0a', accentText: '#5c7a00',
-      muted: '#8a8a8a', line: '#0a0a0a', surface: '#f3f3f3', shade: '#d9d9d9',
+      text: '#0a0a0a', paper: '#ffffff',
+      accent: '#0a0a0a', accentText: '#5c7a00',
+      muted: '#8a8a8a', line: '#0a0a0a',
+      surface: '#f3f3f3', shade: '#d9d9d9',
       highlight: '#c6ff00', danger: '#c62828',
-      series: ['#5c7a00', '#0a0a0a', '#c6ff00', '#8a8a8a', '#2f6fc0', '#d0661a', '#7b4fc4', '#138a8a'],
+      series: [
+        '#5c7a00', '#0a0a0a', '#c6ff00', '#8a8a8a', '#2f6fc0', '#d0661a',
+        '#7b4fc4', '#138a8a',
+      ],
     },
     diagramFont: MONO,
     // Лайм и белый под чёрной рамкой: тёмные блоки съедают краску.
@@ -120,15 +143,21 @@ export const THEMES = {
     // Frost — акцент, Aurora — ряды графиков. nord10 как текст на белом
     // бледноват, для ссылок — он же темнее.
     palette: {
-      text: '#2e3440', paper: '#ffffff', accent: '#5e81ac', accentText: '#43648c',
-      muted: '#4c566a', line: '#d8dee9', surface: '#eceff4', shade: '#d8dee9',
+      text: '#2e3440', paper: '#ffffff',
+      accent: '#5e81ac', accentText: '#43648c',
+      muted: '#4c566a', line: '#d8dee9',
+      surface: '#eceff4', shade: '#d8dee9',
       highlight: '#ebcb8b', danger: '#bf616a',
-      series: ['#5e81ac', '#bf616a', '#a3be8c', '#d08770', '#b48ead', '#88c0d0', '#ebcb8b', '#8fbcbb'],
+      series: [
+        '#5e81ac', '#bf616a', '#a3be8c', '#d08770', '#b48ead', '#88c0d0',
+        '#ebcb8b', '#8fbcbb',
+      ],
     },
     diagramFont: SANS,
     c4: { person: '#5e81ac', system: '#88c0d0', external: '#e5e9f0' },
     mermaid: {
-      primaryColor: '#eceff4', primaryBorderColor: '#81a1c1', lineColor: '#4c566a',
+      primaryColor: '#eceff4', primaryBorderColor: '#81a1c1',
+      lineColor: '#4c566a',
       // Ветви mindmap, разделы timeline, ряды radar, venn и treemap — Aurora и
       // Frost. Подпись последней ветви — ещё и цвет оси timeline: она тёмная.
       ...branches([
@@ -138,7 +167,11 @@ export const THEMES = {
         ['#4c566a', '#ffffff'], ['#5e81ac', '#ffffff'], ['#d8dee9', '#2e3440'],
       ]),
     },
-    footer: { font: SANS, page: 'background:#e5e9f0;color:#2e3440;border-radius:2mm;padding:0.5mm 2.5mm;' },
+    footer: {
+      font: SANS,
+      page: 'background:#e5e9f0;color:#2e3440;border-radius:2mm;'
+        + 'padding:0.5mm 2.5mm;',
+    },
   },
   gruvbox: {
     label: 'Gruvbox Light',
@@ -146,15 +179,21 @@ export const THEMES = {
     // тёмные оттенки цветов — для текста, яркие — для заливок. Лист белый:
     // поля листа Chrome не закрашивает, и кремовый фон вышел бы рамкой.
     palette: {
-      text: '#3c3836', paper: '#ffffff', accent: '#af3a03', accentText: '#076678',
-      muted: '#7c6f64', line: '#d5c4a1', surface: '#fbf1c7', shade: '#d5c4a1',
+      text: '#3c3836', paper: '#ffffff',
+      accent: '#af3a03', accentText: '#076678',
+      muted: '#7c6f64', line: '#d5c4a1',
+      surface: '#fbf1c7', shade: '#d5c4a1',
       highlight: '#fabd2f', danger: '#9d0006',
-      series: ['#458588', '#d65d0e', '#98971a', '#b16286', '#689d6a', '#d79921', '#cc241d', '#076678'],
+      series: [
+        '#458588', '#d65d0e', '#98971a', '#b16286', '#689d6a', '#d79921',
+        '#cc241d', '#076678',
+      ],
     },
     diagramFont: MONO,
     c4: { person: '#d79921', system: '#458588', external: '#ebdbb2' },
     mermaid: {
-      primaryColor: '#ebdbb2', primaryBorderColor: '#7c6f64', lineColor: '#504945',
+      primaryColor: '#ebdbb2', primaryBorderColor: '#7c6f64',
+      lineColor: '#504945',
       // Ветви mindmap, разделы timeline, ряды radar, venn и treemap. Подпись
       // последней ветви — ещё и цвет оси timeline: она тёмная.
       ...branches([
@@ -165,7 +204,11 @@ export const THEMES = {
       ]),
     },
     // Номер страницы — как в строке состояния vim.
-    footer: { font: MONO, page: 'background:#d65d0e;color:#fbf1c7;font-weight:bold;padding:0.5mm 2mm;' },
+    footer: {
+      font: MONO,
+      page: 'background:#d65d0e;color:#fbf1c7;font-weight:bold;'
+        + 'padding:0.5mm 2mm;',
+    },
   },
 };
 
@@ -179,7 +222,7 @@ export function sankeyColors(theme) {
 export function paletteCss(theme) {
   return Object.entries(THEMES[theme].palette)
     .filter(([, value]) => typeof value === 'string')
-    .map(([key, value]) => `--${key.replace(/[A-Z]/g, c => '-' + c.toLowerCase())}: ${value};`)
+    .map(([key, value]) => `--${kebab(key)}: ${value};`)
     .join(' ');
 }
 
@@ -198,13 +241,16 @@ export function mermaidConfig(theme) {
     c4: c4Config(p, diagramFont, c4),
     themeVariables: {
       fontFamily: diagramFont, titleColor: p.text,
-      primaryColor: p.paper, primaryTextColor: p.text, primaryBorderColor: p.accent,
+      primaryColor: p.paper, primaryTextColor: p.text,
+      primaryBorderColor: p.accent,
       secondaryColor: p.surface, tertiaryColor: p.surface, lineColor: p.text,
-      edgeLabelBackground: p.surface, clusterBkg: p.surface, clusterBorder: p.line,
-      noteBkgColor: p.highlight, noteBorderColor: p.accent, noteTextColor: p.text,
+      edgeLabelBackground: p.surface, clusterBkg: p.surface,
+      clusterBorder: p.line,
+      noteBkgColor: p.highlight, noteBorderColor: p.accent,
+      noteTextColor: p.text,
       actorBkg: p.paper, actorBorder: p.accent, actorTextColor: p.text,
       signalColor: p.text, signalTextColor: p.text,
-      ...Object.fromEntries(p.series.map((color, i) => ['pie' + (i + 1), color])),
+      ...numbered('pie', p.series),
       pieStrokeColor: p.text, pieOuterStrokeColor: p.text,
       taskBkgColor: p.paper, taskBorderColor: p.accent,
       taskTextColor: p.text, taskTextDarkColor: p.text,
@@ -212,30 +258,42 @@ export function mermaidConfig(theme) {
       activeTaskBkgColor: p.highlight, activeTaskBorderColor: p.accent,
       doneTaskBkgColor: p.shade, doneTaskBorderColor: p.accent,
       critBkgColor: p.danger, critBorderColor: p.danger,
-      sectionBkgColor: p.surface, altSectionBkgColor: p.paper, sectionBkgColor2: p.surface,
+      sectionBkgColor: p.surface, altSectionBkgColor: p.paper,
+      sectionBkgColor2: p.surface,
       gridColor: p.muted, todayLineColor: p.accentText,
       xyChart: { plotColorPalette: p.series.join(', ') },
       // Круги venn — иначе все оттенки primaryColor и не различаются.
-      ...Object.fromEntries(p.series.map((color, i) => ['venn' + (i + 1), color])),
+      ...numbered('venn', p.series),
       ...mermaid,
     },
   };
 }
 
+function numbered(prefix, colors) {
+  return Object.fromEntries(
+    colors.map((color, i) => [prefix + (i + 1), color]));
+}
+
+function kebab(name) {
+  return name.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+}
+
 // C4 рисуется не по themeVariables, а по своему разделу настроек: цвета и
 // шрифт каждого типа элемента отдельно.
-const C4_TYPES = ['person', 'system', 'system_db', 'system_queue', 'container', 'container_db',
-  'container_queue', 'component', 'component_db', 'component_queue'];
-
 function c4Config(p, font, colors = {}) {
-  const fill = { person: p.accent, system: p.accentText, external: p.muted, ...colors };
+  const fill = {
+    person: p.accent, system: p.accentText, external: p.muted, ...colors,
+  };
   const config = { boundaryFontFamily: font, messageFontFamily: font };
   for (const type of C4_TYPES) {
     for (const external of [false, true]) {
       const key = (external ? 'external_' : '') + type;
-      const bg = external ? fill.external : type === 'person' ? fill.person : fill.system;
+      const bg = external ? fill.external
+        : type === 'person' ? fill.person : fill.system;
       Object.assign(config, {
-        [key + '_bg_color']: bg, [key + '_border_color']: p.accent, [key + 'FontFamily']: font,
+        [key + '_bg_color']: bg,
+        [key + '_border_color']: p.accent,
+        [key + 'FontFamily']: font,
       });
     }
   }
