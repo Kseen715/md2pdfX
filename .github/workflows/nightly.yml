@@ -45,7 +45,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          # md2pdfX-<version>-<platform>-<arch>.<архив>, расширение — md2pdfX-<version>.vsix
+          # md2pdfX-<version>-<platform>-<arch>[-cli].<архив>, расширение — md2pdfX-<version>.vsix
           version=${TAG#v}
           mv out/*.vsix "out/md2pdfX-$version.vsix"
           for f in out/md2pdfX-*-*.*; do
@@ -56,7 +56,7 @@ jobs:
           gh release create "$TAG" out/* \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Nightly $TAG" \
-            --notes "Nightly build of ${GITHUB_SHA::7}. Extension: Extensions → … → Install from VSIX. CLI: unpack md2pdfX-<version>-<platform>-<arch> and run \`md2pdf doc.md\`."
+            --notes "Nightly build of ${GITHUB_SHA::7}. Extension: Extensions → … → Install from VSIX. CLI: unpack md2pdfX-<version>-<platform>-<arch>-cli and run \`md2pdf doc.md\`. App: run the installer (.run on Linux, -setup.exe on Windows) or unpack md2pdfX-<version>-<platform>-<arch> and run md2pdfX; its md2pdf command works without a display."
 
       # Хранится только последний nightly: предыдущие пре-релизы удаляются
       # вместе с тегами. Задача запускается лишь после успешной сборки, а

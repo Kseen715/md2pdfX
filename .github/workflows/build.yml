@@ -1,5 +1,5 @@
 # Общая сборка для nightly и релиза: .vsix и исполняемые файлы под каждую
-# платформу. Всё, что попадает в релиз, выкладывается артефактами dist-*.
+# платформу, окно на Electron. Всё, что попадает в релиз, выкладывается артефактами dist-*.
 name: build
 
 on:
@@ -66,7 +66,7 @@ jobs:
       # Версию в имя вставляет задача релиза: только она знает тег.
       - name: Archive
         run: |
-          name=md2pdfX-${{ matrix.platform }}-${{ matrix.arch }}
+          name=md2pdfX-${{ matrix.platform }}-${{ matrix.arch }}-cli
           mkdir -p out
           if [ "$RUNNER_OS" = Windows ]; then
             7z a -tzip "out/$name.zip" ./dist/md2pdf.exe
@@ -77,5 +77,58 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: dist-${{ matrix.platform }}-${{ matrix.arch }}
+          path: out/*
+          if-no-files-found: error
+
+  # Окно: Electron под x64 и arm64 собирается на одной ОС (packager скачивает
+  # нужный), поэтому по задаче на ОС.
+  gui:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, platform: linux }
+          - { os: windows-latest, platform: windows }
+          - { os: macos-latest, platform: macos }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build:gui
+      # makensis есть не на всех образах windows-latest.
+      - name: Install NSIS
+        if: runner.os == 'Windows'
+        run: command -v makensis || [ -e "C:/Program Files (x86)/NSIS/makensis.exe" ] || choco install nsis -y --no-progress
+      # .run на Linux, setup.exe на Windows.
+      - name: Installers
+        if: runner.os != 'macOS'
+        run: node scripts/build.js installer
+
+      # В каталоге md2pdfX-<платформа>-<arch>/ — приложение целиком; tar
+      # сохраняет права и символические ссылки внутри .app.
+      - name: Archive
+        run: |
+          mkdir -p out
+          for arch in x64 arm64; do
+            dir=md2pdfX-$(node -p process.platform)-$arch
+            name=md2pdfX-${{ matrix.platform }}-$arch
+            if [ "$RUNNER_OS" = Windows ]; then
+              (cd dist/gui && 7z a -tzip "../../out/$name.zip" "$dir")
+            else
+              tar -czf "out/$name.tar.gz" -C dist/gui "$dir"
+            fi
+          done
+          cp dist/gui/*.run dist/gui/*-setup.exe out/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist-${{ matrix.platform }}-gui
           path: out/*
           if-no-files-found: error

@@ -162,6 +162,10 @@ ${diagrams ? `<script>${loadAsset('mermaid.js')}</script>
       // и участников считаются под другой шрифт и текст из них вылезает.
       const font = ${JSON.stringify(mermaid.themeVariables.fontFamily)};
       const sources = [...document.querySelectorAll('pre.mermaid')].map(e => e.textContent);
+      // C4 раскладывает элементы в ряд шириной screen.availWidth, а экран у
+      // печати разный: у Chrome 800×600, у Electron без дисплея — 1×1, и
+      // диаграмма вытягивается в столбик. Экран — как у Chrome.
+      Object.defineProperty(screen, 'availWidth', { get: () => 800 });
       window.mermaid.initialize({
         ...${JSON.stringify(mermaid)},
         startOnLoad: false, fontFamily: font,

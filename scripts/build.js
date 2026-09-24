@@ -4,10 +4,16 @@
 //   node scripts/build.js extension   →  dist/extension.cjs + dist/assets/
 //   node scripts/build.js exe         →  dist/md2pdf (dist/md2pdf.exe на Windows),
 //                                        один файл Node.js SEA; нужен Node 25.5+
+//   node scripts/build.js gui         →  dist/gui/md2pdfX-<платформа>-<arch>/,
+//                                        окно на Electron для x64 и arm64
+//   node scripts/build.js installer   →  из готовых dist/gui/*: на Linux
+//                                        md2pdfX-linux-<arch>.run, на Windows
+//                                        md2pdfX-windows-<arch>-setup.exe (NSIS)
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { packager } from '@electron/packager';
 import { build } from 'esbuild';
 import { assetNames, buildAsset } from '../src/assets.js';
 import { collectFonts } from '../src/fonts.js';
@@ -37,6 +43,77 @@ const targets = {
     }
     console.log(`${path.relative(root, exe)}: ${(fs.statSync(exe).size / 2 ** 20).toFixed(0)} МБ`);
   },
+  // Приложение повторяет раскладку исходников (src/gui, images), так что
+  // относительные пути в main.js и index.html верны и там, и тут. Electron
+  // под другую архитектуру packager скачивает сам: обе собираются на одной ОС.
+  async gui() {
+    const stage = path.join(dist, 'gui-app');
+    fs.rmSync(stage, { recursive: true, force: true });
+    const gui = path.join(stage, 'src/gui');
+    await bundle('src/gui/main.js', 'gui-app/src/gui/main.cjs', { external: ['electron'] });
+    writeAssets(path.join(gui, 'assets'));
+    for (const file of ['preload.cjs', 'index.html', 'app.js', 'app.css']) {
+      fs.copyFileSync(path.join(root, 'src/gui', file), path.join(gui, file));
+    }
+    fs.mkdirSync(path.join(stage, 'images'));
+    for (const file of ['icon.svg', 'icon.png']) {
+      fs.copyFileSync(path.join(root, 'images', file), path.join(stage, 'images', file));
+    }
+    const { version } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+    fs.writeFileSync(path.join(stage, 'package.json'),
+      JSON.stringify({ name: 'md2pdfx', productName: 'md2pdfX', version, main: 'src/gui/main.cjs' }));
+    const electron = JSON.parse(fs.readFileSync(path.join(root, 'node_modules/electron/package.json'), 'utf8'));
+    const apps = await packager({
+      dir: stage, out: path.join(dist, 'gui'), name: 'md2pdfX', appBundleId: 'io.github.kseen715.md2pdfx',
+      electronVersion: electron.version, arch: ['x64', 'arm64'], asar: true, overwrite: true, quiet: true,
+      // Значок exe; ponytail: macOS — со значком Electron, пока нет icon.icns.
+      icon: process.platform === 'win32' ? path.join(root, 'images/icon.ico') : undefined,
+    });
+    // Как у exe: без подписи macOS приложение не запустит, хватает ad-hoc.
+    if (process.platform === 'darwin') {
+      for (const dir of apps) {
+        execFileSync('codesign', ['--sign', '-', '--force', '--deep', path.join(dir, 'md2pdfX.app')], { stdio: 'inherit' });
+      }
+    }
+    // Команда md2pdf рядом с приложением: без аргументов само приложение
+    // открывает окно, а обёртка всегда работает как CLI.
+    for (const dir of apps) {
+      if (process.platform === 'win32') {
+        // cmd ждёт завершения GUI-программы только внутри пакетного файла.
+        fs.writeFileSync(path.join(dir, 'md2pdf.cmd'), '@echo off\r\n"%~dp0md2pdfX.exe" %*\r\n');
+      } else {
+        // Linux: headless — и без дисплея (сервер, CI), и без окна в сеансе.
+        const exe = process.platform === 'darwin' ? 'md2pdfX.app/Contents/MacOS/md2pdfX" "$@"'
+          : 'md2pdfX" --ozone-platform=headless "$@"';
+        fs.writeFileSync(path.join(dir, 'md2pdf'), `#!/bin/sh\nexec "$(dirname "$(readlink -f "$0")")/${exe}\n`, { mode: 0o755 });
+      }
+      if (process.platform === 'linux') fs.copyFileSync(path.join(root, 'images/icon.png'), path.join(dir, 'md2pdfX.png'));
+      console.log(path.relative(root, dir));
+    }
+  },
+  // Установщики из уже собранных приложений (gui).
+  installer() {
+    const { version } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+    for (const arch of ['x64', 'arm64']) {
+      const app = path.join(dist, 'gui', `md2pdfX-${process.platform}-${arch}`);
+      if (process.platform === 'linux') {
+        // Самораспаковывающийся архив: сценарий installer.sh, за ним tar.gz.
+        const out = path.join(dist, 'gui', `md2pdfX-linux-${arch}.run`);
+        const head = fs.readFileSync(path.join(root, 'scripts/installer.sh'), 'utf8')
+          .replaceAll('@VERSION@', version).replaceAll('@ARCH@', arch);
+        const payload = execFileSync('tar', ['-cz', '-C', path.dirname(app), path.basename(app)], { maxBuffer: 2 ** 30 });
+        fs.writeFileSync(out, Buffer.concat([Buffer.from(head), payload]), { mode: 0o755 });
+        console.log(path.relative(root, out));
+      } else if (process.platform === 'win32') {
+        const out = path.join(dist, 'gui', `md2pdfX-windows-${arch}-setup.exe`);
+        execFileSync(makensis(), [`/DVERSION=${version}`, `/DSRC=${app}`, `/DOUT=${out}`,
+          path.join(root, 'scripts/installer.nsi')], { stdio: 'inherit' });
+        console.log(path.relative(root, out));
+      } else {
+        throw new Error('Установщики — только для Linux и Windows');
+      }
+    }
+  },
 };
 
 if (!targets[target]) {
@@ -45,6 +122,12 @@ if (!targets[target]) {
 }
 fs.mkdirSync(dist, { recursive: true });
 await targets[target]();
+
+// NSIS из choco в PATH не попадает.
+function makensis() {
+  const installed = path.join(process.env['ProgramFiles(x86)'] ?? '', 'NSIS/makensis.exe');
+  return fs.existsSync(installed) ? installed : 'makensis';
+}
 
 async function bundle(entry, outName, { external = [] } = {}) {
   const outfile = path.join(dist, outName);
@@ -63,8 +146,7 @@ async function bundle(entry, outName, { external = [] } = {}) {
 }
 
 // → { имя: путь } для конфигурации SEA. Шрифты — в assets/fonts/.
-function writeAssets() {
-  const dir = path.join(dist, 'assets');
+function writeAssets(dir = path.join(dist, 'assets')) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(path.join(dir, 'fonts'), { recursive: true });
   const assets = {};

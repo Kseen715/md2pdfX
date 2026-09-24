@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Значок удаления: icon.svg и красная корзина в правом нижнем углу. -->
+  <defs>
+    <clipPath id="bg"><path d="M28 0H256V228L228 256H0V28Z"/></clipPath>
+  </defs>
+
+  <path d="M28 0H256V228L228 256H0V28Z" fill="#0a0a0a"/>
+  <g clip-path="url(#bg)">
+    <path d="M156 256L256 156L256 163L163 256ZM172 256L256 172L256 179L179 256ZM188 256L256 188L256 195L195 256ZM204 256L256 204L256 211L211 256ZM220 256L256 220L256 227L227 256ZM236 256L256 236L256 243L243 256ZM252 256L256 252L256 259L259 256Z" fill="#c6ff00"/>
+    <path d="M0 96L96 0H112L0 112Z" fill="#c6ff00"/>
+    <path d="M0 124L124 0H128L0 128Z" fill="#fff" opacity="0.5"/>
+  </g>
+  <path d="M14 238H40M14 244H30" stroke="#fff" stroke-width="3"/>
+  <path d="M226 18V34M218 26H234" stroke="#c6ff00" stroke-width="3"/>
+
+  <!-- Лист со срезанным углом -->
+  <path d="M64 40H160L200 80V216H64Z" fill="#fff"/>
+  <path d="M160 40V80H200Z" fill="#c6ff00"/>
+
+  <!-- MD -->
+  <path d="M80 130V80H90L103 97L116 80H126V130H116V98L103 114L90 98V130Z" fill="#0a0a0a"/>
+  <path fill="#0a0a0a" fill-rule="evenodd"
+        d="M136 80H164L176 92V118L164 130H136Z M146 90V120H159L166 113V97L159 90Z"/>
+
+  <!-- Плашка PDF -->
+  <path d="M36 150H206L220 164V200H50L36 186Z" fill="#c6ff00" stroke="#0a0a0a" stroke-width="4"/>
+  <g fill="#0a0a0a" fill-rule="evenodd">
+    <path d="M70 190V160H90L96 166V174L90 180H78V190Z M78 167V173H87L88 172V168L87 167Z"/>
+    <path d="M106 160H126L134 168V182L126 190H106Z M114 167V183H123L126 180V170L123 167Z"/>
+    <path d="M144 160H168V167H152V172H164V179H152V190H144Z"/>
+    <path d="M178 166L186 175L178 184H184L192 175L184 166Z"/>
+    <path d="M190 166L198 175L190 184H196L204 175L196 166Z"/>
+  </g>
+  <!-- Корзина: крупно, чтобы читалась и в 16 px. Плашка в углу, обводка
+       внутри неё (двойная ширина, обрезана по плашке): по краю значка
+       обычная обводка срезалась бы наполовину. -->
+  <clipPath id="badge"><path d="M156 136H256V236L236 256H136V156Z"/></clipPath>
+  <path d="M156 136H256V236L236 256H136V156Z" fill="#e53935" stroke="#0a0a0a" stroke-width="12" clip-path="url(#badge)"/>
+  <g fill="#fff">
+    <path d="M182 156H210V164H228V176H164V164H182Z"/>
+    <path d="M170 182H222L216 236H176Z"/>
+  </g>
+  <path d="M186 192V226M196 192V226M206 192V226" stroke="#e53935" stroke-width="5"/>
+</svg>

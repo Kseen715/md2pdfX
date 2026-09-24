@@ -1,6 +1,6 @@
 # Релиз при изменении package.json в main: версия берётся из package.json,
 # и если релиза vX.Y.Z ещё нет — на GitHub появляется релиз с .vsix и
-# исполняемыми файлами под Linux, Windows и macOS. Ручной запуск — для повтора.
+# исполняемыми файлами и окном под Linux, Windows и macOS. Ручной запуск — для повтора.
 name: release
 
 on:
@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # md2pdfX-<version>-<platform>-<arch>.<архив>, расширение — md2pdfX-<version>.vsix
+          # md2pdfX-<version>-<platform>-<arch>[-cli].<архив>, расширение — md2pdfX-<version>.vsix
           version=${TAG#v}
           mv out/*.vsix "out/md2pdfX-$version.vsix"
           for f in out/md2pdfX-*-*.*; do

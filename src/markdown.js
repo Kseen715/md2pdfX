@@ -259,3 +259,12 @@ function taskLists(state) {
     tokens[i - 2].attrJoin('class', 'task-list-item');
   }
 }
+
+// Вход из командной строки или окна → файлы .md: каталог — все .md в нём
+// (без подкаталогов).
+export function expandInput(p) {
+  const stat = fs.statSync(p, { throwIfNoEntry: false });
+  if (!stat) throw new Error(`Не найден: ${p}`);
+  if (!stat.isDirectory()) return [p];
+  return fs.readdirSync(p).filter(f => /\.md$/i.test(f)).sort().map(f => path.join(p, f));
+}

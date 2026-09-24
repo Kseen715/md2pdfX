@@ -146,7 +146,7 @@ Single executable
 
 Prebuilt files for Linux (x64, arm64), Windows (x64) and macOS (arm64) are on
 [Releases](https://github.com/Kseen715/md2pdfX/releases): unpack
-`md2pdfX-<version>-<platform>-<arch>.tar.gz` (`.zip` on Windows) and run
+`md2pdfX-<version>-<platform>-<arch>-cli.tar.gz` (`.zip` on Windows) and run
 `md2pdf doc.md`. Linux arm64 needs a system Chromium, because Google Chrome
 is not released for that platform.
 
@@ -167,6 +167,47 @@ in this order: `--chrome` or `MD2PDF_CHROME` → the puppeteer cache
 (`~/.cache/puppeteer`, `PUPPETEER_CACHE_DIR`) → Chrome, Chromium or Edge
 installed on the system. If none is found, `chrome-headless-shell` is
 downloaded into the puppeteer cache (once, about 100 MB).
+
+Desktop app
+-----------
+
+A window for the same conversion: drop Markdown files or folders, pick a
+theme and layout, export. It prints through the Chromium inside Electron, so
+it needs no separate Chrome. Builds for Linux, Windows and macOS, each for x64
+and arm64, are on
+[Releases](https://github.com/Kseen715/md2pdfX/releases):
+
+- Linux: `sh md2pdfX-<version>-linux-<arch>.run` installs into
+  `~/.local/share/md2pdfX` with `md2pdfX` and `md2pdf` in `~/.local/bin`;
+  run it with `sudo` to install into `/opt/md2pdfX` and `/usr/local/bin` for
+  everyone. It adds a menu entry. To remove it, run `uninstall.sh` in the
+  install folder.
+- Windows: `md2pdfX-<version>-windows-<arch>-setup.exe` installs for the
+  current user without admin rights, adds a Start menu entry, and adds the app
+  folder to the user `PATH`. Uninstall from Settings → Apps.
+- Any platform: unpack `md2pdfX-<version>-<platform>-<arch>.tar.gz` (`.zip`
+  on Windows) and run `md2pdfX` (`md2pdfX.exe`, `md2pdfX.app`). The macOS app
+  is signed ad hoc only: after downloading, clear the quarantine flag with
+  `xattr -cr md2pdfX.app`, or macOS will call it damaged.
+
+The app also works as the command-line tool, with the same options as
+`md2pdf`. It doesn't need Chrome, but it is larger and starts more slowly than
+the `-cli` binary. Use the `md2pdf` command in the app folder (`md2pdf.cmd` on
+Windows). The installers put it on `PATH`.
+
+```bash
+md2pdf notes.md -o out/                  # no window; on Linux also without a display (headless)
+```
+
+Running `md2pdfX` itself with arguments also works on macOS and on a Linux
+desktop. On Windows the command prompt doesn't wait for `md2pdfX.exe` and
+doesn't get its exit code, so use `md2pdf.cmd` there.
+
+```bash
+npm run gui                              # run from source
+npm run build:gui                        # → dist/gui/md2pdfX-<platform>-<arch>/, x64 and arm64
+node scripts/build.js installer          # → dist/gui/*.run (Linux) or *-setup.exe (Windows, needs NSIS)
+```
 
 Layout
 ------

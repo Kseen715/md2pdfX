@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:">
+<title>md2pdfX</title>
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="top">
+  <img class="logo" src="../../images/icon.svg" alt="">
+  <h1>md2pdf<span>X</span></h1>
+  <span class="version" id="version"></span>
+</header>
+
+<main>
+  <section class="panel queue" id="drop">
+    <div class="panel-head">
+      <h2>Files</h2>
+      <div class="actions">
+        <button class="ghost" id="add-files">+ Files</button>
+        <button class="ghost" id="add-folder">+ Folder</button>
+        <button class="ghost" id="clear" disabled>Clear</button>
+      </div>
+    </div>
+    <div class="empty" id="empty">
+      <div class="drop-mark"></div>
+      <p><strong>Drop Markdown files or folders here</strong></p>
+      <p class="hint">or use the buttons above</p>
+    </div>
+    <ul class="files" id="files"></ul>
+  </section>
+
+  <section class="panel options">
+    <h2>Theme</h2>
+    <div class="themes" id="theme"></div>
+
+    <h2>Layout</h2>
+    <div class="field"><label>Orientation</label><div class="seg" id="orientation"></div></div>
+    <div class="field"><label>Alignment</label><div class="seg" id="align"></div></div>
+    <div class="field"><label>Sections</label><div class="seg" id="sections"></div></div>
+
+    <h2>Extras</h2>
+    <div class="field"><label for="watermark">Watermark</label>
+      <input id="watermark" type="text" placeholder="Text in the footer centre"></div>
+    <label class="toggle"><input type="checkbox" id="book"><span></span>
+      Book — append linked .md files as chapters</label>
+
+    <h2>Output</h2>
+    <div class="output">
+      <span id="out-dir" class="path">Next to each source file</span>
+      <button class="ghost" id="pick-out">Change</button>
+      <button class="ghost" id="reset-out" hidden>Reset</button>
+    </div>
+  </section>
+</main>
+
+<footer class="bottom">
+  <span id="summary">No files</span>
+  <button class="primary" id="export" disabled>Export PDF</button>
+</footer>
+</body>
+</html>
