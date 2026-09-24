@@ -46,6 +46,9 @@ elif ! "$dest/md2pdf" --version >/dev/null 2>&1; then
   echo "md2pdfX will run without it. Install with sudo to keep the sandbox." >&2
 fi
 
+# Прежние версии ставили сюда ссылку на само приложение: запись через неё
+# затёрла бы только что распакованный md2pdfX.
+rm -f "$bin/md2pdfX"
 printf '#!/bin/sh\nexec "%s/md2pdfX" %s"$@"\n' "$dest" "${flags:+$flags }" > "$bin/md2pdfX"
 chmod +x "$bin/md2pdfX"
 ln -sf "$dest/md2pdf" "$bin/md2pdf"
