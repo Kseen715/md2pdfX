@@ -1,7 +1,7 @@
 /* Тема Neo-Vectorheart: чёрно-белая основа, кислотный акцент, срезы под 45°,
    заголовки шрифтом Tektur, служебные подписи — моноширинным. Мотивы —
-   из Tabula Sordida (kseen715.github.io/tabula-sordida): сетка с крестиками,
-   штриховка, номерные плашки. Палитра — в src/themes/index.js: --accent —
+   из Tabula Sordida (kseen715.github.io/tabula-sordida): крестики, риски,
+   штриховка, плашки со срезом. Палитра — в src/themes/index.js: --accent —
    чернила, --highlight — лайм (только заливка под чёрным текстом),
    --accent-text — лайм, читаемый как текст.
    Штриховка — одним SVG на весь блок, линии — пунктиром
@@ -11,7 +11,6 @@
 :root {
   --display-font: "Tektur Variable", var(--font-mono);
   --heading-font: var(--font-mono);
-  --hatch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
   --subheading-color: var(--text);
   --h2-border: 3px solid var(--accent);
   --link-color: var(--text);
@@ -77,11 +76,11 @@ h1 .heading-text {
   background: var(--accent); color: var(--paper); padding: 0.3mm 2mm;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
-/* Полоса под заголовком документа: лаймовая, дальше — штриховка. SVG без
-   viewBox: проценты в нём — от ширины заголовка. */
+/* Полоса под заголовком документа: лаймовая, дальше — гребёнка рисок,
+   толстеющих к штриховке, и сама штриховка. SVG без viewBox: проценты в нём — от ширины заголовка. */
 h1::after {
-  content: ""; display: block; height: 1.6mm; margin-top: 3mm;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40%25' height='100%25' fill='%23c6ff00'/%3E%3Csvg x='42%25' width='58%25'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  content: ""; display: block; height: 6px; margin-top: 3mm;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40%25' height='100%25' fill='%23c6ff00'/%3E%3Csvg x='42%25' width='58%25'%3E%3Cg fill='%230a0a0a'%3E%3Crect x='0' width='0.5' height='100%25'/%3E%3Crect x='2.5' width='1' height='100%25'/%3E%3Crect x='5.5' width='1.5' height='100%25'/%3E%3Crect x='9.0' width='2' height='100%25'/%3E%3Crect x='13.0' width='2.5' height='100%25'/%3E%3Crect x='17.5' width='3' height='100%25'/%3E%3C/g%3E%3Csvg x='24'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E%3C/svg%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
 h2 {
@@ -101,10 +100,11 @@ h2::before {
   display: inline-block; width: 14px; height: 14px; margin-right: 2.5mm;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M1 1H23V23H9L1 15Z' fill='%23c6ff00' stroke='%230a0a0a' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
-/* Штриховая метка в правом конце черты раздела */
+/* Метка в правом конце черты раздела: крестик и штриховка */
 h2::after {
   content: ""; position: absolute; right: 0; bottom: 2mm;
-  width: 12mm; height: 1.6mm; background: var(--hatch);
+  width: 60px; height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 0V7M0 3.5H7' stroke='%230a0a0a' stroke-width='1.5'/%3E%3Csvg x='14' width='46'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
 h3 { font-size: 11.5pt; font-weight: 700; }
@@ -123,7 +123,11 @@ pre:not(.mermaid) {
   border-top-right-radius: 4mm; corner-shape: bevel;
   padding-left: 4mm; clip-path: none;
 }
-pre:not(.mermaid)::before { content: none; }
+/* Слой заливки коду не нужен — вместо него крестик в правом нижнем углу. */
+pre:not(.mermaid)::before {
+  inset: auto 1.5mm 1.2mm auto; width: 7px; height: 7px; z-index: 0;
+  clip-path: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 0V7M0 3.5H7' stroke='%230a0a0a' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
 /* Язык кода — чёрной вкладкой с лаймовой подписью в левом верхнем углу,
    как шапка таблицы. */
 pre[data-lang] { padding-top: 7.5mm; }
@@ -148,15 +152,20 @@ th {
 }
 
 blockquote { --fill: color-mix(in srgb, var(--highlight) 14%, var(--paper)); }
-/* Штриховая метка в правом нижнем углу цитат и callout'ов */
+/* Метка в правом нижнем углу цитат и callout'ов: гребёнка рисок,
+   толстеющих к штриховке, и сама штриховка */
 blockquote, .callout { padding-bottom: 4.5mm; }
 blockquote::after, .callout::after {
   content: ""; position: absolute; right: 4mm; bottom: 1.6mm;
-  width: 10mm; height: 1.6mm; background: var(--hatch);
+  width: 64px; height: 6px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230a0a0a'%3E%3Crect x='0' width='0.5' height='100%25'/%3E%3Crect x='2.5' width='1' height='100%25'/%3E%3Crect x='5.5' width='1.5' height='100%25'/%3E%3Crect x='9.0' width='2' height='100%25'/%3E%3Crect x='13.0' width='2.5' height='100%25'/%3E%3Crect x='17.5' width='3' height='100%25'/%3E%3C/g%3E%3Csvg x='24' width='40'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
-/* Разделитель — штрихованная лента */
-hr { border: none; height: 1.6mm; background: var(--hatch); }
+/* Разделитель: крестики по краям, тонкая линия, в середине — штриховка */
+hr {
+  border: none; height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect y='3' width='35%25' height='1' fill='%230a0a0a'/%3E%3Crect x='65%25' y='3' width='35%25' height='1' fill='%230a0a0a'/%3E%3Csvg x='37%25' width='26%25'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E%3Cpath d='M3.5 0V7M0 3.5H7' stroke='%230a0a0a' stroke-width='1.5'/%3E%3Csvg x='100%25' overflow='visible'%3E%3Cpath d='M-3.5 0V7M-7 3.5H0' stroke='%230a0a0a' stroke-width='1.5'/%3E%3C/svg%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
 
 kbd { border-bottom-width: 3px; }
 summary { font-family: var(--font-mono); text-transform: uppercase; }
