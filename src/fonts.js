@@ -3,6 +3,7 @@
 //
 //   текст    — Noto Sans и Noto Sans для других письменностей и CJK
 //              (пакеты @fontsource, разбиты на подмножества по unicode-range);
+//   заголовки vectorheart — Tektur (@fontsource-variable/tektur);
 //   моно     — JetBrainsMono Nerd Font (src/fonts/, из ryanoasis/nerd-fonts):
 //              JetBrains Mono плюс значки Nerd Fonts;
 //   эмодзи   — Noto Color Emoji в формате COLRv1 (src/fonts/, из
@@ -32,6 +33,7 @@ const FONTSOURCE = [
   '@fontsource-variable/noto-sans-georgian/wght.css',
   '@fontsource-variable/noto-sans-armenian/wght.css',
   '@fontsource-variable/noto-sans-ethiopic/wght.css',
+  '@fontsource-variable/tektur/wght.css',
   // У CJK нет переменных версий: только обычное и жирное начертания.
   '@fontsource/noto-sans-sc/400.css', '@fontsource/noto-sans-sc/700.css',
   '@fontsource/noto-sans-jp/400.css', '@fontsource/noto-sans-jp/700.css',

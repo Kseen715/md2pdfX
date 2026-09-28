@@ -1,9 +1,17 @@
 /* Тема Neo-Vectorheart: чёрно-белая основа, кислотный акцент, срезы под 45°,
-   моноширинные заголовки. Палитра — в src/themes/index.js: --accent —
+   заголовки шрифтом Tektur, служебные подписи — моноширинным. Мотивы —
+   из Tabula Sordida (kseen715.github.io/tabula-sordida): сетка с крестиками,
+   штриховка, номерные плашки. Палитра — в src/themes/index.js: --accent —
    чернила, --highlight — лайм (только заливка под чёрным текстом),
-   --accent-text — лайм, читаемый как текст. */
+   --accent-text — лайм, читаемый как текст.
+   Штриховка — одним SVG на весь блок, линии — пунктиром
+   stroke-dasharray. Не повторяющейся плиткой: её Chrome кладёт в PDF
+   растром, и в печати она мылится. И не repeating-linear-gradient: градиент
+   с прозрачностью часть просмотрщиков PDF рисует сплошной заливкой. */
 :root {
+  --display-font: "Tektur Variable", var(--font-mono);
   --heading-font: var(--font-mono);
+  --hatch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
   --subheading-color: var(--text);
   --h2-border: 3px solid var(--accent);
   --link-color: var(--text);
@@ -54,13 +62,14 @@ pre:not(.mermaid)::before, blockquote::before, .callout::before, h1::before {
 }
 
 h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
+h1, h2, h3 { font-family: var(--display-font); }
 
 /* Заголовок документа — полая рамка со срезанными углами и толстой левой
    гранью, как у callout'ов (рамка — общая, выше), а чёрная плашка — только
    под строками текста: сплошной чёрный блок на полстраницы съедал картридж. */
 h1 {
   --fill: var(--paper);
-  font-size: 22pt; font-weight: 800; text-transform: uppercase;
+  font-size: 24pt; font-weight: 800; text-transform: uppercase;
   line-height: 1.5; text-align: left;
   padding: 3mm 5mm 3.5mm calc(5mm + var(--bl)); margin: 0 0 2mm;
 }
@@ -68,23 +77,34 @@ h1 .heading-text {
   background: var(--accent); color: var(--paper); padding: 0.3mm 2mm;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
-/* Полоса под заголовком документа */
+/* Полоса под заголовком документа: лаймовая, дальше — штриховка. SVG без
+   viewBox: проценты в нём — от ширины заголовка. */
 h1::after {
-  content: ""; display: block; height: 1.6mm; width: 40%; margin-top: 3mm;
-  background: var(--highlight);
+  content: ""; display: block; height: 1.6mm; margin-top: 3mm;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40%25' height='100%25' fill='%23c6ff00'/%3E%3Csvg x='42%25' width='58%25'%3E%3Cpath d='M-10 3H3000' stroke='%230a0a0a' stroke-width='7' stroke-dasharray='3 2.6' transform='skewX(-45)'/%3E%3C/svg%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
 h2 {
-  font-size: 14pt; font-weight: 800; text-transform: uppercase;
-  padding: 0 0 1.5mm 0;
+  position: relative;
+  font-size: 15pt; font-weight: 800; text-transform: uppercase;
+  padding: 0 16mm 1.5mm 0;
 }
-/* Маркер раздела: лаймовый квадрат со срезанным углом. Рисуется SVG, чтобы
-   обводка шла и по срезу. */
+/* Маркер раздела: лаймовая плашка со срезанным углом, без номера — номер
+   часто уже есть в самом заголовке. Рисуется SVG, чтобы обводка шла и по
+   срезу. Пустой inline-block стоит низом на базовой линии, а высотой — с
+   заглавные: так он вровень с текстом в любом алфавите (у Tektur кириллица
+   и латиница по-разному садятся в строку). Размеры — в целых px: края фона
+   Chrome округляет до пикселя, и дробная высота выходила то на пиксель
+   (0.26 мм) больше, то меньше. 14px — высота заглавных Tektur 15pt. */
 h2::before {
-  content: ""; display: inline-block; width: 4.4mm; height: 4.4mm;
-  margin-right: 3mm;
-  vertical-align: -0.4mm;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M1 1H19V19H8L1 12Z' fill='%23c6ff00' stroke='%230a0a0a' stroke-width='2'/%3E%3C/svg%3E") no-repeat;
+  content: "";
+  display: inline-block; width: 14px; height: 14px; margin-right: 2.5mm;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M1 1H23V23H9L1 15Z' fill='%23c6ff00' stroke='%230a0a0a' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
+/* Штриховая метка в правом конце черты раздела */
+h2::after {
+  content: ""; position: absolute; right: 0; bottom: 2mm;
+  width: 12mm; height: 1.6mm; background: var(--hatch);
 }
 
 h3 { font-size: 11.5pt; font-weight: 700; }
@@ -128,6 +148,15 @@ th {
 }
 
 blockquote { --fill: color-mix(in srgb, var(--highlight) 14%, var(--paper)); }
+/* Штриховая метка в правом нижнем углу цитат и callout'ов */
+blockquote, .callout { padding-bottom: 4.5mm; }
+blockquote::after, .callout::after {
+  content: ""; position: absolute; right: 4mm; bottom: 1.6mm;
+  width: 10mm; height: 1.6mm; background: var(--hatch);
+}
+
+/* Разделитель — штрихованная лента */
+hr { border: none; height: 1.6mm; background: var(--hatch); }
 
 kbd { border-bottom-width: 3px; }
 summary { font-family: var(--font-mono); text-transform: uppercase; }
@@ -135,7 +164,10 @@ summary { font-family: var(--font-mono); text-transform: uppercase; }
 .footnotes-sep { border-top: 2px solid var(--line); }
 .footnote-ref a, .footnote-backref { color: var(--accent-text); }
 
+ul { list-style-type: square; }
 ul > li::marker { font-weight: 700; }
+ol { list-style-type: decimal-leading-zero; }
+ol > li::marker { font: 700 0.85em var(--font-mono); }
 
 /* Obsidian */
 .wikilink { border-bottom: 2px solid var(--highlight); }
