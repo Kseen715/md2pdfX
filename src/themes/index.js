@@ -117,7 +117,10 @@ export const THEMES = {
     diagramFont: MONO,
     // Лайм и белый под чёрной рамкой: тёмные блоки съедают краску.
     c4: { person: '#c6ff00', system: '#ffffff', external: '#f3f3f3' },
+    // Градиенты размывают плоскую заливку темы.
     mermaid: {
+      useGradient: false,
+      dropShadow: 'none',
       secondaryColor: '#c6ff00', edgeLabelBackground: '#c6ff00',
       actorBkg: '#0a0a0a', actorTextColor: '#ffffff',
       critBkgColor: '#ffd6d0',

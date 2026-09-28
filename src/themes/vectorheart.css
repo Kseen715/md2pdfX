@@ -108,13 +108,18 @@ pre:not(.mermaid)::before { content: none; }
    как шапка таблицы. */
 pre[data-lang] { padding-top: 7.5mm; }
 pre[data-lang]::after {
-  content: "// " attr(data-lang); position: absolute; top: 0; left: 0;
-  padding: 0.5mm 2.5mm 0.7mm 2mm;
+  /* Вкладка заходит на рамку блока (2px сверху, 6px слева — из
+     --pre-border и --pre-border-left): встык сглаживание краёв оставляло
+     между двумя чёрными фигурами светлую щель. */
+  content: "// " attr(data-lang); position: absolute; top: -2px; left: -6px;
+  padding: calc(0.5mm + 2px) 2.5mm 0.7mm calc(2mm + 6px);
   font: 700 7.5pt var(--font-mono); letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--highlight); background: var(--accent);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.5mm),
-    calc(100% - 1.5mm) 100%, 0 100%);
+  /* Срез — скосом угла, как у самого блока. Не clip-path: по его краю в PDF
+     просвечивала лаймовая кайма (цвет текста). Не градиент с прозрачностью:
+     часть просмотрщиков PDF рисует его сплошной заливкой другого цвета. */
+  border-bottom-right-radius: 1.5mm; corner-shape: bevel;
 }
 
 th {
