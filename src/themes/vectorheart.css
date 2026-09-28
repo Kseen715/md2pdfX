@@ -193,3 +193,20 @@ ol > li::marker { font: 700 0.85em var(--font-mono); }
   font-family: var(--font-mono); text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+
+/* ER: шапка сущности чёрная с лаймовым именем, ключи PK/FK — тёмным
+   лаймом, подписи связей — на лайме, как у flowchart. Цвета mermaid
+   инлайновые, поэтому !important; mainBkg общий с узлами других диаграмм,
+   и через themeVariables шапку не перекрасить. */
+svg[aria-roledescription="er"] {
+  .outer-path path { fill: var(--accent) !important; }
+  .label.name :is(text, tspan, span, p) {
+    fill: var(--highlight) !important; color: var(--highlight) !important;
+    font-weight: 700;
+  }
+  .label.attribute-keys :is(text, tspan, span, p) {
+    fill: var(--accent-text) !important; color: var(--accent-text) !important;
+    font-weight: 700;
+  }
+  .labelBkg, .edgeLabel { background-color: var(--highlight) !important; }
+}

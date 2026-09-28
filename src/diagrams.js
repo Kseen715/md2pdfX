@@ -87,7 +87,7 @@ async function redraw(box, i, source, rooms) {
     if (svg === null) continue;
 
     box.innerHTML = svg;
-    drawn.push(sizes(box, rooms));
+    drawn.push({ ...sizes(box, rooms), wrapped: Boolean(elk) });
     if (drawn.at(-1).normal >= enough(drawn)) break;
   }
   return drawn;
@@ -136,10 +136,13 @@ function place(box, drawn, { normal, wide }) {
     list.reduce((a, b) => b[key] > a[key] ? b : a);
   const best = top('normal');
   const roomy = drawn.find(d => d.wide >= MIN_SCALE);
+  // Змейка хороша, только пока влезает на один лист: разрезанная, она
+  // тянет обратные линии через весь кусок, и их не проследить.
+  const whole = drawn.filter(d => !d.wrapped);
   // Для нарезки на книжных листах — варианты, что влезают в ширину колонки:
   // самый компактный по высоте бывает самым широким, и из-за него длинная
   // узкая диаграмма резалась на альбомные листы.
-  const narrow = drawn.filter(d => d.across >= MIN_SCALE);
+  const narrow = whole.filter(d => d.across >= MIN_SCALE);
 
   if (best.normal >= enough(drawn)) {
     box.innerHTML = best.html;
@@ -152,11 +155,11 @@ function place(box, drawn, { normal, wide }) {
     box.innerHTML = roomy.html;
     landscape(box);
   } else if (wide && !narrow.length) {
-    box.innerHTML = top('wideAcross').html;
+    box.innerHTML = top('wideAcross', whole).html;
     landscape(box);
     split(box, wide);
   } else {
-    box.innerHTML = (narrow.length ? top('normal', narrow) : best).html;
+    box.innerHTML = top('normal', narrow.length ? narrow : whole).html;
     split(box, normal);
   }
 }
