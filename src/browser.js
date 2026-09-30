@@ -13,6 +13,10 @@ import {
 const cacheDir = process.env.PUPPETEER_CACHE_DIR
   || path.join(os.homedir(), '.cache', 'puppeteer');
 
+// Из snap-пакета (VS Code из Snap Store и его терминал) snap-Chromium не
+// запускается: snap-confine отказывает унаследованному профилю AppArmor.
+const insideSnap = Boolean(process.env.SNAP);
+
 const SYSTEM_PATHS = [
   '/usr/bin/chromium', '/usr/bin/chromium-browser', '/snap/bin/chromium',
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
@@ -26,7 +30,8 @@ export async function findBrowser(
 ) {
   const platform = detectBrowserPlatform();
   const found = explicit || await cachedChrome(platform)
-    || [systemChrome(), ...SYSTEM_PATHS].find(p => p && fs.existsSync(p));
+    || [systemChrome(), ...SYSTEM_PATHS].find(p =>
+      p && fs.existsSync(p) && !(insideSnap && isSnap(p)));
   if (found) return launchOptions(found);
 
   if (!platform) throw new Error('Не найден Chrome: укажите путь к нему явно');
@@ -64,6 +69,19 @@ function systemChrome() {
   } catch {
     return undefined;  // платформа без стандартного пути
   }
+}
+
+// Snap — и обёртка-скрипт, что его запускает: /usr/bin/chromium-browser в
+// Ubuntu — переходный пакет, внутри exec /snap/bin/chromium.
+function isSnap(file) {
+  // Команды snap — ссылки на /usr/bin/snap.
+  if (path.basename(fs.realpathSync(file)) === 'snap') return true;
+  const head = Buffer.alloc(4096);
+  const fd = fs.openSync(file, 'r');
+  const size = fs.readSync(fd, head, 0, head.length, 0);
+  fs.closeSync(fd);
+  const text = head.toString('latin1', 0, size);
+  return text.startsWith('#!') && text.includes('/snap/');
 }
 
 function launchOptions(executablePath) {
