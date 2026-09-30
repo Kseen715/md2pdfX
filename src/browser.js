@@ -16,6 +16,9 @@ const cacheDir = process.env.PUPPETEER_CACHE_DIR
 // Из snap-пакета (VS Code из Snap Store и его терминал) snap-Chromium не
 // запускается: snap-confine отказывает унаследованному профилю AppArmor.
 const insideSnap = Boolean(process.env.SNAP);
+// Из flatpak системный Chrome виден (/opt открыт), но библиотеки ему достались
+// бы от среды flatpak, а не от системы — надёжнее скачать свой.
+const insideFlatpak = Boolean(process.env.FLATPAK_ID);
 
 const SYSTEM_PATHS = [
   '/usr/bin/chromium', '/usr/bin/chromium-browser', '/snap/bin/chromium',
@@ -30,7 +33,7 @@ export async function findBrowser(
 ) {
   const platform = detectBrowserPlatform();
   const found = explicit || await cachedChrome(platform)
-    || [systemChrome(), ...SYSTEM_PATHS].find(p =>
+    || !insideFlatpak && [systemChrome(), ...SYSTEM_PATHS].find(p =>
       p && fs.existsSync(p) && !(insideSnap && isSnap(p)));
   if (found) return launchOptions(found);
 
